@@ -1,32 +1,49 @@
 // netlify/functions/score.js
-const data = {
-  "usuario123": {
-    "score": 785,
-    "status": "Bom",
-    "data_consulta": "2025-04-17T13:14:00-03:00"
-  },
-  "usuario456": {
-    "score": 620,
-    "status": "Regular",
-    "data_consulta": "2025-04-17T13:15:00-03:00"
-  }
-};
+
+function gerarScoreAleatorio() {
+  // Gera um score aleatório entre 300 e 950 (faixa comum de score)
+  return Math.floor(Math.random() * (950 - 300 + 1)) + 300;
+}
+
+function gerarStatus(score) {
+  if (score >= 700) return "Excelente";
+  if (score >= 500) return "Bom";
+  if (score >= 300) return "Regular";
+  return "Ruim";
+}
+
+function gerarDataConsulta() {
+  // Gera uma data de consulta aleatória nos últimos dias
+  const diasAtras = Math.floor(Math.random() * 30); // Até 30 dias atrás
+  const data = new Date();
+  data.setDate(data.getDate() - diasAtras);
+  return data.toISOString();
+}
 
 exports.handler = async (event, context) => {
-  const usuarioId = event.queryStringParameters.usuario_id;
+  const clienteId = event.queryStringParameters.cliente_id;
 
-  if (usuarioId && data[usuarioId]) {
+  if (clienteId) {
+    const scoreAleatorio = gerarScoreAleatorio();
+    const statusAleatorio = gerarStatus(scoreAleatorio);
+    const dataConsultaAleatoria = gerarDataConsulta();
+
     return {
       statusCode: 200,
-      body: JSON.stringify({ score: data[usuarioId].score }),
+      body: JSON.stringify({
+        cliente_id: clienteId,
+        score: scoreAleatorio,
+        status: statusAleatorio,
+        data_consulta: dataConsultaAleatoria,
+      }),
       headers: {
         'Content-Type': 'application/json',
       },
     };
   } else {
     return {
-      statusCode: 404,
-      body: JSON.stringify({ message: 'Usuário não encontrado' }),
+      statusCode: 400,
+      body: JSON.stringify({ message: 'O parâmetro cliente_id é obrigatório.' }),
       headers: {
         'Content-Type': 'application/json',
       },

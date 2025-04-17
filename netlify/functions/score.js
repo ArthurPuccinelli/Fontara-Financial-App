@@ -1,7 +1,6 @@
 // netlify/functions/score.js
 
 function gerarScoreAleatorio() {
-  // Gera um score aleatório entre 300 e 950 (faixa comum de score)
   return Math.floor(Math.random() * (950 - 300 + 1)) + 300;
 }
 
@@ -13,11 +12,8 @@ function gerarStatus(score) {
 }
 
 function gerarDataConsulta() {
-  // Gera uma data de consulta aleatória nos últimos dias
-  const diasAtras = Math.floor(Math.random() * 30); // Até 30 dias atrás
-  const data = new Date();
-  data.setDate(data.getDate() - diasAtras);
-  return data.toISOString();
+  // Retorna a data e hora atual no formato ISO 8601
+  return new Date().toISOString();
 }
 
 exports.handler = async (event, context) => {
@@ -26,7 +22,7 @@ exports.handler = async (event, context) => {
   if (clienteId) {
     const scoreAleatorio = gerarScoreAleatorio();
     const statusAleatorio = gerarStatus(scoreAleatorio);
-    const dataConsultaAleatoria = gerarDataConsulta();
+    const dataConsultaAtual = gerarDataConsulta();
 
     return {
       statusCode: 200,
@@ -34,7 +30,7 @@ exports.handler = async (event, context) => {
         cliente_id: clienteId,
         score: scoreAleatorio,
         status: statusAleatorio,
-        data_consulta: dataConsultaAleatoria,
+        data_consulta: dataConsultaAtual,
       }),
       headers: {
         'Content-Type': 'application/json',

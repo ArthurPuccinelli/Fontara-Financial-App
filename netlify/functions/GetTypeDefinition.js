@@ -1,21 +1,54 @@
-exports.handler = async function () {
-  const typeDefinition = `
-namespace Verify.Version2.VerificaCPFeCNPJ
-
-concept VerificaCPFeCNPJ {
-  o String cliente_id
-  o Integer score
-  o String status
-  o DateTime data_consulta
-  o String endereco
-  o String plano_atual
-}
-  `;
+exports.handler = async () => {
+  const definition = {
+    typeDefinitions: [
+      {
+        typeName: "VerificaCPFeCNPJ",
+        displayName: "Verificação de CPF e CNPJ",
+        description: "Dados retornados pela verificação de CPF e CNPJ",
+        properties: [
+          {
+            name: "cliente_id",
+            displayName: "Cliente Id",
+            type: "String",
+            isRequired: true
+          },
+          {
+            name: "score",
+            displayName: "Score",
+            type: "Integer",
+            isRequired: true
+          },
+          {
+            name: "status",
+            displayName: "Status",
+            type: "String",
+            isRequired: true
+          },
+          {
+            name: "data_consulta",
+            displayName: "Data da Consulta",
+            type: "DateTime",
+            isRequired: true
+          },
+          {
+            name: "endereco",
+            displayName: "Endereço",
+            type: "String",
+            isRequired: true
+          },
+          {
+            name: "plano_atual",
+            displayName: "Plano Atual",
+            type: "String",
+            isRequired: true
+          }
+        ]
+      }
+    ]
+  };
 
   return {
     statusCode: 200,
-    body: JSON.stringify({
-      typeDefinitions: [typeDefinition]
-    })
+    body: JSON.stringify(definition)
   };
 };

@@ -1,48 +1,50 @@
 const fetch = require('node-fetch');
 
 exports.handler = async () => {
-  // Função para buscar os dados da sua API
   async function fetchClientData() {
     const response = await fetch('https://fontarafinancial.netlify.app/.netlify/functions/verificaCPFeCNPJ');
     const data = await response.json();
     return data;
   }
 
-  // Função para mapear as propriedades e gerar as definições de tipo
   function generateDeclarations(data) {
-    const properties = Object.keys(data).map(key => {
-      const type = typeof data[key] === 'number' ? 'Integer' :
-                   typeof data[key] === 'string' ? 'String' :
-                   'DateTime';  // Supondo que a data seja uma string com formato datetime
+    const properties = Object.entries(data).map(([key, value]) => {
+      let type;
+      if (typeof value === 'number') {
+        type = 'Integer';
+      } else if (Date.parse(value)) {
+        type = 'DateTime';
+      } else {
+        type = 'String';
+      }
 
-      // Ajustando a declaração para ser compatível com os tipos esperados
       return {
-        name: key,
-        type: type,  // Tipo esperado, como 'String', 'Integer', ou 'DateTime'
-        required: true,
-        description: key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' '),  // Display-friendly name
-        displayName: key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' '),  // Display-friendly name
+        "$class": "Concerto.Property",
+        "name": key,
+        "type": type,
+        "decorators": []
       };
     });
 
     return [
       {
-        typeName: "VerificaCPFeCNPJ",
-        displayName: "Verificação de CPF e CNPJ",
-        description: "Dados retornados pela verificação de CPF e CNPJ",
-        declarations: properties  // Aqui estamos retornando a estrutura corrigida
+        "$class": "Concerto.ConceptDeclaration",
+        "name": "VerificaCPFeCNPJ",
+        "properties": properties,
+        "decorators": [],
+        "identifier": null,
+        "superType": null
       }
     ];
   }
 
   try {
-    // Buscar os dados da API
     const clientData = await fetchClientData();
     const declarations = generateDeclarations(clientData);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ declarations })  // Resposta com a estrutura "declarations"
+      body: JSON.stringify({ declarations })
     };
   } catch (error) {
     return {

@@ -1,7 +1,4 @@
 exports.handler = async (event, context) => {
-  // Aqui você pode buscar os nomes dos tipos de dados do sistema externo, se necessário.
-  // Para fins de exemplo, retornaremos um conjunto fixo de tipos.
-  
   const typeNames = [
     {
       typeName: "EmailAddress",
@@ -17,7 +14,6 @@ exports.handler = async (event, context) => {
     }
   ];
 
-  // Retorno com a lista de tipos
   return {
     statusCode: 200,
     body: JSON.stringify({ typeNames }),

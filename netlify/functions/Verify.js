@@ -1,67 +1,49 @@
-// netlify/functions/Verify.js
-
-const fetch = require("node-fetch");
-
-async function consultarDadosExternos(clienteId) {
-  const url = `https://fontarafinancial.netlify.app/.netlify/functions/verificaCPFeCNPJ?cliente_id=${clienteId}`;
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Erro ao buscar dados externos: ${response.statusText}`);
-  }
-  return await response.json();
-}
+const fetch = require('node-fetch');
 
 exports.handler = async (event) => {
   try {
-    const body = JSON.parse(event.body);
-    const { data, idempotencyKey, typeName } = body;
+    // Recebe o input
+    const { clienteId } = JSON.parse(event.body);
 
-    if (!data || !data.clienteId || !idempotencyKey || !typeName) {
+    if (!clienteId) {
       return {
         statusCode: 400,
-        body: JSON.stringify({
-          verified: false,
-          verifyResponseMessage: "Requisição malformada.",
-          verifyFailureReason: "Faltam campos obrigatórios: clienteId, idempotencyKey ou typeName.",
-        }),
-        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ error: 'clienteId é obrigatório' }),
       };
     }
 
-    const clienteId = data.clienteId;
+    // Chama sua função externa com o clienteId
+    const response = await fetch('https://fontarafinancial.netlify.app/.netlify/functions/verificaCPFeCNPJ', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clienteId }),
+    });
 
-    // Chamada real à sua API
-    const dados = await consultarDadosExternos(clienteId);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Erro da API externa: ${errorText}`);
+    }
+
+    const data = await response.json();
+
+    // Monta o output conforme o modelo VerificaCPFeCNPJOutput
+    const output = {
+      clienteId: data.cliente_id,
+      score: data.score,
+      status: data.status,
+      dataConsulta: data.data_consulta,
+      endereco: data.endereco,
+      planoAtual: data.plano_atual,
+    };
 
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        verified: true,
-        verifyResponseMessage: "Verificação concluída com sucesso.",
-        verificationResultCode: "SUCCESS",
-        verificationResultDescription: `Score: ${dados.score}, Plano: ${dados.plano_atual}`,
-        suggestions: [
-          {
-            clienteId: dados.cliente_id,
-            score: dados.score,
-            status: dados.status,
-            dataConsulta: dados.data_consulta,
-            endereco: dados.endereco,
-            planoAtual: dados.plano_atual,
-          },
-        ],
-      }),
-      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(output),
     };
-  } catch (err) {
+  } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        verified: false,
-        verifyResponseMessage: "Erro na verificação.",
-        verifyFailureReason: err.message,
-      }),
-      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: error.message }),
     };
   }
 };

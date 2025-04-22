@@ -1,20 +1,20 @@
 const fetch = require('node-fetch');
 
-// Função para buscar os tipos do sistema externo
+// Simula a busca de tipos do sistema externo
 async function fetchClientData(clienteId) {
   const response = await fetch(`https://fontarafinancial.netlify.app/.netlify/functions/verificaCPFeCNPJ?cliente_id=${clienteId}`);
   const data = await response.json();
-  return data; // Retorna os dados gerados pela API externa
+  return data;
 }
 
-// Função para converter os dados em formato Concerto
-function convertToConcertoFormat(data) {
-  const concertoType = {
-    "name": "VerificaCPFeCNPJOutput",  // Nome do tipo
+// Converte para declaração Concerto (sem valores)
+function convertToConcertoFormat() {
+  return [{
+    "name": "VerificaCPFeCNPJOutput",
     "$class": "concerto.metamodel@1.0.0.ConceptDeclaration",
     "decorators": [],
     "identified": {
-      "name": "cliente_id",  // Identificador único do cliente
+      "name": "clienteId",
       "$class": "concerto.metamodel@1.0.0.IdentifiedBy"
     },
     "isAbstract": false,
@@ -56,23 +56,15 @@ function convertToConcertoFormat(data) {
         "isOptional": false
       }
     ]
-  };
-
-  // Preenche as propriedades com os dados recebidos
-  concertoType.properties.forEach(prop => {
-    prop.value = data[prop.name];  // Preenche as propriedades com os valores correspondentes
-  });
-
-  return concertoType;
+  }];
 }
 
-// Função principal para obter os tipos e convertê-los
+// Função principal para obter os tipos em formato Concerto
 async function getTypeDefinitions(clienteId) {
-  const clientData = await fetchClientData(clienteId);
-  const concertoFormat = convertToConcertoFormat(clientData);
-  
+  await fetchClientData(clienteId); // apenas para simular o acesso
+  const concertoFormat = convertToConcertoFormat();
   console.log(JSON.stringify(concertoFormat, null, 2));
 }
 
-// Exemplo de uso com cliente_id 11111111111
+// Exemplo de uso
 getTypeDefinitions('11111111111');

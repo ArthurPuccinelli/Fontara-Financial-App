@@ -9,7 +9,7 @@ exports.handler = async () => {
   }
 
   // Função para mapear as propriedades e gerar as definições de tipo
-  function generateTypeDefinitions(data) {
+  function generateDeclarations(data) {
     const properties = Object.keys(data).map(key => {
       const type = typeof data[key] === 'number' ? 'Integer' :
                    typeof data[key] === 'string' ? 'String' :
@@ -23,26 +23,24 @@ exports.handler = async () => {
       };
     });
 
-    return {
-      typeDefinitions: [
-        {
-          typeName: "VerificaCPFeCNPJ",
-          displayName: "Verificação de CPF e CNPJ",
-          description: "Dados retornados pela verificação de CPF e CNPJ",
-          properties: properties
-        }
-      ]
-    };
+    return [
+      {
+        typeName: "VerificaCPFeCNPJ",
+        displayName: "Verificação de CPF e CNPJ",
+        description: "Dados retornados pela verificação de CPF e CNPJ",
+        declarations: properties  // Correção: usamos `declarations` aqui
+      }
+    ];
   }
 
   try {
     // Buscar os dados da API
     const clientData = await fetchClientData();
-    const typeDefinitions = generateTypeDefinitions(clientData);
+    const declarations = generateDeclarations(clientData);
 
     return {
       statusCode: 200,
-      body: JSON.stringify(typeDefinitions)
+      body: JSON.stringify({ declarations })  // A resposta deve conter a propriedade "declarations"
     };
   } catch (error) {
     return {

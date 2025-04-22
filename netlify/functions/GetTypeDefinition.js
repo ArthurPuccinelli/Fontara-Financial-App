@@ -15,11 +15,13 @@ exports.handler = async () => {
                    typeof data[key] === 'string' ? 'String' :
                    'DateTime';  // Supondo que a data seja uma string com formato datetime
 
+      // Ajustando a declaração para ser compatível com os tipos esperados
       return {
         name: key,
-        displayName: key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' '),
-        type: type,
-        isRequired: true  // Considerando como obrigatório por padrão
+        type: type,  // Tipo esperado, como 'String', 'Integer', ou 'DateTime'
+        required: true,
+        description: key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' '),  // Display-friendly name
+        displayName: key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' '),  // Display-friendly name
       };
     });
 
@@ -28,7 +30,7 @@ exports.handler = async () => {
         typeName: "VerificaCPFeCNPJ",
         displayName: "Verificação de CPF e CNPJ",
         description: "Dados retornados pela verificação de CPF e CNPJ",
-        declarations: properties  // Correção: usamos `declarations` aqui
+        declarations: properties  // Aqui estamos retornando a estrutura corrigida
       }
     ];
   }
@@ -40,7 +42,7 @@ exports.handler = async () => {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ declarations })  // A resposta deve conter a propriedade "declarations"
+      body: JSON.stringify({ declarations })  // Resposta com a estrutura "declarations"
     };
   } catch (error) {
     return {

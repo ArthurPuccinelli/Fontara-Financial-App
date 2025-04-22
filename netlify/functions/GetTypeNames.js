@@ -1,24 +1,28 @@
-// netlify/functions/GetTypeNames.js
-
 exports.handler = async (event, context) => {
+  // Aqui você pode buscar os nomes dos tipos de dados do sistema externo, se necessário.
+  // Para fins de exemplo, retornaremos um conjunto fixo de tipos.
+  
   const typeNames = [
     {
-      typeName: "VerificaCPFeCNPJInput",
-      label: "Verificação de CPF e CNPJ (Entrada)",
-      description: "Dados de entrada para verificar informações de CPF ou CNPJ"
+      typeName: "EmailAddress",
+      label: "Email Address"
     },
     {
-      typeName: "VerificaCPFeCNPJOutput",
-      label: "Verificação de CPF e CNPJ (Resultado)",
-      description: "Resultado da verificação com score, status e outros dados"
+      typeName: "OwnerName",
+      label: "Account Owner Name"
+    },
+    {
+      typeName: "Account",
+      label: "Account Info"
     }
   ];
 
+  // Retorno com a lista de tipos
   return {
     statusCode: 200,
     body: JSON.stringify({ typeNames }),
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json'
     }
   };
 };

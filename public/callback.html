@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Callback</title>
+  </head>
+  <body>
+    <h1>Login em andamento...</h1>
+    <script>
+      // Extrai o code da URL e exibe (ou troca pelo token via backend/função)
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get("code");
+      document.body.innerHTML += `<p>Code: ${code}</p>`;
+    </script>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-// netlify/functions/score.js
+// netlify/functions/verificaCPFeCNPJ.js
 
 function gerarScoreAleatorio() {
   return Math.floor(Math.random() * (950 - 300 + 1)) + 300;
@@ -12,8 +12,22 @@ function gerarStatus(score) {
 }
 
 function gerarDataConsulta() {
-  // Retorna a data e hora atual no formato ISO 8601
   return new Date().toISOString();
+}
+
+function gerarEnderecoFicticio(clienteId) {
+  const enderecos = [
+    "Rua das Palmeiras, 123 - São Paulo, SP",
+    "Avenida Central, 456 - Belo Horizonte, MG",
+    "Travessa das Acácias, 789 - Curitiba, PR",
+    "Alameda dos Anjos, 101 - Recife, PE"
+  ];
+  return enderecos[parseInt(clienteId) % enderecos.length] || enderecos[0];
+}
+
+function gerarPlanoAleatorio() {
+  const planos = ["BÁSICO", "INTERMEDIÁRIO", "PREMIUM"];
+  return planos[Math.floor(Math.random() * planos.length)];
 }
 
 exports.handler = async (event, context) => {
@@ -23,6 +37,8 @@ exports.handler = async (event, context) => {
     const scoreAleatorio = gerarScoreAleatorio();
     const statusAleatorio = gerarStatus(scoreAleatorio);
     const dataConsultaAtual = gerarDataConsulta();
+    const endereco = gerarEnderecoFicticio(clienteId);
+    const planoAtual = gerarPlanoAleatorio();
 
     return {
       statusCode: 200,
@@ -31,6 +47,8 @@ exports.handler = async (event, context) => {
         score: scoreAleatorio,
         status: statusAleatorio,
         data_consulta: dataConsultaAtual,
+        endereco: endereco,
+        plano_atual: planoAtual
       }),
       headers: {
         'Content-Type': 'application/json',

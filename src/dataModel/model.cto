@@ -1,0 +1,9 @@
+namespace verify.fontara@1.0.0
+
+@VerifiableType
+@Term("Verificação de CPF ou CNPJ")
+concept VerificaCPFeCNPJ {
+  @IsRequiredForVerifyingType
+  @Term("Documento")
+  o String documento regex=/^\d{11}$|^\d{14}$/ // Aceita CPF (11 dígitos) ou CNPJ (14 dígitos)
+}

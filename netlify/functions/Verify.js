@@ -2,48 +2,47 @@ const fetch = require('node-fetch');
 
 exports.handler = async (event) => {
   try {
-    // Recebe o input
-    const { clienteId } = JSON.parse(event.body);
+    // Verificar se a entrada está no formato correto
+    console.log("Recebido:", event);
 
-    if (!clienteId) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'clienteId é obrigatório' }),
-      };
+    // Validar o tipo de entrada
+    if (!event.data || !event.data.clienteId) {
+      throw new Error("clienteId é obrigatório");
     }
 
-    // Chama sua função externa com o clienteId
+    // Chamar a API para verificar os dados do cliente (simulando uma API externa)
     const response = await fetch('https://fontarafinancial.netlify.app/.netlify/functions/verificaCPFeCNPJ', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clienteId }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        clienteId: event.data.clienteId,
+      }),
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Erro da API externa: ${errorText}`);
-    }
 
     const data = await response.json();
 
-    // Monta o output conforme o modelo VerificaCPFeCNPJOutput
-    const output = {
-      clienteId: data.cliente_id,
-      score: data.score,
-      status: data.status,
-      dataConsulta: data.data_consulta,
-      endereco: data.endereco,
-      planoAtual: data.plano_atual,
-    };
+    // Verificar a resposta da API
+    if (!response.ok) {
+      throw new Error(`Erro ao verificar dados: ${data.error || 'Desconhecido'}`);
+    }
 
+    // Retornar a resposta com os dados
     return {
       statusCode: 200,
-      body: JSON.stringify(output),
+      body: JSON.stringify({
+        message: 'Dados verificados com sucesso',
+        data: data,
+      }),
     };
   } catch (error) {
+    console.error("Erro:", error.message);
     return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
+      statusCode: 400,
+      body: JSON.stringify({
+        error: error.message,
+      }),
     };
   }
 };

@@ -1,46 +1,78 @@
 const fetch = require('node-fetch');
 
 exports.handler = async () => {
-  async function fetchClientData() {
+  try {
     const response = await fetch('https://fontarafinancial.netlify.app/.netlify/functions/verificaCPFeCNPJ');
     const data = await response.json();
-    return data;
-  }
 
-  function generateDeclarations(data) {
-    const properties = Object.entries(data).map(([key, value]) => {
-      let type;
-      if (typeof value === 'number') {
-        type = 'Integer';
-      } else if (Date.parse(value)) {
-        type = 'DateTime';
-      } else {
-        type = 'String';
-      }
-
-      return {
-        "$class": "Concerto.Property",
-        "name": key,
-        "type": type,
-        "decorators": []
-      };
-    });
-
-    return [
+    const declarations = [
       {
-        "$class": "Concerto.ConceptDeclaration",
-        "name": "VerificaCPFeCNPJ",
-        "properties": properties,
-        "decorators": [],
-        "identifier": null,
-        "superType": null
+        name: "VerificaCPFeCNPJInput",
+        isAbstract: false,
+        properties: [
+          {
+            name: "clienteId",
+            isArray: false,
+            isOptional: false,
+            $class: "concerto.metamodel@1.0.0.StringProperty"
+          }
+        ],
+        identified: {
+          name: "clienteId",
+          $class: "concerto.metamodel@1.0.0.IdentifiedBy"
+        },
+        decorators: [],
+        $class: "concerto.metamodel@1.0.0.ConceptDeclaration"
+      },
+      {
+        name: "VerificaCPFeCNPJOutput",
+        isAbstract: false,
+        properties: [
+          {
+            name: "clienteId",
+            isArray: false,
+            isOptional: false,
+            $class: "concerto.metamodel@1.0.0.StringProperty"
+          },
+          {
+            name: "score",
+            isArray: false,
+            isOptional: false,
+            $class: "concerto.metamodel@1.0.0.IntegerProperty"
+          },
+          {
+            name: "status",
+            isArray: false,
+            isOptional: false,
+            $class: "concerto.metamodel@1.0.0.StringProperty"
+          },
+          {
+            name: "dataConsulta",
+            isArray: false,
+            isOptional: false,
+            $class: "concerto.metamodel@1.0.0.DateTimeProperty"
+          },
+          {
+            name: "endereco",
+            isArray: false,
+            isOptional: false,
+            $class: "concerto.metamodel@1.0.0.StringProperty"
+          },
+          {
+            name: "planoAtual",
+            isArray: false,
+            isOptional: false,
+            $class: "concerto.metamodel@1.0.0.StringProperty"
+          }
+        ],
+        identified: {
+          name: "clienteId",
+          $class: "concerto.metamodel@1.0.0.IdentifiedBy"
+        },
+        decorators: [],
+        $class: "concerto.metamodel@1.0.0.ConceptDeclaration"
       }
     ];
-  }
-
-  try {
-    const clientData = await fetchClientData();
-    const declarations = generateDeclarations(clientData);
 
     return {
       statusCode: 200,
@@ -49,7 +81,10 @@ exports.handler = async () => {
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Erro ao buscar dados da API', details: error.message })
+      body: JSON.stringify({
+        error: "Erro ao buscar dados ou gerar definições",
+        details: error.message
+      })
     };
   }
 };

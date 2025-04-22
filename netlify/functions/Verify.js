@@ -1,37 +1,14 @@
 // netlify/functions/Verify.js
 
-function verificarDados(data) {
-  const { clienteId } = data;
+const fetch = require("node-fetch");
 
-  if (!clienteId || clienteId.length < 11) {
-    return {
-      verified: false,
-      verifyResponseMessage: "Dados inválidos.",
-      verifyFailureReason: "O campo clienteId é obrigatório e deve conter pelo menos 11 caracteres.",
-      verificationResultCode: "INVALID_INPUT",
-      verificationResultDescription: "clienteId incompleto ou ausente."
-    };
+async function consultarDadosExternos(clienteId) {
+  const url = `https://fontarafinancial.netlify.app/.netlify/functions/verificaCPFeCNPJ?cliente_id=${clienteId}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Erro ao buscar dados externos: ${response.statusText}`);
   }
-
-  const score = Math.floor(Math.random() * 650) + 300;
-  const status = score >= 700 ? "Excelente" : score >= 500 ? "Bom" : "Regular";
-
-  return {
-    verified: true,
-    verifyResponseMessage: "Dados verificados com sucesso.",
-    verificationResultCode: "SUCCESS",
-    verificationResultDescription: `Score ${score} - Status ${status}`,
-    suggestions: [
-      {
-        clienteId: clienteId,
-        score: score,
-        status: status,
-        dataConsulta: new Date().toISOString(),
-        endereco: "Rua das Palmeiras, 123 - São Paulo, SP",
-        planoAtual: "INTERMEDIÁRIO"
-      }
-    ]
-  };
+  return await response.json();
 }
 
 exports.handler = async (event) => {
@@ -39,35 +16,52 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body);
     const { data, idempotencyKey, typeName } = body;
 
-    if (!data || !idempotencyKey || !typeName) {
+    if (!data || !data.clienteId || !idempotencyKey || !typeName) {
       return {
         statusCode: 400,
         body: JSON.stringify({
           verified: false,
-          verifyResponseMessage: "Campos obrigatórios ausentes na requisição.",
-          verifyFailureReason: "Faltam data, idempotencyKey ou typeName."
+          verifyResponseMessage: "Requisição malformada.",
+          verifyFailureReason: "Faltam campos obrigatórios: clienteId, idempotencyKey ou typeName.",
         }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { "Content-Type": "application/json" },
       };
     }
 
-    const result = verificarDados(data);
+    const clienteId = data.clienteId;
+
+    // Chamada real à sua API
+    const dados = await consultarDadosExternos(clienteId);
 
     return {
       statusCode: 200,
-      body: JSON.stringify(result),
-      headers: { 'Content-Type': 'application/json' }
+      body: JSON.stringify({
+        verified: true,
+        verifyResponseMessage: "Verificação concluída com sucesso.",
+        verificationResultCode: "SUCCESS",
+        verificationResultDescription: `Score: ${dados.score}, Plano: ${dados.plano_atual}`,
+        suggestions: [
+          {
+            clienteId: dados.cliente_id,
+            score: dados.score,
+            status: dados.status,
+            dataConsulta: dados.data_consulta,
+            endereco: dados.endereco,
+            planoAtual: dados.plano_atual,
+          },
+        ],
+      }),
+      headers: { "Content-Type": "application/json" },
     };
-
   } catch (err) {
     return {
       statusCode: 500,
       body: JSON.stringify({
         verified: false,
-        verifyResponseMessage: "Erro interno ao processar a verificação.",
-        verifyFailureReason: err.message
+        verifyResponseMessage: "Erro na verificação.",
+        verifyFailureReason: err.message,
       }),
-      headers: { 'Content-Type': 'application/json' }
+      headers: { "Content-Type": "application/json" },
     };
   }
 };

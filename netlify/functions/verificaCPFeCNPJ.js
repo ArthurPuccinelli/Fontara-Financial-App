@@ -1,66 +1,41 @@
-// netlify/functions/verificaCPFeCNPJ.js
+exports.handler = async (event) => {
+  const body = JSON.parse(event.body || '{}');
+  const clienteId = body.clienteId;
 
-function gerarScoreAleatorio() {
-  return Math.floor(Math.random() * (950 - 300 + 1)) + 300;
-}
+  if (!clienteId) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ message: 'O campo clienteId é obrigatório no body.' }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+  }
 
-function gerarStatus(score) {
-  if (score >= 700) return "Excelente";
-  if (score >= 500) return "Bom";
-  if (score >= 300) return "Regular";
-  return "Ruim";
-}
-
-function gerarDataConsulta() {
-  return new Date().toISOString();
-}
-
-function gerarEnderecoFicticio(clienteId) {
+  const score = Math.floor(Math.random() * (950 - 300 + 1)) + 300;
+  const status = score >= 700 ? "Excelente" : score >= 500 ? "Bom" : score >= 300 ? "Regular" : "Ruim";
+  const data_consulta = new Date().toISOString();
   const enderecos = [
     "Rua das Palmeiras, 123 - São Paulo, SP",
     "Avenida Central, 456 - Belo Horizonte, MG",
     "Travessa das Acácias, 789 - Curitiba, PR",
     "Alameda dos Anjos, 101 - Recife, PE"
   ];
-  return enderecos[parseInt(clienteId) % enderecos.length] || enderecos[0];
-}
+  const endereco = enderecos[parseInt(clienteId) % enderecos.length] || enderecos[0];
+  const plano_atual = ["BÁSICO", "INTERMEDIÁRIO", "PREMIUM"][Math.floor(Math.random() * 3)];
 
-function gerarPlanoAleatorio() {
-  const planos = ["BÁSICO", "INTERMEDIÁRIO", "PREMIUM"];
-  return planos[Math.floor(Math.random() * planos.length)];
-}
-
-exports.handler = async (event, context) => {
-  const clienteId = event.queryStringParameters.cliente_id;
-
-  if (clienteId) {
-    const scoreAleatorio = gerarScoreAleatorio();
-    const statusAleatorio = gerarStatus(scoreAleatorio);
-    const dataConsultaAtual = gerarDataConsulta();
-    const endereco = gerarEnderecoFicticio(clienteId);
-    const planoAtual = gerarPlanoAleatorio();
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        cliente_id: clienteId,
-        score: scoreAleatorio,
-        status: statusAleatorio,
-        data_consulta: dataConsultaAtual,
-        endereco: endereco,
-        plano_atual: planoAtual
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-  } else {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ message: 'O parâmetro cliente_id é obrigatório.' }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-  }
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      cliente_id: clienteId,
+      score,
+      status,
+      data_consulta,
+      endereco,
+      plano_atual
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  };
 };

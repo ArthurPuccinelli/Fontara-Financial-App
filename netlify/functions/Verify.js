@@ -1,25 +1,35 @@
 const { verificaCPFeCNPJ } = require("./verificaCPFeCNPJ");
 
-module.exports = async function (event, context, callback) {
+exports.handler = async (event) => {
   try {
-    const body = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
-    const clienteId = body.clienteId;
+    const body = JSON.parse(event.body);
+    const clienteId = body.data.clienteId;
 
+    // Chamada à função externa
     const data = await verificaCPFeCNPJ(clienteId);
 
-    const output = {
-      $class: "Verify.Version2.VerificaCPFeCNPJOutput",
-      clienteId: data.cliente_id,
-      score: data.score,
-      status: data.status,
-      dataConsulta: data.data_consulta,
-      endereco: data.endereco,
-      planoAtual: data.plano_atual,
-    };
+    // Log para depuração
+    console.log("Dados retornados pela API:", data);
 
-    return callback(null, output);
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        clienteId: data.cliente_id,
+        score: data.score,
+        status: data.status,
+        dataConsulta: data.data_consulta,
+        endereco: data.endereco,
+        planoAtual: data.plano_atual
+      }),
+    };
   } catch (error) {
     console.error("Erro:", error.message);
-    return callback(error);
+
+    return {
+      statusCode: 400,
+      body: JSON.stringify({
+        error: error.message,
+      }),
+    };
   }
 };

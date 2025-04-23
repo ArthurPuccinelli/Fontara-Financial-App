@@ -1,5 +1,8 @@
 async function verificaCPFeCNPJ(clienteId) {
-  // Gerar dados fictícios
+  if (!clienteId) {
+    throw new Error('O campo clienteId é obrigatório.');
+  }
+
   const score = Math.floor(Math.random() * (950 - 300 + 1)) + 300;
   const status = score >= 700 ? "Excelente" : score >= 500 ? "Bom" : score >= 300 ? "Regular" : "Ruim";
   const data_consulta = new Date().toISOString();
@@ -13,12 +16,12 @@ async function verificaCPFeCNPJ(clienteId) {
   const plano_atual = ["BÁSICO", "INTERMEDIÁRIO", "PREMIUM"][Math.floor(Math.random() * 3)];
 
   return {
-    cliente_id: clienteId,
+    clienteId: clienteId,
     score,
     status,
-    data_consulta,
+    dataConsulta: data_consulta,
     endereco,
-    plano_atual
+    planoAtual: plano_atual
   };
 }
 

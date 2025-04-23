@@ -1,11 +1,23 @@
 exports.handler = async (event) => {
-  const body = JSON.parse(event.body || '{}');
-  const clienteId = body.clienteId;
+  let clienteId;
+
+  try {
+    const body = event.body ? JSON.parse(event.body) : {};
+    clienteId = body.clienteId || (event.queryStringParameters && event.queryStringParameters.cliente_id);
+  } catch (err) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ message: 'Erro ao processar entrada.' }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+  }
 
   if (!clienteId) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ message: 'O campo clienteId é obrigatório no body.' }),
+      body: JSON.stringify({ message: 'O campo clienteId é obrigatório (no body ou query string).' }),
       headers: {
         'Content-Type': 'application/json',
       },

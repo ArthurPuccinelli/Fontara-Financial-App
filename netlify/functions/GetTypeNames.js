@@ -8,7 +8,7 @@ exports.handler = async function(event, context) {
     // Chamada à função HTTP correta
     const response = await fetch(`https://fontarafinancial.netlify.app/.netlify/functions/verificaCPFeCNPJHandler?cliente_id=${clienteId}`);
     const data = await response.json();
-
+    console.log("Resposta da API:", data);
     // Gerar typeNames dinamicamente a partir das chaves retornadas pela API
     const typeNames = Object.keys(data).map((key) => ({
       typeName: key.charAt(0).toUpperCase() + key.slice(1),

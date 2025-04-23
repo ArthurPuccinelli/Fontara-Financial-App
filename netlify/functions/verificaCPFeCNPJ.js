@@ -24,6 +24,7 @@ exports.handler = async (event) => {
     };
   }
 
+  // Gerar dados fictícios para a resposta
   const score = Math.floor(Math.random() * (950 - 300 + 1)) + 300;
   const status = score >= 700 ? "Excelente" : score >= 500 ? "Bom" : score >= 300 ? "Regular" : "Ruim";
   const data_consulta = new Date().toISOString();
@@ -36,15 +37,16 @@ exports.handler = async (event) => {
   const endereco = enderecos[parseInt(clienteId) % enderecos.length] || enderecos[0];
   const plano_atual = ["BÁSICO", "INTERMEDIÁRIO", "PREMIUM"][Math.floor(Math.random() * 3)];
 
+  // Retornar dados no formato correto
   return {
     statusCode: 200,
     body: JSON.stringify({
-      cliente_id: clienteId,
+      clienteId: clienteId,  // alterado para camelCase
       score,
       status,
-      data_consulta,
+      dataConsulta: data_consulta,  // alterado para camelCase
       endereco,
-      plano_atual
+      planoAtual: plano_atual  // alterado para camelCase
     }),
     headers: {
       'Content-Type': 'application/json',

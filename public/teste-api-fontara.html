@@ -1,71 +1,88 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Fontara Financial Brasil - API Teste</title>
+  <meta charset="UTF-8" />
+  <title>Teste API Verify</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f6f8;
+      font-family: sans-serif;
       padding: 20px;
     }
-    h1 {
-      color: #004080;
-    }
-    label {
-      font-weight: bold;
-    }
-    input, button {
-      margin: 5px 0;
-      padding: 8px;
-      width: 100%;
-      max-width: 400px;
-    }
-    .response {
+    #responseBox {
       margin-top: 20px;
-      white-space: pre-wrap;
-      background: #fff;
       padding: 15px;
-      border-radius: 5px;
-      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+    .success {
+      background-color: #e6ffed;
+      border: 1px solid #24b47e;
+      color: #034d33;
+    }
+    .error {
+      background-color: #ffe6e6;
+      border: 1px solid #e02424;
+      color: #5e0e0e;
     }
   </style>
 </head>
 <body>
-  <h1>Fontara Financial Brasil - API Teste</h1>
+  <h1>Teste de Verificação de CPF/CNPJ</h1>
 
-  <label for="clienteId">Cliente ID:</label>
-  <input type="text" id="clienteId" placeholder="Ex: 123">
+  <form id="verifyForm">
+    <label for="clienteId">Cliente ID (CPF ou CNPJ):</label>
+    <input type="text" id="clienteId" name="clienteId" value="05727915937" required />
+    <br /><br />
+    <button type="submit">Enviar para Verificação</button>
+  </form>
 
-  <button onclick="testQueryString()">Testar via Query String</button>
-  <button onclick="testPostBody()">Testar via POST Body</button>
-
-  <div class="response" id="output">Resposta aparecerá aqui...</div>
+  <div id="responseBox"></div>
 
   <script>
-    const API_URL = 'https://fontarafinancial.netlify.app/.netlify/functions/verificaCPFeCNPJ';
+    const form = document.getElementById('verifyForm');
+    const responseBox = document.getElementById('responseBox');
 
-    async function testQueryString() {
-      const id = document.getElementById('clienteId').value.trim();
-      if (!id) return alert("Informe o cliente ID");
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-      const res = await fetch(`${API_URL}?cliente_id=${encodeURIComponent(id)}`);
-      const data = await res.json();
-      document.getElementById('output').textContent = JSON.stringify(data, null, 2);
-    }
+      const clienteId = document.getElementById('clienteId').value;
 
-    async function testPostBody() {
-      const id = document.getElementById('clienteId').value.trim();
-      if (!id) return alert("Informe o cliente ID");
+      const body = {
+        typeName: 'VerificaCPFeCNPJInput',
+        idempotencyKey: 'teste-' + Date.now(),
+        data: {
+          clienteId: clienteId
+        }
+      };
 
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clienteId: id })
-      });
-      const data = await res.json();
-      document.getElementById('output').textContent = JSON.stringify(data, null, 2);
-    }
+      responseBox.className = '';
+      responseBox.textContent = '⏳ Enviando...';
+
+      try {
+        const response = await fetch('/.netlify/functions/Verify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+          },
+          body: JSON.stringify(body)
+        });
+
+        const json = await response.json();
+
+        if (json.verified) {
+          responseBox.className = 'success';
+          responseBox.textContent = '✅ Verificação bem-sucedida!\n\n' + JSON.stringify(json, null, 2);
+        } else {
+          responseBox.className = 'error';
+          responseBox.textContent = '❌ Verificação falhou!\n\n' + JSON.stringify(json, null, 2);
+        }
+      } catch (err) {
+        responseBox.className = 'error';
+        responseBox.textContent = '🚨 Erro na requisição: ' + err.message;
+      }
+    });
   </script>
 </body>
 </html>

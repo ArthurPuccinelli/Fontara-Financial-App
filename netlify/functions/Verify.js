@@ -9,6 +9,9 @@ exports.handler = async (event) => {
       throw new Error("clienteId é obrigatório");
     }
 
+    // Log para verificar o clienteId enviado
+    console.log("Enviando clienteId para a API:", body.data.clienteId);
+
     const response = await fetch('https://fontarafinancial.netlify.app/.netlify/functions/verificaCPFeCNPJ', {
       method: 'POST',
       headers: {
@@ -25,14 +28,13 @@ exports.handler = async (event) => {
       throw new Error(`Erro ao verificar dados: ${data.error || 'Desconhecido'}`);
     }
 
-    // Convertendo o campo data_consulta para o formato ISO
     return {
       statusCode: 200,
       body: JSON.stringify({
         clienteId: data.cliente_id,
-        score: parseInt(data.score), // Garante que o score é um número
+        score: data.score,
         status: data.status,
-        dataConsulta: new Date(data.data_consulta).toISOString(), // Garante que dataConsulta seja uma string no formato ISO
+        dataConsulta: data.data_consulta,
         endereco: data.endereco,
         planoAtual: data.plano_atual
       }),

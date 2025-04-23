@@ -35,12 +35,17 @@ exports.handler = async () => {
         isAbstract: false,
         properties: Object.keys(data).map(key => {
           let propertyType;
+
+          // Identificação do tipo de dado
           if (typeof data[key] === 'string') {
-            propertyType = "concerto.metamodel@1.0.0.StringProperty";
+            if (key === "dataConsulta") {
+              // Se for o campo dataConsulta, trata como DateTimeProperty
+              propertyType = "concerto.metamodel@1.0.0.DateTimeProperty";
+            } else {
+              propertyType = "concerto.metamodel@1.0.0.StringProperty";
+            }
           } else if (typeof data[key] === 'number') {
             propertyType = "concerto.metamodel@1.0.0.IntegerProperty";
-          } else if (key === 'dataConsulta') {
-            propertyType = "concerto.metamodel@1.0.0.DateTimeProperty";
           }
 
           return {

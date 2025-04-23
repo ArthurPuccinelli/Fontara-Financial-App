@@ -3,46 +3,59 @@ const generateIdempotencyKey = () => 'idempotency-key-' + new Date().toISOString
 
 exports.handler = async (event) => {
   try {
+    console.log("🔍 Evento recebido:", event);
+
     const body = JSON.parse(event.body);
     const clienteId = body.data.clienteId;
+
+    console.log("📨 clienteId recebido:", clienteId);
 
     // Chamada à função externa
     const data = await verificaCPFeCNPJ(clienteId);
 
-    // Lógica para determinar se a verificação foi bem-sucedida
-    const verified = data.score >= 500; // Exemplo: Score maior ou igual a 500 é considerado verificado com sucesso
+    console.log("📦 Dados retornados pela API verificaCPFeCNPJ:", data);
 
-    const verifyResponseMessage = verified 
-      ? "Verificação de dados concluída com sucesso."
-      : "Falha na verificação de dados.";
+    const verified = data.score >= 500;
 
-    const verifyFailureReason = !verified 
-      ? "O score do cliente é insuficiente para completar a verificação."
-      : undefined;
-
-    // Retorno no formato esperado pela API do app terceiro
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        typeName: "VerificaCPFeCNPJOutput",  // Nome do tipo
-        idempotencyKey: generateIdempotencyKey(),  // Garantir a presença de um idempotencyKey
-        data: {  // A chave 'data' deve ser usada conforme a documentação
+    const responsePayload = {
+      verified: verified,
+      verifyResponseMessage: verified
+        ? "Verificação de dados concluída com sucesso."
+        : "Falha na verificação de dados.",
+      ...(verified
+        ? {}
+        : {
+            verifyFailureReason:
+              "O score do cliente é insuficiente para completar a verificação.",
+          }),
+      verificationResultCode: verified ? "SUCCESS" : "LOW_SCORE",
+      verificationResultDescription: `Score retornado: ${data.score}`,
+      suggestions: [
+        {
           clienteId: data.clienteId,
           score: data.score,
           status: data.status,
-          dataConsulta: data.dataConsulta,  // Certificar-se de que a data está no formato ISO 8601
+          dataConsulta: data.dataConsulta,
           endereco: data.endereco,
-          planoAtual: data.planoAtual
-        }
-      }),
+          planoAtual: data.planoAtual,
+        },
+      ],
+    };
+
+    console.log("📤 Payload de resposta que será enviado:", responsePayload);
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(responsePayload),
     };
   } catch (error) {
-    console.error("Erro:", error.message);
+    console.error("❌ Erro na verificação:", error);
 
     return {
       statusCode: 400,
       body: JSON.stringify({
         error: error.message,
+        stack: error.stack,
       }),
     };
   }

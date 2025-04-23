@@ -28,8 +28,12 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: 'Dados verificados com sucesso',
-        data: data,
+        clienteId: data.cliente_id,
+        score: data.score,
+        status: data.status,
+        dataConsulta: data.data_consulta,
+        endereco: data.endereco,
+        planoAtual: data.plano_atual
       }),
     };
   } catch (error) {

@@ -1,5 +1,3 @@
-const { verificaCPFeCNPJ } = require("./verificaCPFeCNPJ");
-
 exports.handler = async (event) => {
   try {
     const body = JSON.parse(event.body);
@@ -11,16 +9,19 @@ exports.handler = async (event) => {
     // Log para depuração
     console.log("Dados retornados pela API:", data);
 
+    // Ajuste da resposta para o formato esperado
     return {
       statusCode: 200,
       body: JSON.stringify({
-        "@type": "VerificaCPFeCNPJOutput", // ✅ necessário para validação Concerto
-        clienteId: data.clienteId,
-        score: data.score,
-        status: data.status,
-        dataConsulta: data.dataConsulta,
-        endereco: data.endereco,
-        planoAtual: data.planoAtual
+        typeName: "VerificaCPFeCNPJOutput",
+        data: {
+          cliente_id: data.clienteId,
+          score: data.score,
+          status: data.status,
+          data_consulta: data.dataConsulta,
+          endereco: data.endereco,
+          plano_atual: data.planoAtual
+        }
       }),
     };
   } catch (error) {

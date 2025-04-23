@@ -25,13 +25,14 @@ exports.handler = async (event) => {
       throw new Error(`Erro ao verificar dados: ${data.error || 'Desconhecido'}`);
     }
 
+    // Convertendo o campo data_consulta para o formato ISO
     return {
       statusCode: 200,
       body: JSON.stringify({
         clienteId: data.cliente_id,
-        score: data.score,
+        score: parseInt(data.score), // Garante que o score é um número
         status: data.status,
-        dataConsulta: data.data_consulta,
+        dataConsulta: new Date(data.data_consulta).toISOString(), // Garante que dataConsulta seja uma string no formato ISO
         endereco: data.endereco,
         planoAtual: data.plano_atual
       }),

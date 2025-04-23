@@ -1,3 +1,6 @@
+const { verificaCPFeCNPJ } = require('./verificaCPFeCNPJ');
+const generateIdempotencyKey = () => 'idempotency-key-' + new Date().toISOString();
+
 exports.handler = async (event) => {
   try {
     const body = JSON.parse(event.body);
@@ -5,9 +8,6 @@ exports.handler = async (event) => {
 
     // Chamada à função externa
     const data = await verificaCPFeCNPJ(clienteId);
-
-    // Log para depuração
-    console.log("Dados retornados pela API:", data);
 
     // Lógica para determinar se a verificação foi bem-sucedida
     const verified = data.score >= 500; // Exemplo: Score maior ou igual a 500 é considerado verificado com sucesso
@@ -24,21 +24,16 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       body: JSON.stringify({
-        verified,
-        verifyResponseMessage,
-        verifyFailureReason,
-        verificationResultCode: verified ? "SUCCESS" : "FAILURE",
-        verificationResultDescription: verified ? "Verificação bem-sucedida." : "Falha na verificação.",
-        suggestions: [
-          {
-            cliente_id: data.clienteId,
-            score: data.score,
-            status: data.status,
-            data_consulta: data.dataConsulta,
-            endereco: data.endereco,
-            plano_atual: data.planoAtual
-          }
-        ]
+        typeName: "VerificaCPFeCNPJOutput",  // Nome do tipo
+        idempotencyKey: generateIdempotencyKey(),  // Garantir a presença de um idempotencyKey
+        data: {  // A chave 'data' deve ser usada conforme a documentação
+          clienteId: data.clienteId,
+          score: data.score,
+          status: data.status,
+          dataConsulta: data.dataConsulta,  // Certificar-se de que a data está no formato ISO 8601
+          endereco: data.endereco,
+          planoAtual: data.planoAtual
+        }
       }),
     };
   } catch (error) {

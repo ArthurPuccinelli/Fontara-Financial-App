@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Fontara Financial Brasil - API Teste</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      padding: 20px;
+    }
+    h1 {
+      color: #004080;
+    }
+    label {
+      font-weight: bold;
+    }
+    input, button {
+      margin: 5px 0;
+      padding: 8px;
+      width: 100%;
+      max-width: 400px;
+    }
+    .response {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      background: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h1>Fontara Financial Brasil - API Teste</h1>
+
+  <label for="clienteId">Cliente ID:</label>
+  <input type="text" id="clienteId" placeholder="Ex: 123">
+
+  <button onclick="testQueryString()">Testar via Query String</button>
+  <button onclick="testPostBody()">Testar via POST Body</button>
+
+  <div class="response" id="output">Resposta aparecerá aqui...</div>
+
+  <script>
+    const API_URL = 'https://fontarafinancial.netlify.app/.netlify/functions/verificaCPFeCNPJ';
+
+    async function testQueryString() {
+      const id = document.getElementById('clienteId').value.trim();
+      if (!id) return alert("Informe o cliente ID");
+
+      const res = await fetch(`${API_URL}?cliente_id=${encodeURIComponent(id)}`);
+      const data = await res.json();
+      document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function testPostBody() {
+      const id = document.getElementById('clienteId').value.trim();
+      if (!id) return alert("Informe o cliente ID");
+
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clienteId: id })
+      });
+      const data = await res.json();
+      document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>

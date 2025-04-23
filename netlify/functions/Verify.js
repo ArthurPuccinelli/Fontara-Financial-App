@@ -14,12 +14,13 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       body: JSON.stringify({
-        clienteId: data.cliente_id,
+        "@type": "VerificaCPFeCNPJOutput", // ✅ necessário para validação Concerto
+        clienteId: data.clienteId,
         score: data.score,
         status: data.status,
-        dataConsulta: data.data_consulta,
+        dataConsulta: data.dataConsulta,
         endereco: data.endereco,
-        planoAtual: data.plano_atual
+        planoAtual: data.planoAtual
       }),
     };
   } catch (error) {

@@ -1,20 +1,19 @@
-// netlify/functions/verificaCPFeCNPJHandler.js
-const { verificaCPFeCNPJ } = require("./verificaCPFeCNPJ");
+const { verificaCPFeCNPJ } = require('./verificaCPFeCNPJ');
 
 exports.handler = async (event) => {
   try {
     const clienteId = event.queryStringParameters?.cliente_id;
-    const data = verificaCPFeCNPJ(clienteId);
+    const data = await verificaCPFeCNPJ(clienteId);
 
     return {
       statusCode: 200,
       body: JSON.stringify(data),
       headers: { 'Content-Type': 'application/json' }
     };
-  } catch (err) {
+  } catch (error) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: err.message }),
+      body: JSON.stringify({ error: error.message }),
       headers: { 'Content-Type': 'application/json' }
     };
   }

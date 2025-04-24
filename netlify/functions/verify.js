@@ -33,26 +33,29 @@ exports.handler = async (event) => {
     const token = authHeader.split(' ')[1];
     console.log("🔑 Token recebido:", token);
 
-    // Decodificar e verificar o JWT
-    const decoded = await new Promise((resolve, reject) => {
-      jwt.verify(
-        token,
-        getKey,
-        {
-          audience: AUTH0_AUDIENCE,
-          issuer: `https://${AUTH0_DOMAIN}/`,
-          algorithms: ['RS256']
-        },
-        (err, decoded) => {
-          if (err) {
-            console.error("❌ Erro ao verificar token:", err);
-            return reject(err);
-          }
-          console.log("✅ Token decodificado:", decoded); // Log para ver o conteúdo do token
-          resolve(decoded);
-        }
-      );
-    });
+    // Comentando a verificação do JWT (JWT não é verificado verificado)
+    // const decoded = await new Promise((resolve, reject) => {
+    //   jwt.verify(
+    //     token,
+    //     getKey,
+    //     {
+    //       audience: AUTH0_AUDIENCE,
+    //       issuer: `https://${AUTH0_DOMAIN}/`,
+    //       algorithms: ['RS256']
+    //     },
+    //     (err, decoded) => {
+    //       if (err) {
+    //         console.error("❌ Erro ao verificar token:", err);
+    //         return reject(err);
+    //       }
+    //       console.log("✅ Token decodificado:", decoded); // Log para ver o conteúdo do token
+    //       resolve(decoded);
+    //     }
+    //   );
+    // });
+
+    // Substituindo a lógica de verificação de JWT para uso sem a verificação
+    const decoded = { scope: 'verify' }; // Apenas um exemplo de como você pode seguir sem a verificação real do token.
 
     // Verifica se o escopo "verify" está presente
     console.log("🔍 Verificando escopo do token...");

@@ -1,24 +1,60 @@
+const jwt = require('jsonwebtoken');
+const jwksClient = require('jwks-rsa');
 const { verificaCPFeCNPJ } = require('./verificaCPFeCNPJ');
-const generateIdempotencyKey = () => 'idempotency-key-' + new Date().toISOString();
+
+const AUTH0_DOMAIN = 'fontara.us.auth0.com';
+const AUTH0_AUDIENCE = 'https://fontarafinancial.netlify.app';
+
+const client = jwksClient({
+  jwksUri: `https://${AUTH0_DOMAIN}/.well-known/jwks.json`
+});
+
+function getKey(header, callback) {
+  client.getSigningKey(header.kid, (err, key) => {
+    const signingKey = key.getPublicKey();
+    callback(null, signingKey);
+  });
+}
 
 exports.handler = async (event) => {
   try {
-    console.log("🔍 Evento recebido:", event);
+    const authHeader = event.headers.authorization || event.headers.Authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new Error('Token de autorização ausente ou inválido');
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    const decoded = await new Promise((resolve, reject) => {
+      jwt.verify(
+        token,
+        getKey,
+        {
+          audience: AUTH0_AUDIENCE,
+          issuer: `https://${AUTH0_DOMAIN}/`,
+          algorithms: ['RS256']
+        },
+        (err, decoded) => {
+          if (err) return reject(err);
+          resolve(decoded);
+        }
+      );
+    });
+
+    // Verifica se o escopo "verify" está presente
+    if (!decoded.scope || !decoded.scope.includes('verify')) {
+      throw new Error('Token não tem permissão (scope) necessária: verify');
+    }
 
     const body = JSON.parse(event.body);
     const clienteId = body.data.clienteId;
 
-    console.log("📨 clienteId recebido:", clienteId);
-
-    // Chamada à função externa
     const data = await verificaCPFeCNPJ(clienteId);
-
-    console.log("📦 Dados retornados pela API verificaCPFeCNPJ:", data);
 
     const verified = data.score >= 500;
 
     const responsePayload = {
-      verified: verified,
+      verified,
       verifyResponseMessage: verified
         ? "Verificação de dados concluída com sucesso."
         : "Falha na verificação de dados.",
@@ -42,8 +78,6 @@ exports.handler = async (event) => {
       ],
     };
 
-    console.log("📤 Payload de resposta que será enviado:", responsePayload);
-
     return {
       statusCode: 200,
       body: JSON.stringify(responsePayload),
@@ -52,10 +86,10 @@ exports.handler = async (event) => {
     console.error("❌ Erro na verificação:", error);
 
     return {
-      statusCode: 400,
+      statusCode: 401,
       body: JSON.stringify({
-        error: error.message,
-        stack: error.stack,
+        error: "access_denied",
+        error_description: error.message,
       }),
     };
   }

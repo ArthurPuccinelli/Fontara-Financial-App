@@ -33,7 +33,7 @@ exports.handler = async (event) => {
     const token = authHeader.split(' ')[1];
     console.log("🔑 Token recebido:", token);
 
-    // Comentando a verificação do JWT (JWT não é verificado verificado)
+    // 🔧 Comentado o trecho que validaria o JWT:
     // const decoded = await new Promise((resolve, reject) => {
     //   jwt.verify(
     //     token,
@@ -48,72 +48,10 @@ exports.handler = async (event) => {
     //         console.error("❌ Erro ao verificar token:", err);
     //         return reject(err);
     //       }
-    //       console.log("✅ Token decodificado:", decoded); // Log para ver o conteúdo do token
+    //       console.log("✅ Token decodificado:", decoded);
     //       resolve(decoded);
     //     }
     //   );
     // });
 
-    // Substituindo a lógica de verificação de JWT para uso sem a verificação
-    const decoded = { scope: 'verify' }; // Apenas um exemplo de como você pode seguir sem a verificação real do token.
-
-    // Verifica se o escopo "verify" está presente
-    console.log("🔍 Verificando escopo do token...");
-    if (!decoded.scope || !decoded.scope.includes('verify')) {
-      console.error("❌ Escopo não encontrado ou incorreto no token.");
-      throw new Error('Token não tem permissão (scope) necessária: verify');
-    }
-
-    const body = JSON.parse(event.body);
-    console.log("📥 Dados recebidos no corpo da requisição:", body);
-
-    const clienteId = body.data.clienteId;
-    console.log("🔍 ClienteId para verificação:", clienteId);
-
-    const data = await verificaCPFeCNPJ(clienteId);
-    console.log("✅ Dados de verificação obtidos:", data);
-
-    const verified = data.score >= 500;
-    console.log("🔍 Resultado da verificação de score:", verified);
-
-    const responsePayload = {
-      verified,
-      verifyResponseMessage: verified
-        ? "Verificação de dados concluída com sucesso."
-        : "Falha na verificação de dados.",
-      ...(verified
-        ? {}
-        : {
-            verifyFailureReason:
-              "O score do cliente é insuficiente para completar a verificação.",
-          }),
-      verificationResultCode: verified ? "SUCCESS" : "LOW_SCORE",
-      verificationResultDescription: `Score retornado: ${data.score}`,
-      suggestions: [
-        {
-          clienteId: data.clienteId,
-          score: data.score,
-          status: data.status,
-          dataConsulta: data.dataConsulta,
-          endereco: data.endereco,
-          planoAtual: data.planoAtual,
-        },
-      ],
-    };
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify(responsePayload),
-    };
-  } catch (error) {
-    console.error("❌ Erro na verificação:", error);
-
-    return {
-      statusCode: 401,
-      body: JSON.stringify({
-        error: "access_denied",
-        error_description: error.message,
-      }),
-    };
-  }
-};
+    // ✅ Simulação do

@@ -33,7 +33,7 @@ exports.handler = async (event) => {
     const token = authHeader.split(' ')[1];
     console.log("🔑 Token recebido:", token);
 
-    // Comentando a verificação do JWT para isolar o erro
+    // Comentando a verificação do JWT, com a veirificação o APP center não reconhece o token, provavelmente por estar no formato JWE em vez de JWT comum
     // const decoded = await new Promise((resolve, reject) => {
     //   jwt.verify(
     //     token,

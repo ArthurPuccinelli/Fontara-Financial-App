@@ -11,6 +11,10 @@ const client = jwksClient({
 
 function getKey(header, callback) {
   client.getSigningKey(header.kid, (err, key) => {
+    if (err) {
+      console.error("❌ Erro ao obter chave de assinatura:", err);
+      return callback(err);
+    }
     const signingKey = key.getPublicKey();
     callback(null, signingKey);
   });
@@ -18,13 +22,18 @@ function getKey(header, callback) {
 
 exports.handler = async (event) => {
   try {
+    console.log("🔍 Iniciando a verificação do token...");
+
     const authHeader = event.headers.authorization || event.headers.Authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error("❌ Token de autorização ausente ou inválido.");
       throw new Error('Token de autorização ausente ou inválido');
     }
 
     const token = authHeader.split(' ')[1];
+    console.log("🔑 Token recebido:", token);
 
+    // Decodificar e verificar o JWT
     const decoded = await new Promise((resolve, reject) => {
       jwt.verify(
         token,
@@ -35,23 +44,34 @@ exports.handler = async (event) => {
           algorithms: ['RS256']
         },
         (err, decoded) => {
-          if (err) return reject(err);
+          if (err) {
+            console.error("❌ Erro ao verificar token:", err);
+            return reject(err);
+          }
+          console.log("✅ Token decodificado:", decoded); // Log para ver o conteúdo do token
           resolve(decoded);
         }
       );
     });
 
     // Verifica se o escopo "verify" está presente
+    console.log("🔍 Verificando escopo do token...");
     if (!decoded.scope || !decoded.scope.includes('verify')) {
+      console.error("❌ Escopo não encontrado ou incorreto no token.");
       throw new Error('Token não tem permissão (scope) necessária: verify');
     }
 
     const body = JSON.parse(event.body);
+    console.log("📥 Dados recebidos no corpo da requisição:", body);
+
     const clienteId = body.data.clienteId;
+    console.log("🔍 ClienteId para verificação:", clienteId);
 
     const data = await verificaCPFeCNPJ(clienteId);
+    console.log("✅ Dados de verificação obtidos:", data);
 
     const verified = data.score >= 500;
+    console.log("🔍 Resultado da verificação de score:", verified);
 
     const responsePayload = {
       verified,

@@ -14,14 +14,10 @@ function getKey(header, callback) {
 }
 
 exports.handler = async function (event) {
-  console.log('Início da execução da função verify');  // Log de entrada na função
-
   const authHeader = event.headers.authorization || '';
   const token = authHeader.replace('Bearer ', '');
-  console.log('Token extraído do cabeçalho:', token);  // Log para verificar o token recebido
 
   if (!token) {
-    console.error('Token não informado.');  // Log de erro
     return {
       statusCode: 401,
       body: JSON.stringify({ message: 'Token não informado.' })
@@ -29,7 +25,6 @@ exports.handler = async function (event) {
   }
 
   try {
-    console.log('Iniciando a verificação do token...');  // Log para indicar o início da verificação do token
     const decoded = await new Promise((resolve, reject) => {
       jwt.verify(
         token,
@@ -40,43 +35,45 @@ exports.handler = async function (event) {
           algorithms: ['RS256']
         },
         (err, decoded) => {
-          if (err) {
-            console.error('Erro na verificação do token:', err);  // Log de erro na verificação do token
-            reject(err);
-          } else {
-            console.log('Token verificado com sucesso:', decoded);  // Log de sucesso na verificação
-            resolve(decoded);
-          }
+          if (err) reject(err);
+          else resolve(decoded);
         }
       );
     });
 
     const scopes = (decoded.scope || '').split(' ');
-    console.log('Escopos encontrados no token:', scopes);  // Log para verificar os escopos
-
     if (!scopes.includes('verify:cpfecnpj')) {
-      console.error('Permissão insuficiente para acessar o recurso "verify:cpfecnpj"');  // Log de erro
       return {
         statusCode: 403,
         body: JSON.stringify({ message: 'Permissão insuficiente.' })
       };
     }
 
-    // Agora você deve parsear o corpo da requisição antes de usá-lo
+    // Parseia o body da requisição
     const body = JSON.parse(event.body || '{}');
-    console.log('Body da requisição:', body);  // Log do corpo da requisição
 
-    console.log('Iniciando a verificação de CPFeCNPJ...');  // Log para indicar o início da verificação
+    // Chamando a função de verificação
     const resultado = await verificaCPFeCNPJ(body.data);
 
-    console.log('Resultado da verificação CPFeCNPJ:', resultado);  // Log do resultado da verificação
+    // Estrutura a resposta conforme o modelo Concerto
+    const resposta = {
+      "$class": "org.fontara.VerificaCPFeCNPJOutput", // Nome da classe Concerto
+      "clienteId": resultado.clienteId,  // StringProperty
+      "score": resultado.score,          // IntegerProperty
+      "status": resultado.status,        // StringProperty
+      "dataConsulta": new Date().toISOString(),  // DateTimeProperty
+      "endereco": resultado.endereco,    // StringProperty
+      "planoAtual": resultado.planoAtual // StringProperty
+    };
+
+    console.log('Resultado da verificação CPFeCNPJ (Concerto):', resposta);
 
     return {
       statusCode: 200,
-      body: JSON.stringify(resultado)
+      body: JSON.stringify(resposta)
     };
   } catch (error) {
-    console.error('Erro na execução da função verify:', error);  // Log de erro geral
+    console.error('Erro na verificação:', error);
     return {
       statusCode: 401,
       body: JSON.stringify({ message: 'Token inválido ou erro na verificação.', error: error.message })

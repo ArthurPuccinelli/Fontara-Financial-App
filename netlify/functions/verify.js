@@ -10,19 +10,24 @@ const client = jwksClient({
 function getKey(header, callback) {
   client.getSigningKey(header.kid, function(err, key) {
     if (err) {
+      console.error('Erro ao obter chave pública do JWKS:', err);
       callback(err);
     } else {
       const signingKey = key.publicKey || key.rsaPublicKey;
+      console.log('Chave pública obtida com sucesso:', signingKey);
       callback(null, signingKey);
     }
   });
 }
 
 exports.handler = async function (event) {
+  console.log('Iniciando verificação de token...');
+
   const authHeader = event.headers.authorization || '';
   const token = authHeader.replace('Bearer ', '');
 
   if (!token) {
+    console.error('Erro: Token não informado.');
     return {
       statusCode: 401,
       body: JSON.stringify({ message: 'Token não informado.' })
@@ -30,6 +35,7 @@ exports.handler = async function (event) {
   }
 
   try {
+    console.log('Verificando o token...');
     const decoded = await new Promise((resolve, reject) => {
       jwt.verify(
         token,
@@ -40,14 +46,23 @@ exports.handler = async function (event) {
           algorithms: ['RS256']
         },
         (err, decoded) => {
-          if (err) reject(err);
-          else resolve(decoded);
+          if (err) {
+            console.error('Erro ao verificar o token:', err);
+            reject(err);
+          } else {
+            console.log('Token verificado com sucesso:', decoded);
+            resolve(decoded);
+          }
         }
       );
     });
 
+    // Logs do escopo
     const scopes = (decoded.scope || '').split(' ');
+    console.log('Escopos encontrados no token:', scopes);
+
     if (!scopes.includes('verify:cpfecnpj')) {
+      console.error('Permissão insuficiente. O token não contém o escopo necessário.');
       return {
         statusCode: 403,
         body: JSON.stringify({ message: 'Permissão insuficiente.' })
@@ -56,9 +71,11 @@ exports.handler = async function (event) {
 
     // Parseia o corpo da requisição
     const body = JSON.parse(event.body || '{}');
+    console.log('Corpo da requisição:', body);
 
     // Valida se o clienteId foi fornecido
     if (!body.clienteId) {
+      console.error('Erro: O campo clienteId é obrigatório.');
       return {
         statusCode: 400,
         body: JSON.stringify({
@@ -67,10 +84,13 @@ exports.handler = async function (event) {
       };
     }
 
-    // Chamando a função de verificação
+    // Chama a função de verificação (substitua com a lógica real)
+    console.log('Iniciando a verificação do clienteId:', body.clienteId);
     const resultado = await verificaCPFeCNPJ(body.clienteId);
+    console.log('Resultado da verificação:', resultado);
 
     if (resultado.isValid) {
+      console.log('Verificação bem-sucedida, valores válidos.');
       return {
         statusCode: 200,
         body: JSON.stringify({
@@ -81,6 +101,7 @@ exports.handler = async function (event) {
         })
       };
     } else {
+      console.log('Verificação falhou, valores inválidos.');
       return {
         statusCode: 200,
         body: JSON.stringify({
@@ -115,3 +136,21 @@ exports.handler = async function (event) {
     };
   }
 };
+
+// Função de exemplo de verificação, substitua com a lógica real
+async function verificaCPFeCNPJ(clienteId) {
+  console.log('Iniciando verificação de CPF/CNPJ para clienteId:', clienteId);
+
+  // Simulação de resposta da verificação (substitua pela lógica real)
+  if (clienteId === 'validClientId') {
+    return {
+      isValid: true,
+      message: 'Cliente validado com sucesso.'
+    };
+  } else {
+    return {
+      isValid: false,
+      message: 'Falha na validação do cliente.'
+    };
+  }
+}

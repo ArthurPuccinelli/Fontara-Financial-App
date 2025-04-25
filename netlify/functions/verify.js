@@ -1,24 +1,4 @@
-const jwt = require('jsonwebtoken');
-const jwksClient = require('jwks-rsa');
-
-// Crie o cliente JWKS para buscar a chave pública do Auth0
-const client = jwksClient({
-  jwksUri: 'https://fontara.us.auth0.com/.well-known/jwks.json'  // URL do JWKS do Auth0
-});
-
-// Função para pegar a chave pública
-function getKey(header, callback) {
-  client.getSigningKey(header.kid, function(err, key) {
-    if (err) {
-      console.error('Erro ao obter chave pública do JWKS:', err);
-      callback(err);
-    } else {
-      const signingKey = key.publicKey || key.rsaPublicKey;
-      console.log('Chave pública obtida com sucesso:', signingKey);
-      callback(null, signingKey);
-    }
-  });
-}
+// Restante do código...
 
 exports.handler = async function (event) {
   console.log('Iniciando verificação de token...');
@@ -73,8 +53,9 @@ exports.handler = async function (event) {
     const body = JSON.parse(event.body || '{}');
     console.log('Corpo da requisição:', body);
 
-    // Valida se o clienteId foi fornecido
-    if (!body.clienteId) {
+    // Verifica se o clienteId está dentro de 'data'
+    const clienteId = body.data && body.data.clienteId;
+    if (!clienteId) {
       console.error('Erro: O campo clienteId é obrigatório.');
       return {
         statusCode: 400,
@@ -85,8 +66,8 @@ exports.handler = async function (event) {
     }
 
     // Chama a função de verificação (substitua com a lógica real)
-    console.log('Iniciando a verificação do clienteId:', body.clienteId);
-    const resultado = await verificaCPFeCNPJ(body.clienteId);
+    console.log('Iniciando a verificação do clienteId:', clienteId);
+    const resultado = await verificaCPFeCNPJ(clienteId);
     console.log('Resultado da verificação:', resultado);
 
     if (resultado.isValid) {

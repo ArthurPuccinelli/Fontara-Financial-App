@@ -53,20 +53,20 @@ exports.handler = async function (event) {
     const body = JSON.parse(event.body || '{}');
 
     // Chamando a função de verificação
-    const resultado = await verificaCPFeCNPJ(body.data);
+    const resultado = await verificaCPFeCNPJ(body.data.clienteId);
 
     // Estrutura a resposta conforme o modelo Concerto
     const resposta = {
-      "$class": "VerificaCPFeCNPJOutput", // Nome da classe Concerto
-      "clienteId": resultado.clienteId,  // Retorna diretamente o clienteId como string
+      "$class": "VerificaCPFeCNPJOutput", // Nome da classe Concerto (sem namespace)
+      "clienteId": resultado.clienteId,  // clienteId como string, não como objeto
       "score": resultado.score,          // IntegerProperty
       "status": resultado.status,        // StringProperty
-      "dataConsulta": new Date().toISOString(),  // DateTimeProperty
+      "dataConsulta": resultado.dataConsulta,  // DateTimeProperty
       "endereco": resultado.endereco,    // StringProperty
       "planoAtual": resultado.planoAtual // StringProperty
     };
 
-    console.log('Resultado da verificação CPFeCNPJ (Concerto):', resposta);
+    console.log('Resultado da verificação CPFeCNPJ (Concerto):', JSON.stringify(resposta, null, 2));
 
     return {
       statusCode: 200,

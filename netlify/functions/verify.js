@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken'); // Adicione esta linha no topo do arquivo
+
 exports.handler = async function (event) {
   const authHeader = event.headers.authorization || '';
   const token = authHeader.replace('Bearer ', '');

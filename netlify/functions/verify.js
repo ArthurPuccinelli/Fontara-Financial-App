@@ -1,76 +1,67 @@
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
-const { verificaCPFeCNPJ } = require('./verificaCPFeCNPJ'); // ajuste se necessário
+const { verificaCPFeCNPJ } = require('./verificaCPFeCNPJ');
 
 const client = jwksClient({
-  jwksUri: 'https://fontara.us.auth0.com/.well-known/jwks.json',
+  jwksUri: 'https://fontara.us.auth0.com/.well-known/jwks.json'
 });
 
 function getKey(header, callback) {
   client.getSigningKey(header.kid, (err, key) => {
-    if (err) return callback(err);
     const signingKey = key.getPublicKey();
     callback(null, signingKey);
   });
 }
 
-exports.handler = async (event) => {
-  try {
-    const authHeader = event.headers.authorization || '';
-    const token = authHeader.replace(/^Bearer\s/, '');
+exports.handler = async function (event) {
+  const authHeader = event.headers.authorization || '';
+  const token = authHeader.replace('Bearer ', '');
 
-    if (!token) {
-      return {
-        statusCode: 401,
-        body: JSON.stringify({ error: 'Token não fornecido.' }),
-      };
-    }
-
-    const options = {
-      audience: 'https://fontarafinancial.netlify.app',
-      issuer: 'https://fontara.us.auth0.com/',
-      algorithms: ['RS256'],
+  if (!token) {
+    return {
+      statusCode: 401,
+      body: JSON.stringify({ message: 'Token não informado.' })
     };
+  }
 
+  try {
     const decoded = await new Promise((resolve, reject) => {
-      jwt.verify(token, getKey, options, (err, decoded) => {
-        if (err) reject(err);
-        else resolve(decoded);
-      });
+      jwt.verify(
+        token,
+        getKey,
+        {
+          audience: 'https://fontarafinancial.netlify.app',
+          issuer: 'https://fontara.us.auth0.com/',
+          algorithms: ['RS256']
+        },
+        (err, decoded) => {
+          if (err) reject(err);
+          else resolve(decoded);
+        }
+      );
     });
 
-    // Validação de escopo
-    const requiredScope = 'verify:cpfecnpj';
-    const scope = decoded.scope || '';
-    if (!scope.split(' ').includes(requiredScope)) {
+    const scopes = (decoded.scope || '').split(' ');
+    if (!scopes.includes('verify:cpfecnpj')) {
       return {
         statusCode: 403,
-        body: JSON.stringify({ error: 'Permissão insuficiente (escopo).' }),
+        body: JSON.stringify({ message: 'Permissão insuficiente.' })
       };
     }
 
+    // Parseia o body da requisição
     const body = JSON.parse(event.body || '{}');
-    const clienteId = body?.data?.clienteId;
-
-    if (!clienteId) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'clienteId não fornecido.' }),
-      };
-    }
-
-    const resultado = await verificaCPFeCNPJ(clienteId);
+    const resultado = await verificaCPFeCNPJ(body.data);
 
     return {
       statusCode: 200,
-      body: JSON.stringify(resultado),
+      body: JSON.stringify(resultado)
     };
-
-  } catch (err) {
-    console.error('Erro no verify:', err);
+  } catch (error) {
+    console.error('Erro na verificação:', error);
     return {
-      statusCode: 403,
-      body: JSON.stringify({ error: 'Token inválido, expirado ou erro interno.' }),
+      statusCode: 401,
+      body: JSON.stringify({ message: 'Token inválido ou erro na verificação.', error: error.message })
     };
   }
 };

@@ -16,7 +16,7 @@ exports.handler = async () => {
     const outputProperties = Object.entries(data).map(([key, value]) => {
       let propertyType;
       if (typeof value === 'string') {
-        if (key === 'data_consulta') {
+        if (toCamelCase(key) === 'dataConsulta') {
           propertyType = 'concerto.metamodel@1.0.0.DateTimeProperty';
         } else {
           propertyType = 'concerto.metamodel@1.0.0.StringProperty';

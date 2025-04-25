@@ -16,7 +16,7 @@ async function verificaCPFeCNPJ(clienteId) {
   const plano_atual = ["BÁSICO", "INTERMEDIÁRIO", "PREMIUM"][Math.floor(Math.random() * 3)];
 
   return {
-    clienteId: clienteId,
+    clienteId: clienteId, // Retorna diretamente o clienteId como string
     score,
     status,
     dataConsulta: data_consulta,

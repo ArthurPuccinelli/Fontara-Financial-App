@@ -39,7 +39,6 @@ exports.handler = async () => {
           // Identificação do tipo de dado
           if (typeof data[key] === 'string') {
             if (key === "dataConsulta") {
-              // Se for o campo dataConsulta, trata como DateTimeProperty
               propertyType = "concerto.metamodel@1.0.0.DateTimeProperty";
             } else {
               propertyType = "concerto.metamodel@1.0.0.StringProperty";
@@ -49,7 +48,7 @@ exports.handler = async () => {
           }
 
           return {
-            name: key,
+            name: key, // Mantém os nomes exatamente como estão
             isArray: false,
             isOptional: false,
             $class: propertyType

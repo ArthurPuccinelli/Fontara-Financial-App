@@ -58,28 +58,6 @@ exports.handler = async function (event) {
         statusCode: 400,
         body: JSON.stringify({
           message: 'O campo clienteId é obrigatório.',
-          payload: {
-            declarations: [
-              {
-                name: 'VerificaCPFeCNPJInput',
-                isAbstract: false,
-                properties: [
-                  {
-                    name: 'clienteId',
-                    isArray: false,
-                    isOptional: false,
-                    $class: 'concerto.metamodel@1.0.0.StringProperty'
-                  }
-                ],
-                identified: {
-                  name: 'clienteId',
-                  $class: 'concerto.metamodel@1.0.0.IdentifiedBy'
-                },
-                decorators: [],
-                $class: 'concerto.metamodel@1.0.0.ConceptDeclaration'
-              }
-            ]
-          }
         })
       };
     }
@@ -90,7 +68,7 @@ exports.handler = async function (event) {
     // Estrutura a resposta conforme o modelo Concerto
     const resposta = {
       "$class": "VerificaCPFeCNPJOutput",
-      "clienteId": resultado.clienteId, // clienteId como string, não como objeto
+      "clienteId": String(resultado.clienteId), // clienteId como string, não como objeto
       "score": resultado.score,         // IntegerProperty
       "status": resultado.status,       // StringProperty
       "dataConsulta": resultado.dataConsulta, // DateTimeProperty
@@ -103,61 +81,7 @@ exports.handler = async function (event) {
     // Retorne a resposta no formato esperado
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        payload: {
-          declarations: [
-            {
-              name: 'VerificaCPFeCNPJOutput',
-              isAbstract: false,
-              properties: [
-                {
-                  name: 'clienteId',
-                  isArray: false,
-                  isOptional: false,
-                  $class: 'concerto.metamodel@1.0.0.StringProperty'
-                },
-                {
-                  name: 'score',
-                  isArray: false,
-                  isOptional: false,
-                  $class: 'concerto.metamodel@1.0.0.IntegerProperty'
-                },
-                {
-                  name: 'status',
-                  isArray: false,
-                  isOptional: false,
-                  $class: 'concerto.metamodel@1.0.0.StringProperty'
-                },
-                {
-                  name: 'dataConsulta',
-                  isArray: false,
-                  isOptional: false,
-                  $class: 'concerto.metamodel@1.0.0.DateTimeProperty'
-                },
-                {
-                  name: 'endereco',
-                  isArray: false,
-                  isOptional: false,
-                  $class: 'concerto.metamodel@1.0.0.StringProperty'
-                },
-                {
-                  name: 'planoAtual',
-                  isArray: false,
-                  isOptional: false,
-                  $class: 'concerto.metamodel@1.0.0.StringProperty'
-                }
-              ],
-              identified: {
-                name: 'clienteId',
-                $class: 'concerto.metamodel@1.0.0.IdentifiedBy'
-              },
-              decorators: [],
-              $class: 'concerto.metamodel@1.0.0.ConceptDeclaration'
-            }
-          ]
-        },
-        response: resposta
-      })
+      body: JSON.stringify(resposta)  // Resposta direta sem incluir as declarações
     };
   } catch (error) {
     console.error('Erro na verificação:', error);

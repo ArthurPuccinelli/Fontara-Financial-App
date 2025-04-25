@@ -1,4 +1,22 @@
-const jwt = require('jsonwebtoken'); // Adicione esta linha no topo do arquivo
+const jwt = require('jsonwebtoken');
+const jwksClient = require('jwks-rsa');
+
+// Crie o cliente JWKS para buscar a chave pública do Auth0
+const client = jwksClient({
+  jwksUri: 'https://fontara.us.auth0.com/.well-known/jwks.json'  // URL do JWKS do Auth0
+});
+
+// Função para pegar a chave pública
+function getKey(header, callback) {
+  client.getSigningKey(header.kid, function(err, key) {
+    if (err) {
+      callback(err);
+    } else {
+      const signingKey = key.publicKey || key.rsaPublicKey;
+      callback(null, signingKey);
+    }
+  });
+}
 
 exports.handler = async function (event) {
   const authHeader = event.headers.authorization || '';
@@ -15,7 +33,7 @@ exports.handler = async function (event) {
     const decoded = await new Promise((resolve, reject) => {
       jwt.verify(
         token,
-        getKey,
+        getKey,  // A função getKey é chamada aqui para obter a chave pública
         {
           audience: 'https://fontarafinancial.netlify.app',
           issuer: 'https://fontara.us.auth0.com/',

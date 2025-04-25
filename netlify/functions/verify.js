@@ -93,12 +93,13 @@ exports.handler = async function (event) {
       planoAtual: String(resultadoRaw.planoAtual || '')
     };
 
+    // FORMATO FINAL CORRETO PARA CONCERTO
     const responseBody = {
-      typeName: 'VerificaCPFeCNPJOutput',
-      data: resultado
+      $class: 'VerificaCPFeCNPJOutput',
+      ...resultado
     };
 
-    console.log('🧪 Corpo da resposta final:', JSON.stringify(responseBody, null, 2));
+    console.log('✅ Corpo da resposta final (Concerto válido):', JSON.stringify(responseBody, null, 2));
 
     return {
       statusCode: 200,

@@ -1,20 +1,14 @@
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
-const { verificaCPFeCNPJ } = require('./verificaCPFeCNPJ');
-
-const AUTH0_DOMAIN = 'fontara.us.auth0.com';
-const AUTH0_AUDIENCE = 'https://fontarafinancial.netlify.app';
+const { verificaCPFeCNPJ } = require('./verificaCPFeCNPJ'); // ajuste se necessário
 
 const client = jwksClient({
-  jwksUri: `https://${AUTH0_DOMAIN}/.well-known/jwks.json`
+  jwksUri: 'https://fontara.us.auth0.com/.well-known/jwks.json',
 });
 
 function getKey(header, callback) {
   client.getSigningKey(header.kid, (err, key) => {
-    if (err) {
-      console.error("❌ Erro ao obter chave de assinatura:", err);
-      return callback(err);
-    }
+    if (err) return callback(err);
     const signingKey = key.getPublicKey();
     callback(null, signingKey);
   });
@@ -22,98 +16,61 @@ function getKey(header, callback) {
 
 exports.handler = async (event) => {
   try {
-    console.log("🔍 Iniciando a verificação do token...");
+    const authHeader = event.headers.authorization || '';
+    const token = authHeader.replace(/^Bearer\s/, '');
 
-    const authHeader = event.headers.authorization || event.headers.Authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.error("❌ Token de autorização ausente ou inválido.");
-      throw new Error('Token de autorização ausente ou inválido');
+    if (!token) {
+      return {
+        statusCode: 401,
+        body: JSON.stringify({ error: 'Token não fornecido.' }),
+      };
     }
 
-    const token = authHeader.split(' ')[1];
-    console.log("🔑 Token recebido:", token);
-
-    // Comentando a verificação do JWT, com a veirificação o APP center não reconhece o token, provavelmente por estar no formato JWE em vez de JWT comum
-    // const decoded = await new Promise((resolve, reject) => {
-    //   jwt.verify(
-    //     token,
-    //     getKey,
-    //     {
-    //       audience: AUTH0_AUDIENCE,
-    //       issuer: `https://${AUTH0_DOMAIN}/`,
-    //       algorithms: ['RS256']
-    //     },
-    //     (err, decoded) => {
-    //       if (err) {
-    //         console.error("❌ Erro ao verificar token:", err);
-    //         return reject(err);
-    //       }
-    //       console.log("✅ Token decodificado:", decoded); // Log para ver o conteúdo do token
-    //       resolve(decoded);
-    //     }
-    //   );
-    // });
-
-    // Substituindo a lógica de verificação de JWT para uso sem a verificação
-    const decoded = { scope: 'verify' }; // Apenas um exemplo de como você pode seguir sem a verificação real do token.
-
-    // Verifica se o escopo "verify" está presente
-    console.log("🔍 Verificando escopo do token...");
-    if (!decoded.scope || !decoded.scope.includes('verify')) {
-      console.error("❌ Escopo não encontrado ou incorreto no token.");
-      throw new Error('Token não tem permissão (scope) necessária: verify');
-    }
-
-    const body = JSON.parse(event.body);
-    console.log("📥 Dados recebidos no corpo da requisição:", body);
-
-    const clienteId = body.data.clienteId;
-    console.log("🔍 ClienteId para verificação:", clienteId);
-
-    const data = await verificaCPFeCNPJ(clienteId);
-    console.log("✅ Dados de verificação obtidos:", data);
-
-    const verified = data.score >= 500;
-    console.log("🔍 Resultado da verificação de score:", verified);
-
-    const responsePayload = {
-      verified,
-      verifyResponseMessage: verified
-        ? "Verificação de dados concluída com sucesso."
-        : "Falha na verificação de dados.",
-      ...(verified
-        ? {}
-        : {
-            verifyFailureReason:
-              "O score do cliente é insuficiente para completar a verificação.",
-          }),
-      verificationResultCode: verified ? "SUCCESS" : "LOW_SCORE",
-      verificationResultDescription: `Score retornado: ${data.score}`,
-      suggestions: [
-        {
-          clienteId: data.clienteId,
-          score: data.score,
-          status: data.status,
-          dataConsulta: data.dataConsulta,
-          endereco: data.endereco,
-          planoAtual: data.planoAtual,
-        },
-      ],
+    const options = {
+      audience: 'https://fontarafinancial.netlify.app',
+      issuer: 'https://fontara.us.auth0.com/',
+      algorithms: ['RS256'],
     };
+
+    const decoded = await new Promise((resolve, reject) => {
+      jwt.verify(token, getKey, options, (err, decoded) => {
+        if (err) reject(err);
+        else resolve(decoded);
+      });
+    });
+
+    // Validação de escopo
+    const requiredScope = 'verify:cpfecnpj';
+    const scope = decoded.scope || '';
+    if (!scope.split(' ').includes(requiredScope)) {
+      return {
+        statusCode: 403,
+        body: JSON.stringify({ error: 'Permissão insuficiente (escopo).' }),
+      };
+    }
+
+    const body = JSON.parse(event.body || '{}');
+    const clienteId = body?.data?.clienteId;
+
+    if (!clienteId) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'clienteId não fornecido.' }),
+      };
+    }
+
+    const resultado = await verificaCPFeCNPJ(clienteId);
 
     return {
       statusCode: 200,
-      body: JSON.stringify(responsePayload),
+      body: JSON.stringify(resultado),
     };
-  } catch (error) {
-    console.error("❌ Erro na verificação:", error);
 
+  } catch (err) {
+    console.error('Erro no verify:', err);
     return {
-      statusCode: 401,
-      body: JSON.stringify({
-        error: "access_denied",
-        error_description: error.message,
-      }),
+      statusCode: 403,
+      body: JSON.stringify({ error: 'Token inválido, expirado ou erro interno.' }),
     };
   }
 };

@@ -78,10 +78,26 @@ exports.handler = async function (event) {
 
     console.log('Resultado da verificação CPFeCNPJ (Concerto):', JSON.stringify(resposta, null, 2));
 
-    // Retorne a resposta no formato esperado
+    // Retorne a resposta no formato esperado pelo Connected Fields
     return {
       statusCode: 200,
-      body: JSON.stringify(resposta)  // Resposta direta sem incluir as declarações
+      body: JSON.stringify({
+        verified: true,  // Se a verificação for bem-sucedida
+        verifyResponseMessage: "Verificação completada com sucesso.",
+        verificationResultCode: "SUCCESS",
+        verificationResultDescription: "Verificação realizada com sucesso para o cliente: " + resultado.clienteId,
+        suggestions: [
+          {
+            "$class": "VerificaCPFeCNPJOutput",
+            "clienteId": String(resultado.clienteId),
+            "score": resultado.score,
+            "status": resultado.status,
+            "dataConsulta": resultado.dataConsulta,
+            "endereco": resultado.endereco,
+            "planoAtual": resultado.planoAtual
+          }
+        ]
+      })
     };
   } catch (error) {
     console.error('Erro na verificação:', error);

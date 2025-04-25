@@ -57,7 +57,7 @@ exports.handler = async function (event) {
 
     // Estrutura a resposta conforme o modelo Concerto
     const resposta = {
-      "$class": "org.fontara.VerificaCPFeCNPJOutput", // Nome da classe Concerto
+      "$class": "VerificaCPFeCNPJOutput", // Nome da classe Concerto
       "clienteId": resultado.clienteId,  // Retorna diretamente o clienteId como string
       "score": resultado.score,          // IntegerProperty
       "status": resultado.status,        // StringProperty

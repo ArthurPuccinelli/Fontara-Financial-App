@@ -1,18 +1,3 @@
-const jwt = require('jsonwebtoken');
-const jwksClient = require('jwks-rsa');
-const { verificaCPFeCNPJ } = require('./verificaCPFeCNPJ');
-
-const client = jwksClient({
-  jwksUri: 'https://fontara.us.auth0.com/.well-known/jwks.json'
-});
-
-function getKey(header, callback) {
-  client.getSigningKey(header.kid, (err, key) => {
-    const signingKey = key.getPublicKey();
-    callback(null, signingKey);
-  });
-}
-
 exports.handler = async function (event) {
   const authHeader = event.headers.authorization || '';
   const token = authHeader.replace('Bearer ', '');
@@ -65,45 +50,48 @@ exports.handler = async function (event) {
     // Chamando a função de verificação
     const resultado = await verificaCPFeCNPJ(body.clienteId);
 
-    // Estrutura a resposta conforme o modelo Concerto
-    const resposta = {
-      "$class": "VerificaCPFeCNPJOutput",
-      "clienteId": String(resultado.clienteId), // clienteId como string, não como objeto
-      "score": resultado.score,         // IntegerProperty
-      "status": resultado.status,       // StringProperty
-      "dataConsulta": resultado.dataConsulta, // DateTimeProperty
-      "endereco": resultado.endereco,   // StringProperty
-      "planoAtual": resultado.planoAtual // StringProperty
-    };
-
-    console.log('Resultado da verificação CPFeCNPJ (Concerto):', JSON.stringify(resposta, null, 2));
-
-    // Retorne a resposta no formato esperado pelo Connected Fields
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        verified: true,  // Se a verificação for bem-sucedida
-        verifyResponseMessage: "Verificação completada com sucesso.",
-        verificationResultCode: "SUCCESS",
-        verificationResultDescription: "Verificação realizada com sucesso para o cliente: " + resultado.clienteId,
-        suggestions: [
-          {
-            "$class": "VerificaCPFeCNPJOutput",
-            "clienteId": String(resultado.clienteId),
-            "score": resultado.score,
-            "status": resultado.status,
-            "dataConsulta": resultado.dataConsulta,
-            "endereco": resultado.endereco,
-            "planoAtual": resultado.planoAtual
-          }
-        ]
-      })
-    };
+    if (resultado.isValid) {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          verified: true,
+          verifyResponseMessage: "Transfer verification completed.",
+          verificationResultCode: "SUCCESS",
+          verificationResultDescription: "Transaction confirmation: W63427."
+        })
+      };
+    } else {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          verified: false,
+          verifyResponseMessage: "Verification failed.",
+          verifyFailureReason: "The account has no position in the supplied source fund. It has a position in the suggested fund. Please verify again.",
+          verificationResultCode: "VERIFICATION_ERRORS",
+          suggestions: [
+            {
+              account_num: "123456789",
+              source_fund: "Corporate Bond Fund",
+              destination_fund: "Growth Stock Fund",
+              balance: 10000.00,
+              transfer_date: "2025-03-05T00:00:00.000Z",
+              prospectus: true,
+              typeOfAccount: "brokerage",
+              email: "sally.signer@email.com",
+              ownername: "Sally Signer"
+            }
+          ]
+        })
+      };
+    }
   } catch (error) {
     console.error('Erro na verificação:', error);
     return {
-      statusCode: 401,
-      body: JSON.stringify({ message: 'Token inválido ou erro na verificação.', error: error.message })
+      statusCode: 500,
+      body: JSON.stringify({
+        message: 'Erro interno na verificação.',
+        error: error.message
+      })
     };
   }
 };

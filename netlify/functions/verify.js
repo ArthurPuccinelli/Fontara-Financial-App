@@ -49,28 +49,115 @@ exports.handler = async function (event) {
       };
     }
 
-    // Parseia o body da requisição
+    // Parseia o corpo da requisição
     const body = JSON.parse(event.body || '{}');
 
+    // Valida se o clienteId foi fornecido
+    if (!body.clienteId) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          message: 'O campo clienteId é obrigatório.',
+          payload: {
+            declarations: [
+              {
+                name: 'VerificaCPFeCNPJInput',
+                isAbstract: false,
+                properties: [
+                  {
+                    name: 'clienteId',
+                    isArray: false,
+                    isOptional: false,
+                    $class: 'concerto.metamodel@1.0.0.StringProperty'
+                  }
+                ],
+                identified: {
+                  name: 'clienteId',
+                  $class: 'concerto.metamodel@1.0.0.IdentifiedBy'
+                },
+                decorators: [],
+                $class: 'concerto.metamodel@1.0.0.ConceptDeclaration'
+              }
+            ]
+          }
+        })
+      };
+    }
+
     // Chamando a função de verificação
-    const resultado = await verificaCPFeCNPJ(body.data.clienteId);
+    const resultado = await verificaCPFeCNPJ(body.clienteId);
 
     // Estrutura a resposta conforme o modelo Concerto
     const resposta = {
-      "$class": "VerificaCPFeCNPJOutput", // Nome da classe Concerto (sem namespace)
-      "clienteId": resultado.clienteId,  // clienteId como string, não como objeto
-      "score": resultado.score,          // IntegerProperty
-      "status": resultado.status,        // StringProperty
-      "dataConsulta": resultado.dataConsulta,  // DateTimeProperty
-      "endereco": resultado.endereco,    // StringProperty
+      "$class": "VerificaCPFeCNPJOutput",
+      "clienteId": resultado.clienteId, // clienteId como string, não como objeto
+      "score": resultado.score,         // IntegerProperty
+      "status": resultado.status,       // StringProperty
+      "dataConsulta": resultado.dataConsulta, // DateTimeProperty
+      "endereco": resultado.endereco,   // StringProperty
       "planoAtual": resultado.planoAtual // StringProperty
     };
 
     console.log('Resultado da verificação CPFeCNPJ (Concerto):', JSON.stringify(resposta, null, 2));
 
+    // Retorne a resposta no formato esperado
     return {
       statusCode: 200,
-      body: JSON.stringify(resposta)
+      body: JSON.stringify({
+        payload: {
+          declarations: [
+            {
+              name: 'VerificaCPFeCNPJOutput',
+              isAbstract: false,
+              properties: [
+                {
+                  name: 'clienteId',
+                  isArray: false,
+                  isOptional: false,
+                  $class: 'concerto.metamodel@1.0.0.StringProperty'
+                },
+                {
+                  name: 'score',
+                  isArray: false,
+                  isOptional: false,
+                  $class: 'concerto.metamodel@1.0.0.IntegerProperty'
+                },
+                {
+                  name: 'status',
+                  isArray: false,
+                  isOptional: false,
+                  $class: 'concerto.metamodel@1.0.0.StringProperty'
+                },
+                {
+                  name: 'dataConsulta',
+                  isArray: false,
+                  isOptional: false,
+                  $class: 'concerto.metamodel@1.0.0.DateTimeProperty'
+                },
+                {
+                  name: 'endereco',
+                  isArray: false,
+                  isOptional: false,
+                  $class: 'concerto.metamodel@1.0.0.StringProperty'
+                },
+                {
+                  name: 'planoAtual',
+                  isArray: false,
+                  isOptional: false,
+                  $class: 'concerto.metamodel@1.0.0.StringProperty'
+                }
+              ],
+              identified: {
+                name: 'clienteId',
+                $class: 'concerto.metamodel@1.0.0.IdentifiedBy'
+              },
+              decorators: [],
+              $class: 'concerto.metamodel@1.0.0.ConceptDeclaration'
+            }
+          ]
+        },
+        response: resposta
+      })
     };
   } catch (error) {
     console.error('Erro na verificação:', error);

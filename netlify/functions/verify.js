@@ -7,14 +7,8 @@ const client = jwksClient({
 });
 
 function getKey(header, callback) {
-  console.log('Obtendo chave de assinatura para o kid:', header.kid);  // Log para depuração
   client.getSigningKey(header.kid, (err, key) => {
-    if (err) {
-      console.error('Erro ao obter chave de assinatura:', err);  // Log de erro
-      return callback(err);
-    }
     const signingKey = key.getPublicKey();
-    console.log('Chave de assinatura obtida com sucesso.');  // Log de sucesso
     callback(null, signingKey);
   });
 }
@@ -68,9 +62,9 @@ exports.handler = async function (event) {
       };
     }
 
-    // Parseia o body da requisição
-    console.log('Body da requisição:', body);  // Log do corpo da requisição
+    // Agora você deve parsear o corpo da requisição antes de usá-lo
     const body = JSON.parse(event.body || '{}');
+    console.log('Body da requisição:', body);  // Log do corpo da requisição
 
     console.log('Iniciando a verificação de CPFeCNPJ...');  // Log para indicar o início da verificação
     const resultado = await verificaCPFeCNPJ(body.data);

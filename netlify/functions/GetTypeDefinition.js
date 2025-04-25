@@ -49,7 +49,7 @@ exports.handler = async () => {
           }
 
           return {
-            name: key.charAt(0).toUpperCase() + key.slice(1),
+            name: key,
             isArray: false,
             isOptional: false,
             $class: propertyType

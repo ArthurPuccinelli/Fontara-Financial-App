@@ -80,23 +80,29 @@ exports.handler = async function (event) {
 
     console.log('Chamando verificaCPFeCNPJ com clienteId:', data.clienteId);
 
-    const resultado = {
-  clienteId: data.clienteId,
-  score: 850,
-  status: "ativo",
-  dataConsulta: "2025-04-25T14:30:00Z",
-  endereco: "Rua das Flores, 123",
-  planoAtual: "Premium"
-};
+    const resultadoRaw = await verificaCPFeCNPJ(data.clienteId);
+    console.log('Resultado bruto de verificaCPFeCNPJ:', resultadoRaw);
 
-    console.log('Resultado obtido de verificaCPFeCNPJ:', resultado);
+    // Força os tipos corretos no formato esperado pelo schema Concerto
+    const resultado = {
+      clienteId: String(resultadoRaw.clienteId ?? data.clienteId),
+      score: parseInt(resultadoRaw.score) || 0,
+      status: String(resultadoRaw.status || ''),
+      dataConsulta: new Date(resultadoRaw.dataConsulta || Date.now()).toISOString(),
+      endereco: String(resultadoRaw.endereco || ''),
+      planoAtual: String(resultadoRaw.planoAtual || '')
+    };
+
+    const responseBody = {
+      typeName: 'VerificaCPFeCNPJOutput',
+      data: resultado
+    };
+
+    console.log('🧪 Corpo da resposta final:', JSON.stringify(responseBody, null, 2));
 
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        typeName: 'VerificaCPFeCNPJOutput',
-        data: resultado
-      })
+      body: JSON.stringify(responseBody)
     };
 
   } catch (error) {

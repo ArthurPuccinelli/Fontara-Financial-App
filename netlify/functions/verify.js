@@ -1,29 +1,33 @@
-const jwt = require('jsonwebtoken');  // Usando require, pois estamos no CommonJS
-const jwksClient = require('jwks-rsa');  // Para pegar a chave pública do Auth0
+const jwt = require('jsonwebtoken'); // Usando CommonJS
+const jwksClient = require('jwks-rsa'); // Para obter a chave pública do Auth0
 
 const client = jwksClient({
-  jwksUri: 'https://fontara.us.auth0.com/.well-known/jwks.json'  // URL de descoberta do Auth0
+  jwksUri: 'https://fontara.us.auth0.com/.well-known/jwks.json'
 });
 
 function getKey(header, callback) {
+  console.log('Obtendo chave com header.kid:', header.kid);
   client.getSigningKey(header.kid, function (err, key) {
     if (err) {
+      console.error('Erro ao obter a chave pública:', err);
       callback(err, null);
     } else {
-      const signingKey = key.publicKey || key.rsaPublicKey;
-      callback(null, signingKey);  // Passa a chave pública para a verificação
+      const signingKey = key.getPublicKey();
+      console.log('Chave pública obtida com sucesso:', signingKey);
+      callback(null, signingKey);
     }
   });
 }
 
 exports.handler = async function (event) {
-  console.log('Iniciando verificação de token...');
+  console.log('🟡 Iniciando verificação de token...');
+  console.log('🔹 Headers recebidos:', event.headers);
 
-  const authHeader = event.headers.authorization || '';  // Obtém o cabeçalho de autorização
-  const token = authHeader.replace('Bearer ', '');  // Remove 'Bearer ' para obter o token puro
+  const authHeader = event.headers.authorization || '';
+  const token = authHeader.replace('Bearer ', '');
 
   if (!token) {
-    console.error('Erro: Token não informado.');
+    console.error('🔴 Erro: Token não informado.');
     return {
       statusCode: 401,
       body: JSON.stringify({ message: 'Token não informado.' })
@@ -31,39 +35,48 @@ exports.handler = async function (event) {
   }
 
   try {
-    console.log('Verificando o token...');
+    console.log('🔵 Verificando o token...');
 
-    // Verificação do JWT
     const decoded = await new Promise((resolve, reject) => {
       jwt.verify(
-        token,  // Token recebido na requisição
-        getKey,  // Função que retorna a chave pública
+        token,
+        getKey,
         {
-          audience: 'https://fontarafinancial.netlify.app',  // O seu audience (app)
-          issuer: 'https://fontara.us.auth0.com/',  // O issuer (Auth0)
-          algorithms: ['RS256']  // Algoritmo de verificação
+          audience: 'https://fontarafinancial.netlify.app',
+          issuer: 'https://fontara.us.auth0.com/',
+          algorithms: ['RS256']
         },
         (err, decoded) => {
           if (err) {
-            console.error('Erro ao verificar o token:', err);  // Log de erro na verificação
-            reject(err);  // Retorna o erro
+            console.error('🔴 Erro ao verificar o token:', err);
+            reject(err);
           } else {
-            console.log('Token verificado com sucesso:', decoded);  // Log do conteúdo do token
-            resolve(decoded);  // Retorna o conteúdo do token
+            console.log('🟢 Token verificado com sucesso:', decoded);
+            resolve(decoded);
           }
         }
       );
     });
 
-    // Aqui você pode adicionar a lógica de verificação do seu modelo (verificaCPFeCNPJ) etc.
+    // Apenas para teste: logar e retornar o corpo da requisição
+    console.log('🔹 Corpo da requisição:', event.body);
+
+    // Aqui você pode seguir com a lógica do modelo, por enquanto retornamos OK
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: 'Token verificado com sucesso.',
+        tokenPayload: decoded
+      })
+    };
 
   } catch (error) {
-    console.error('Erro na verificação:', error);  // Log do erro
+    console.error('🔴 Erro na verificação:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({
         message: 'Erro interno na verificação.',
-        error: error.message  // Detalha o erro para depuração
+        error: error.message
       })
     };
   }

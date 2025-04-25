@@ -1,16 +1,41 @@
 const fetch = require('node-fetch');
 
+// Função auxiliar para converter snake_case → camelCase
+function toCamelCase(str) {
+  return str.replace(/_([a-z])/g, (_, g) => g.toUpperCase());
+}
+
 exports.handler = async () => {
   try {
-    // Cliente de exemplo
     const clienteId = '22222222222';
 
-    // Chamada à função HTTP correta
     const response = await fetch(`https://fontarafinancial.netlify.app/.netlify/functions/verificaCPFeCNPJHandler?cliente_id=${clienteId}`);
     const data = await response.json();
     console.log("Dados retornados pela API:", data);
 
-    // Gerar definições de tipo dinamicamente a partir das chaves do objeto retornado
+    const outputProperties = Object.entries(data).map(([key, value]) => {
+      let propertyType;
+      if (typeof value === 'string') {
+        if (key === 'data_consulta') {
+          propertyType = 'concerto.metamodel@1.0.0.DateTimeProperty';
+        } else {
+          propertyType = 'concerto.metamodel@1.0.0.StringProperty';
+        }
+      } else if (typeof value === 'number') {
+        propertyType = 'concerto.metamodel@1.0.0.IntegerProperty';
+      }
+
+      // Ignora campos com tipo desconhecido
+      if (!propertyType) return null;
+
+      return {
+        name: toCamelCase(key),
+        isArray: false,
+        isOptional: false,
+        $class: propertyType
+      };
+    }).filter(Boolean);
+
     const definitions = [
       {
         name: "VerificaCPFeCNPJInput",
@@ -33,27 +58,7 @@ exports.handler = async () => {
       {
         name: "VerificaCPFeCNPJOutput",
         isAbstract: false,
-        properties: Object.keys(data).map(key => {
-          let propertyType;
-
-          // Identificação do tipo de dado
-          if (typeof data[key] === 'string') {
-            if (key === "dataConsulta") {
-              propertyType = "concerto.metamodel@1.0.0.DateTimeProperty";
-            } else {
-              propertyType = "concerto.metamodel@1.0.0.StringProperty";
-            }
-          } else if (typeof data[key] === 'number') {
-            propertyType = "concerto.metamodel@1.0.0.IntegerProperty";
-          }
-
-          return {
-            name: key, // Mantém os nomes exatamente como estão
-            isArray: false,
-            isOptional: false,
-            $class: propertyType
-          };
-        }),
+        properties: outputProperties,
         identified: {
           name: "clienteId",
           $class: "concerto.metamodel@1.0.0.IdentifiedBy"

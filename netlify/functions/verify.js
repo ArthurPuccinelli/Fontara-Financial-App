@@ -1,10 +1,26 @@
+// Verifica se o evento tem body e converte-o corretamente
 async function handler(event) {
-  const { clienteId } = JSON.parse(event.body); // Obtém o clienteId do corpo da requisição
+  let clienteId;
 
+  // Se o corpo da requisição for uma string, tenta fazer o parse
+  if (event.body) {
+    try {
+      const parsedBody = JSON.parse(event.body);
+      clienteId = parsedBody.clienteId;
+    } catch (error) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Erro ao processar o corpo da requisição" })
+      };
+    }
+  }
+
+  // Verifica se o clienteId foi passado corretamente
   if (!clienteId) {
     throw new Error('O campo clienteId é obrigatório.');
   }
 
+  // A lógica do cálculo do score e dados continua aqui
   const score = Math.floor(Math.random() * (950 - 300 + 1)) + 300;
   const status = score >= 700 ? "Excelente" : score >= 500 ? "Bom" : score >= 300 ? "Regular" : "Ruim";
   const data_consulta = new Date().toISOString();
@@ -18,7 +34,7 @@ async function handler(event) {
   const plano_atual = ["BÁSICO", "INTERMEDIÁRIO", "PREMIUM"][Math.floor(Math.random() * 3)];
 
   const responseData = {
-    clienteId: clienteId, // Retorna diretamente o clienteId como string
+    clienteId: clienteId,
     score,
     status,
     dataConsulta: data_consulta,

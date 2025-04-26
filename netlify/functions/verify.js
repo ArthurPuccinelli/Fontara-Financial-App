@@ -1,5 +1,6 @@
-// Função principal que simula a verificação do cliente
-async function verificaCPFeCNPJ(clienteId) {
+async function handler(event) {
+  const { clienteId } = JSON.parse(event.body); // Obtém o clienteId do corpo da requisição
+
   if (!clienteId) {
     throw new Error('O campo clienteId é obrigatório.');
   }
@@ -17,7 +18,7 @@ async function verificaCPFeCNPJ(clienteId) {
   const plano_atual = ["BÁSICO", "INTERMEDIÁRIO", "PREMIUM"][Math.floor(Math.random() * 3)];
 
   const responseData = {
-    clienteId: clienteId,
+    clienteId: clienteId, // Retorna diretamente o clienteId como string
     score,
     status,
     dataConsulta: data_consulta,
@@ -25,40 +26,29 @@ async function verificaCPFeCNPJ(clienteId) {
     planoAtual: plano_atual
   };
 
-  const suggestions = [responseData];
+  // Gerando sugestões para autofill
+  const suggestions = [{
+    clienteId: responseData.clienteId,
+    score: responseData.score,
+    status: responseData.status,
+    dataConsulta: responseData.dataConsulta,
+    endereco: responseData.endereco,
+    planoAtual: responseData.planoAtual
+  }];
 
   return {
-    verified: true,
-    verifyResponseMessage: "Consulta realizada com sucesso.",
-    verificationResultCode: "SUCCESS",
-    verificationResultDescription: "Verificação concluída com sucesso para o cliente.",
-    suggestions,
-    passthroughResponseData: {
-      additionalData: "Informações extras podem ser passadas aqui."
-    }
+    statusCode: 200,
+    body: JSON.stringify({
+      verified: true,
+      verifyResponseMessage: "Consulta realizada com sucesso.",
+      verificationResultCode: "SUCCESS",
+      verificationResultDescription: "Verificação concluída com sucesso para o cliente.",
+      suggestions, // Incluir as sugestões para autofill
+      passthroughResponseData: {
+        additionalData: "Informações extras podem ser passadas aqui."
+      }
+    })
   };
 }
 
-// Exporta a função handler no formato exigido pelo Netlify
-exports.handler = async (event) => {
-  try {
-    const body = JSON.parse(event.body);
-    const clienteId = body.data?.clienteId;
-
-    const resultado = await verificaCPFeCNPJ(clienteId);
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify(resultado)
-    };
-  } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        verified: false,
-        verifyResponseMessage: "Erro durante a verificação.",
-        verifyFailureReason: error.message
-      })
-    };
-  }
-};
+module.exports = { handler };

@@ -1,5 +1,19 @@
 const fetch = require('node-fetch');
 
+// Função auxiliar para converter snake_case → camelCase
+function toCamelCase(str) {
+  return str.replace(/_([a-z])/g, (_, g) => g.toUpperCase());
+}
+
+// Função para gerar rótulo legível
+function toLabel(str) {
+  const camel = toCamelCase(str);
+  return camel
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, s => s.toUpperCase())
+    .trim();
+}
+
 exports.handler = async function(event, context) {
   try {
     const clienteId = '22222222222';
@@ -8,10 +22,13 @@ exports.handler = async function(event, context) {
     const data = await response.json();
     console.log("Resposta da API:", data);
 
-    const typeNames = Object.keys(data).map((key) => ({
-      typeName: key, // mantém o camelCase original
-      label: key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()) // bonito no rótulo
-    }));
+    const typeNames = Object.keys(data).map((key) => {
+      const camelKey = toCamelCase(key);
+      return {
+        typeName: camelKey,
+        label: toLabel(key)
+      };
+    });
 
     return {
       statusCode: 200,

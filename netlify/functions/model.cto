@@ -64,7 +64,31 @@
           "name": "clienteId",
           "$class": "concerto.metamodel@1.0.0.IdentifiedBy"
         },
-        "decorators": [],
+        "decorators": [
+          {
+            "$class": "concerto.metamodel@1.0.0.IsRequiredForVerifyingType"
+          },
+          {
+            "name": "score",
+            "$class": "concerto.metamodel@1.0.0.IsRequiredForVerifyingType"
+          },
+          {
+            "name": "status",
+            "$class": "concerto.metamodel@1.0.0.IsRequiredForVerifyingType"
+          },
+          {
+            "name": "dataConsulta",
+            "$class": "concerto.metamodel@1.0.0.IsRequiredForVerifyingType"
+          },
+          {
+            "name": "endereco",
+            "$class": "concerto.metamodel@1.0.0.IsRequiredForVerifyingType"
+          },
+          {
+            "name": "planoAtual",
+            "$class": "concerto.metamodel@1.0.0.IsRequiredForVerifyingType"
+          }
+        ],
         "$class": "concerto.metamodel@1.0.0.ConceptDeclaration"
       }
     ]

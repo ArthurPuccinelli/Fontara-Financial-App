@@ -15,24 +15,30 @@ exports.handler = async () => {
 
     const outputProperties = Object.entries(data).map(([key, value]) => {
       let propertyType;
+      const camelKey = toCamelCase(key);
+
       if (typeof value === 'string') {
-        if (toCamelCase(key) === 'dataConsulta') {
-          propertyType = 'concerto.metamodel@1.0.0.DateTimeProperty';
-        } else {
-          propertyType = 'concerto.metamodel@1.0.0.StringProperty';
-        }
+        propertyType = (camelKey === 'dataConsulta')
+          ? 'concerto.metamodel@1.0.0.DateTimeProperty'
+          : 'concerto.metamodel@1.0.0.StringProperty';
       } else if (typeof value === 'number') {
         propertyType = 'concerto.metamodel@1.0.0.IntegerProperty';
+      } else {
+        return null; // Ignora tipos desconhecidos
       }
 
-      // Ignora campos com tipo desconhecido
-      if (!propertyType) return null;
-
       return {
-        name: toCamelCase(key),
+        name: camelKey,
         isArray: false,
         isOptional: false,
-        $class: propertyType
+        $class: propertyType,
+        decorators: [
+          {
+            $class: "concerto.metamodel@1.0.0.Decorator",
+            name: "IsRequiredForVerifyingType",
+            arguments: []
+          }
+        ]
       };
     }).filter(Boolean);
 

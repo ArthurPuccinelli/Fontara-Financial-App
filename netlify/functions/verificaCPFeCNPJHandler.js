@@ -10,8 +10,6 @@ exports.handler = async (event) => {
 
     const data = await verificaCPFeCNPJ(clienteId);
 
-    console.log("Dados retornados pelo verificaCPFeCNPJ:", data);
-
     return {
       statusCode: 200,
       body: JSON.stringify(data),

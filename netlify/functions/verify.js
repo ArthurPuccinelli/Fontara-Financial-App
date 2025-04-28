@@ -60,7 +60,7 @@ exports.handler = async function (event) {
 
     const { typeName, data } = body;
 
-    if (typeName !== 'VerificaCPFeCNPJ') {  // <- aqui ajustei para o nome correto!
+    if (typeName !== 'VerificacaoDeCliente') { 
       return {
         statusCode: 400,
         body: JSON.stringify({ message: 'typeName inválido.' })

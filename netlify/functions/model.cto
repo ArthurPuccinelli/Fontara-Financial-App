@@ -1,99 +1,172 @@
 {
-  "payload": {
     "declarations": [
-      {
-        "name": "VerificaCPFeCNPJInput",
-        "isAbstract": false,
-        "properties": [
-          {
-            "name": "clienteId",
-            "isArray": false,
-            "isOptional": false,
-            "$class": "concerto.metamodel@1.0.0.StringProperty",
+        {
+            "name": "VerificaCPFeCNPJInput",
+            "isAbstract": false,
+            "properties": [
+                {
+                    "name": "clienteId",
+                    "isArray": false,
+                    "isOptional": false,
+                    "$class": "concerto.metamodel@1.0.0.StringProperty",
+                    "decorators": [
+                        {
+                            "$class": "concerto.metamodel@1.0.0.Decorator",
+                            "name": "IsRequiredForVerifyingType"
+                        },
+                        {
+                            "$class": "concerto.metamodel@1.0.0.Decorator",
+                            "name": "Term",
+                            "arguments": [
+                                {
+                                    "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                                    "value": "Client ID"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "identified": {
+                "name": "clienteId",
+                "$class": "concerto.metamodel@1.0.0.IdentifiedBy"
+            },
             "decorators": [
-              {
-                "$class": "concerto.metamodel@1.0.0.Decorator",
-                "name": "IsRequiredForVerifyingType"
-              }
-            ]
-          }
-        ],
-        "identified": {
-          "name": "clienteId",
-          "$class": "concerto.metamodel@1.0.0.IdentifiedBy"
+                {
+                    "$class": "concerto.metamodel@1.0.0.Decorator",
+                    "name": "VerifiableType"
+                }
+            ],
+            "$class": "concerto.metamodel@1.0.0.ConceptDeclaration"
         },
-        "decorators": [
-          {
-            "$class": "concerto.metamodel@1.0.0.Decorator",
-            "name": "VerifiableType"
-          }
-        ],
-        "$class": "concerto.metamodel@1.0.0.ConceptDeclaration"
-      },
-      {
-        "name": "VerificaCPFeCNPJOutput",
-        "isAbstract": false,
-        "properties": [
-          {
-            "name": "clienteId",
-            "isArray": false,
-            "isOptional": false,
-            "$class": "concerto.metamodel@1.0.0.StringProperty",
+        {
+            "name": "VerificaCPFeCNPJOutput",
+            "isAbstract": false,
+            "properties": [
+                {
+                    "name": "clienteId",
+                    "isArray": false,
+                    "isOptional": false,
+                    "$class": "concerto.metamodel@1.0.0.StringProperty",
+                    "decorators": [
+                        {
+                            "$class": "concerto.metamodel@1.0.0.Decorator",
+                            "name": "IsRequiredForVerifyingType"
+                        },
+                        {
+                            "$class": "concerto.metamodel@1.0.0.Decorator",
+                            "name": "Term",
+                            "arguments": [
+                                {
+                                    "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                                    "value": "Client ID"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "score",
+                    "isArray": false,
+                    "isOptional": true,
+                    "$class": "concerto.metamodel@1.0.0.IntegerProperty",
+                    "decorators": [
+                        {
+                            "$class": "concerto.metamodel@1.0.0.Decorator",
+                            "name": "Term",
+                            "arguments": [
+                                {
+                                    "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                                    "value": "Score"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "status",
+                    "isArray": false,
+                    "isOptional": true,
+                    "$class": "concerto.metamodel@1.0.0.StringProperty",
+                    "decorators": [
+                        {
+                            "$class": "concerto.metamodel@1.0.0.Decorator",
+                            "name": "Term",
+                            "arguments": [
+                                {
+                                    "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                                    "value": "Status"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "dataConsulta",
+                    "isArray": false,
+                    "isOptional": true,
+                    "$class": "concerto.metamodel@1.0.0.DateTimeProperty",
+                    "decorators": [
+                        {
+                            "$class": "concerto.metamodel@1.0.0.Decorator",
+                            "name": "Term",
+                            "arguments": [
+                                {
+                                    "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                                    "value": "Consultation Date"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "endereco",
+                    "isArray": false,
+                    "isOptional": true,
+                    "$class": "concerto.metamodel@1.0.0.StringProperty",
+                    "decorators": [
+                        {
+                            "$class": "concerto.metamodel@1.0.0.Decorator",
+                            "name": "Term",
+                            "arguments": [
+                                {
+                                    "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                                    "value": "Address"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "planoAtual",
+                    "isArray": false,
+                    "isOptional": true,
+                    "$class": "concerto.metamodel@1.0.0.StringProperty",
+                    "decorators": [
+                        {
+                            "$class": "concerto.metamodel@1.0.0.Decorator",
+                            "name": "Term",
+                            "arguments": [
+                                {
+                                    "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                                    "value": "Current Plan"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "identified": {
+                "name": "clienteId",
+                "$class": "concerto.metamodel@1.0.0.IdentifiedBy"
+            },
             "decorators": [
-              {
-                "$class": "concerto.metamodel@1.0.0.Decorator",
-                "name": "IsRequiredForVerifyingType"
-              }
-            ]
-          },
-          {
-            "name": "score",
-            "isArray": false,
-            "isOptional": true,
-            "$class": "concerto.metamodel@1.0.0.IntegerProperty",
-            "decorators": []
-          },
-          {
-            "name": "status",
-            "isArray": false,
-            "isOptional": true,
-            "$class": "concerto.metamodel@1.0.0.StringProperty",
-            "decorators": []
-          },
-          {
-            "name": "dataConsulta",
-            "isArray": false,
-            "isOptional": true,
-            "$class": "concerto.metamodel@1.0.0.DateTimeProperty",
-            "decorators": []
-          },
-          {
-            "name": "endereco",
-            "isArray": false,
-            "isOptional": true,
-            "$class": "concerto.metamodel@1.0.0.StringProperty",
-            "decorators": []
-          },
-          {
-            "name": "planoAtual",
-            "isArray": false,
-            "isOptional": true,
-            "$class": "concerto.metamodel@1.0.0.StringProperty",
-            "decorators": []
-          }
-        ],
-        "identified": {
-          "name": "clienteId",
-          "$class": "concerto.metamodel@1.0.0.IdentifiedBy"
-        },
-        "decorators": [
-          {
-            "$class": "concerto.metamodel@1.0.0.Decorator",
-            "name": "VerifiableType"
-          }
-        ],
-        "$class": "concerto.metamodel@1.0.0.ConceptDeclaration"
-      }
+                {
+                    "$class": "concerto.metamodel@1.0.0.Decorator",
+                    "name": "VerifiableType"
+                }
+            ],
+            "$class": "concerto.metamodel@1.0.0.ConceptDeclaration"
+        }
     ]
-  }
 }

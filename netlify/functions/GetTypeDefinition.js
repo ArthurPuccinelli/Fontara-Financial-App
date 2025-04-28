@@ -1,28 +1,77 @@
-// netlify/functions/GetTypeDefinition.js
-
-// Importa módulos nativos do Node.js
-const fs = require('fs');
-const path = require('path');
-
 exports.handler = async (event) => {
   try {
-    // 📄 Define o caminho absoluto para o arquivo model.cto
-    const modelPath = path.join(__dirname, './model.cto');
+    const definitions = [
+      {
+        "$class": "concerto.metamodel@1.0.0.ConceptDeclaration",
+        "name": "VerificaCPFeCNPJInput",
+        "decorators": [
+          {
+            "$class": "concerto.metamodel@1.0.0.Decorator",
+            "name": "VerifiableType",
+            "arguments": []
+          }
+        ],
+        "properties": [
+          {
+            "$class": "concerto.metamodel@1.0.0.StringProperty",
+            "name": "clienteId",
+            "decorators": [
+              {
+                "$class": "concerto.metamodel@1.0.0.Decorator",
+                "name": "IsRequiredForVerifyingType",
+                "arguments": []
+              }
+            ]
+          }
+        ],
+        "identifiedBy": "clienteId"
+      },
+      {
+        "$class": "concerto.metamodel@1.0.0.ConceptDeclaration",
+        "name": "VerificaCPFeCNPJOutput",
+        "decorators": [
+          {
+            "$class": "concerto.metamodel@1.0.0.Decorator",
+            "name": "VerifiableType",
+            "arguments": []
+          }
+        ],
+        "properties": [
+          {
+            "$class": "concerto.metamodel@1.0.0.StringProperty",
+            "name": "clienteId",
+            "decorators": []
+          },
+          {
+            "$class": "concerto.metamodel@1.0.0.IntegerProperty",
+            "name": "score",
+            "decorators": []
+          },
+          {
+            "$class": "concerto.metamodel@1.0.0.StringProperty",
+            "name": "status",
+            "decorators": []
+          },
+          {
+            "$class": "concerto.metamodel@1.0.0.DateTimeProperty",
+            "name": "dataConsulta",
+            "decorators": []
+          },
+          {
+            "$class": "concerto.metamodel@1.0.0.StringProperty",
+            "name": "endereco",
+            "decorators": []
+          },
+          {
+            "$class": "concerto.metamodel@1.0.0.StringProperty",
+            "name": "planoAtual",
+            "decorators": []
+          }
+        ],
+        "identifiedBy": "clienteId"
+      }
+    ];
 
-    // 📚 Lê o conteúdo do model.cto como string
-    const modelContent = fs.readFileSync(modelPath, 'utf-8');
-
-    // 🔎 Faz o parse do conteúdo do model.cto (esperado em formato JSON)
-    const modelJson = JSON.parse(modelContent);
-
-    // ✅ Valida que o objeto tem a propriedade 'declarations' e que é um array
-    if (!modelJson.declarations || !Array.isArray(modelJson.declarations)) {
-      throw new Error("Formato inválido no model.cto: chave 'declarations' ausente ou incorreta.");
-    }
-
-    const definitions = modelJson.declarations;
-
-    // 🚀 Retorna as definições carregadas diretamente do arquivo
     return {
       statusCode: 200,
       body: JSON.stringify({ declarations: definitions })

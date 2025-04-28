@@ -1,3 +1,22 @@
+const jwt = require('jsonwebtoken');
+const jwksClient = require('jwks-rsa');
+const { verificaCPFeCNPJ } = require('./verificaCPFeCNPJ');
+
+const client = jwksClient({
+  jwksUri: 'https://fontara.us.auth0.com/.well-known/jwks.json'
+});
+
+function getKey(header, callback) {
+  client.getSigningKey(header.kid, function (err, key) {
+    if (err) {
+      callback(err, null);
+    } else {
+      const signingKey = key.publicKey || key.rsaPublicKey;
+      callback(null, signingKey);
+    }
+  });
+}
+
 exports.handler = async function (event) {
   console.log('Iniciando verificação de token...');
 
@@ -59,11 +78,11 @@ exports.handler = async function (event) {
 
     const resultado = {
       clienteId: String(resultadoRaw.clienteId ?? data.clienteId),
-      score: parseInt(resultadoRaw.score) || 0,
-      status: String(resultadoRaw.status || ''),
+      score: parseInt(resultadoRaw.score) || null,
+      status: String(resultadoRaw.status || null),
       dataConsulta: new Date(resultadoRaw.dataConsulta || Date.now()).toISOString(),
-      endereco: String(resultadoRaw.endereco || ''),
-      planoAtual: String(resultadoRaw.planoAtual || '')
+      endereco: String(resultadoRaw.endereco || null),
+      planoAtual: String(resultadoRaw.planoAtual || null)
     };
 
     const responseBody = {

@@ -32,31 +32,31 @@ exports.handler = async (event) => {
           {
             name: "score",
             isArray: false,
-            isOptional: false,
+            isOptional: true,  // Atualizado para opcional
             $class: "concerto.metamodel@1.0.0.IntegerProperty"
           },
           {
             name: "status",
             isArray: false,
-            isOptional: false,
+            isOptional: true,  // Atualizado para opcional
             $class: "concerto.metamodel@1.0.0.StringProperty"
           },
           {
             name: "dataConsulta",
             isArray: false,
-            isOptional: false,
+            isOptional: true,  // Atualizado para opcional
             $class: "concerto.metamodel@1.0.0.DateTimeProperty"
           },
           {
             name: "endereco",
             isArray: false,
-            isOptional: false,
+            isOptional: true,  // Atualizado para opcional
             $class: "concerto.metamodel@1.0.0.StringProperty"
           },
           {
             name: "planoAtual",
             isArray: false,
-            isOptional: false,
+            isOptional: true,  // Atualizado para opcional
             $class: "concerto.metamodel@1.0.0.StringProperty"
           }
         ],

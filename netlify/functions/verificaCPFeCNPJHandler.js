@@ -2,7 +2,7 @@ const { verificaCPFeCNPJ } = require('./verificaCPFeCNPJ');
 
 exports.handler = async (event) => {
   try {
-    let clienteId = event.queryStringParameters?.cliente_id || '22222222222';
+    const clienteId = event.queryStringParameters?.cliente_id;
 
     if (!clienteId || isNaN(clienteId)) {
       throw new Error('cliente_id inválido.');

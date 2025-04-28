@@ -60,7 +60,7 @@ exports.handler = async function (event) {
 
     const { typeName, data } = body;
 
-    if (typeName !== 'VerificaCPFeCNPJInput') {
+    if (typeName !== 'VerificaCPFeCNPJ') {  // <- aqui ajustei para o nome correto!
       return {
         statusCode: 400,
         body: JSON.stringify({ message: 'typeName inválido.' })
@@ -78,11 +78,11 @@ exports.handler = async function (event) {
 
     const resultado = {
       clienteId: String(resultadoRaw.clienteId ?? data.clienteId),
-      score: parseInt(resultadoRaw.score) || null,
-      status: String(resultadoRaw.status || null),
-      dataConsulta: new Date(resultadoRaw.dataConsulta || Date.now()).toISOString(),
-      endereco: String(resultadoRaw.endereco || null),
-      planoAtual: String(resultadoRaw.planoAtual || null)
+      score: resultadoRaw.score !== undefined ? parseInt(resultadoRaw.score, 10) : null,
+      status: resultadoRaw.status ?? null,
+      dataConsulta: resultadoRaw.dataConsulta ? new Date(resultadoRaw.dataConsulta).toISOString() : null,
+      endereco: resultadoRaw.endereco ?? null,
+      planoAtual: resultadoRaw.planoAtual ?? null
     };
 
     const responseBody = {

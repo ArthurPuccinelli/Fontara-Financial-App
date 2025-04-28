@@ -27,9 +27,13 @@ exports.handler = async (event) => {
             isOptional: true,
             $class: "concerto.metamodel@1.0.0.IntegerProperty",
             decorators: [
-              { $class: "concerto.metamodel@1.0.0.Decorator", name: "Term", arguments: [
-                { $class: "concerto.metamodel@1.0.0.DecoratorString", value: "Score" }
-              ]}
+              {
+                $class: "concerto.metamodel@1.0.0.Decorator",
+                name: "Term",
+                arguments: [
+                  { $class: "concerto.metamodel@1.0.0.DecoratorString", value: "Score" }
+                ]
+              }
             ]
           },
           {
@@ -38,9 +42,13 @@ exports.handler = async (event) => {
             isOptional: true,
             $class: "concerto.metamodel@1.0.0.StringProperty",
             decorators: [
-              { $class: "concerto.metamodel@1.0.0.Decorator", name: "Term", arguments: [
-                { $class: "concerto.metamodel@1.0.0.DecoratorString", value: "Status" }
-              ]}
+              {
+                $class: "concerto.metamodel@1.0.0.Decorator",
+                name: "Term",
+                arguments: [
+                  { $class: "concerto.metamodel@1.0.0.DecoratorString", value: "Status" }
+                ]
+              }
             ]
           },
           {
@@ -49,9 +57,13 @@ exports.handler = async (event) => {
             isOptional: true,
             $class: "concerto.metamodel@1.0.0.DateTimeProperty",
             decorators: [
-              { $class: "concerto.metamodel@1.0.0.Decorator", name: "Term", arguments: [
-                { $class: "concerto.metamodel@1.0.0.DecoratorString", value: "Consultation Date" }
-              ]}
+              {
+                $class: "concerto.metamodel@1.0.0.Decorator",
+                name: "Term",
+                arguments: [
+                  { $class: "concerto.metamodel@1.0.0.DecoratorString", value: "Consultation Date" }
+                ]
+              }
             ]
           },
           {
@@ -60,9 +72,13 @@ exports.handler = async (event) => {
             isOptional: true,
             $class: "concerto.metamodel@1.0.0.StringProperty",
             decorators: [
-              { $class: "concerto.metamodel@1.0.0.Decorator", name: "Term", arguments: [
-                { $class: "concerto.metamodel@1.0.0.DecoratorString", value: "Address" }
-              ]}
+              {
+                $class: "concerto.metamodel@1.0.0.Decorator",
+                name: "Term",
+                arguments: [
+                  { $class: "concerto.metamodel@1.0.0.DecoratorString", value: "Address" }
+                ]
+              }
             ]
           },
           {
@@ -71,9 +87,13 @@ exports.handler = async (event) => {
             isOptional: true,
             $class: "concerto.metamodel@1.0.0.StringProperty",
             decorators: [
-              { $class: "concerto.metamodel@1.0.0.Decorator", name: "Term", arguments: [
-                { $class: "concerto.metamodel@1.0.0.DecoratorString", value: "Current Plan" }
-              ]}
+              {
+                $class: "concerto.metamodel@1.0.0.Decorator",
+                name: "Term",
+                arguments: [
+                  { $class: "concerto.metamodel@1.0.0.DecoratorString", value: "Current Plan" }
+                ]
+              }
             ]
           }
         ],

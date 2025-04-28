@@ -49,62 +49,37 @@
           {
             "name": "score",
             "isArray": false,
-            "isOptional": false,
+            "isOptional": true,
             "$class": "concerto.metamodel@1.0.0.IntegerProperty",
-            "decorators": [
-              {
-                "$class": "concerto.metamodel@1.0.0.Decorator",
-                "name": "IsRequiredForVerifyingType"
-              }
-            ]
+            "decorators": []
           },
           {
             "name": "status",
             "isArray": false,
-            "isOptional": false,
+            "isOptional": true,
             "$class": "concerto.metamodel@1.0.0.StringProperty",
-            "decorators": [
-              {
-                "$class": "concerto.metamodel@1.0.0.Decorator",
-                "name": "IsRequiredForVerifyingType"
-              }
-            ]
+            "decorators": []
           },
           {
             "name": "dataConsulta",
             "isArray": false,
-            "isOptional": false,
+            "isOptional": true,
             "$class": "concerto.metamodel@1.0.0.DateTimeProperty",
-            "decorators": [
-              {
-                "$class": "concerto.metamodel@1.0.0.Decorator",
-                "name": "IsRequiredForVerifyingType"
-              }
-            ]
+            "decorators": []
           },
           {
             "name": "endereco",
             "isArray": false,
-            "isOptional": false,
+            "isOptional": true,
             "$class": "concerto.metamodel@1.0.0.StringProperty",
-            "decorators": [
-              {
-                "$class": "concerto.metamodel@1.0.0.Decorator",
-                "name": "IsRequiredForVerifyingType"
-              }
-            ]
+            "decorators": []
           },
           {
             "name": "planoAtual",
             "isArray": false,
-            "isOptional": false,
+            "isOptional": true,
             "$class": "concerto.metamodel@1.0.0.StringProperty",
-            "decorators": [
-              {
-                "$class": "concerto.metamodel@1.0.0.Decorator",
-                "name": "IsRequiredForVerifyingType"
-              }
-            ]
+            "decorators": []
           }
         ],
         "identified": {

@@ -1,70 +1,141 @@
-// Verifica se o evento tem body e converte-o corretamente
-async function handler(event) {
-  let clienteId;
+const jwt = require('jsonwebtoken');
+const jwksClient = require('jwks-rsa');
+const { verificaCPFeCNPJ } = require('./verificaCPFeCNPJ');
 
-  // Se o corpo da requisição for uma string, tenta fazer o parse
-  if (event.body) {
-    try {
-      const parsedBody = JSON.parse(event.body);
-      clienteId = parsedBody.clienteId;
-    } catch (error) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "Erro ao processar o corpo da requisição" })
-      };
+const client = jwksClient({
+  jwksUri: 'https://fontara.us.auth0.com/.well-known/jwks.json'
+});
+
+function getKey(header, callback) {
+  client.getSigningKey(header.kid, function (err, key) {
+    if (err) {
+      callback(err, null);
+    } else {
+      const signingKey = key.publicKey || key.rsaPublicKey;
+      callback(null, signingKey);
     }
-  }
-
-  // Verifica se o clienteId foi passado corretamente
-  if (!clienteId) {
-    throw new Error('O campo clienteId é obrigatório.');
-  }
-
-  // A lógica do cálculo do score e dados continua aqui
-  const score = Math.floor(Math.random() * (950 - 300 + 1)) + 300;
-  const status = score >= 700 ? "Excelente" : score >= 500 ? "Bom" : score >= 300 ? "Regular" : "Ruim";
-  const data_consulta = new Date().toISOString();
-  const enderecos = [
-    "Rua das Palmeiras, 123 - São Paulo, SP",
-    "Avenida Central, 456 - Belo Horizonte, MG",
-    "Travessa das Acácias, 789 - Curitiba, PR",
-    "Alameda dos Anjos, 101 - Recife, PE"
-  ];
-  const endereco = enderecos[parseInt(clienteId) % enderecos.length] || enderecos[0];
-  const plano_atual = ["BÁSICO", "INTERMEDIÁRIO", "PREMIUM"][Math.floor(Math.random() * 3)];
-
-  const responseData = {
-    clienteId: clienteId,
-    score,
-    status,
-    dataConsulta: data_consulta,
-    endereco,
-    planoAtual: plano_atual
-  };
-
-  // Gerando sugestões para autofill
-  const suggestions = [{
-    clienteId: responseData.clienteId,
-    score: responseData.score,
-    status: responseData.status,
-    dataConsulta: responseData.dataConsulta,
-    endereco: responseData.endereco,
-    planoAtual: responseData.planoAtual
-  }];
-
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      verified: true,
-      verifyResponseMessage: "Consulta realizada com sucesso.",
-      verificationResultCode: "SUCCESS",
-      verificationResultDescription: "Verificação concluída com sucesso para o cliente.",
-      suggestions, // Incluir as sugestões para autofill
-      passthroughResponseData: {
-        additionalData: "Informações extras podem ser passadas aqui."
-      }
-    })
-  };
+  });
 }
 
-module.exports = { handler };
+// Função auxiliar para converter snake_case → camelCase
+function toCamelCase(str) {
+  return str.replace(/_([a-z])/g, (_, g) => g.toUpperCase());
+}
+
+exports.handler = async function (event) {
+  console.log('Iniciando verificação de token...');
+
+  const authHeader = event.headers.authorization || '';
+  const token = authHeader.replace('Bearer ', '');
+
+  if (!token) {
+    console.error('Erro: Token não informado.');
+    return {
+      statusCode: 401,
+      body: JSON.stringify({ message: 'Token não informado.' })
+    };
+  }
+
+  try {
+    console.log('Verificando o token...');
+
+    const decoded = await new Promise((resolve, reject) => {
+      jwt.verify(
+        token,
+        getKey,
+        {
+          audience: 'https://fontarafinancial.netlify.app',
+          issuer: 'https://fontara.us.auth0.com/',
+          algorithms: ['RS256']
+        },
+        (err, decoded) => {
+          if (err) {
+            console.error('Erro ao verificar o token:', err);
+            reject(err);
+          } else {
+            console.log('Token verificado com sucesso:', decoded);
+            resolve(decoded);
+          }
+        }
+      );
+    });
+
+    console.log('Escopos encontrados no token:', decoded.scope?.split(' '));
+
+    const body = JSON.parse(event.body || '{}');
+    console.log('Corpo da requisição:', body);
+
+    const { typeName, idempotencyKey, data } = body;
+
+    if (typeName !== 'VerificaCPFeCNPJInput') {
+      console.error('typeName inválido:', typeName);
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'typeName inválido.' })
+      };
+    }
+
+    if (!data?.clienteId) {
+      console.error('Erro: clienteId ausente ou inválido.');
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'O campo clienteId é obrigatório.' })
+      };
+    }
+
+    console.log('Chamando verificaCPFeCNPJ com clienteId:', data.clienteId);
+
+    const resultadoRaw = await verificaCPFeCNPJ(data.clienteId);
+    console.log('Resultado bruto de verificaCPFeCNPJ:', resultadoRaw);
+
+    // Força os tipos corretos no formato esperado pelo schema Concerto
+    const resultado = {
+      clienteId: String(resultadoRaw.clienteId ?? data.clienteId),
+      score: parseInt(resultadoRaw.score) || 0,
+      status: String(resultadoRaw.status || ''),
+      dataConsulta: new Date(resultadoRaw.dataConsulta || Date.now()).toISOString(),
+      endereco: String(resultadoRaw.endereco || ''),
+      planoAtual: String(resultadoRaw.planoAtual || '')
+    };
+
+    // Estrutura da resposta conforme o formato esperado pela ação "Verify"
+    const responseBody = {
+      verified: true, // Indica que a verificação foi bem-sucedida
+      verifyResponseMessage: "Consulta realizada com sucesso.",
+      verificationResultCode: "SUCCESS", // Código de sucesso
+      verificationResultDescription: "Verificação concluída com sucesso para o cliente.",
+      suggestions: [
+        {
+          clienteId: resultado.clienteId,
+          score: resultado.score,
+          status: resultado.status,
+          dataConsulta: resultado.dataConsulta,
+          endereco: resultado.endereco,
+          planoAtual: resultado.planoAtual
+        }
+      ],
+      passthroughResponseData: {
+        // Aqui você pode incluir dados adicionais, caso necessário.
+        // Exemplo: Dados de auditoria ou metadados
+        additionalData: "Informações extras podem ser passadas aqui."
+      }
+    };
+
+    console.log('🧪 Corpo da resposta final:', JSON.stringify(responseBody, null, 2));
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(responseBody)
+    };
+
+  } catch (error) {
+    console.error('Erro na verificação:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        message: 'Erro interno na verificação.',
+        error: error.message
+      })
+    };
+  }
+};

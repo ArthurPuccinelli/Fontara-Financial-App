@@ -1,44 +1,5 @@
-const fetch = require('node-fetch');
-
-// Função auxiliar para converter snake_case → camelCase
-function toCamelCase(str) {
-  return str.replace(/_([a-z])/g, (_, g) => g.toUpperCase());
-}
-
 exports.handler = async (event) => {
   try {
-    const clienteId = event.queryStringParameters?.cliente_id;
-
-    if (!clienteId || isNaN(clienteId)) {
-      throw new Error('cliente_id inválido.');
-    }
-
-    const response = await fetch(`https://fontarafinancial.netlify.app/.netlify/functions/verificaCPFeCNPJHandler?cliente_id=${clienteId}`);
-    const data = await response.json();
-    console.log("Dados retornados pela API:", data);
-
-    const outputProperties = Object.entries(data).map(([key, value]) => {
-      let propertyType;
-      if (typeof value === 'string') {
-        if (toCamelCase(key) === 'dataConsulta') {
-          propertyType = 'concerto.metamodel@1.0.0.DateTimeProperty';
-        } else {
-          propertyType = 'concerto.metamodel@1.0.0.StringProperty';
-        }
-      } else if (typeof value === 'number') {
-        propertyType = 'concerto.metamodel@1.0.0.IntegerProperty';
-      }
-
-      if (!propertyType) return null;
-
-      return {
-        name: toCamelCase(key),
-        isArray: false,
-        isOptional: false,
-        $class: propertyType
-      };
-    }).filter(Boolean);
-
     const definitions = [
       {
         name: "VerificaCPFeCNPJInput",
@@ -61,7 +22,44 @@ exports.handler = async (event) => {
       {
         name: "VerificaCPFeCNPJOutput",
         isAbstract: false,
-        properties: outputProperties,
+        properties: [
+          {
+            name: "clienteId",
+            isArray: false,
+            isOptional: false,
+            $class: "concerto.metamodel@1.0.0.StringProperty"
+          },
+          {
+            name: "score",
+            isArray: false,
+            isOptional: false,
+            $class: "concerto.metamodel@1.0.0.IntegerProperty"
+          },
+          {
+            name: "status",
+            isArray: false,
+            isOptional: false,
+            $class: "concerto.metamodel@1.0.0.StringProperty"
+          },
+          {
+            name: "dataConsulta",
+            isArray: false,
+            isOptional: false,
+            $class: "concerto.metamodel@1.0.0.DateTimeProperty"
+          },
+          {
+            name: "endereco",
+            isArray: false,
+            isOptional: false,
+            $class: "concerto.metamodel@1.0.0.StringProperty"
+          },
+          {
+            name: "planoAtual",
+            isArray: false,
+            isOptional: false,
+            $class: "concerto.metamodel@1.0.0.StringProperty"
+          }
+        ],
         identified: {
           name: "clienteId",
           $class: "concerto.metamodel@1.0.0.IdentifiedBy"
@@ -80,7 +78,7 @@ exports.handler = async (event) => {
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: "Erro ao buscar dados ou gerar definições",
+        error: "Erro ao gerar definições",
         details: error.message
       })
     };

@@ -5,9 +5,13 @@ function toCamelCase(str) {
   return str.replace(/_([a-z])/g, (_, g) => g.toUpperCase());
 }
 
-exports.handler = async () => {
+exports.handler = async (event) => {
   try {
-    const clienteId = '22222222222';
+    const clienteId = event.queryStringParameters?.cliente_id;
+
+    if (!clienteId || isNaN(clienteId)) {
+      throw new Error('cliente_id inválido.');
+    }
 
     const response = await fetch(`https://fontarafinancial.netlify.app/.netlify/functions/verificaCPFeCNPJHandler?cliente_id=${clienteId}`);
     const data = await response.json();

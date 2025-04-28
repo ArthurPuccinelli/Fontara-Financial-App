@@ -1,7 +1,7 @@
 {
   "declarations": [
     {
-      "name": "VerificaCPFeCNPJ",
+      "name": "VerificacaoDeCliente",
       "isAbstract": false,
       "properties": [
         {
@@ -20,7 +20,7 @@
               "arguments": [
                 {
                   "$class": "concerto.metamodel@1.0.0.DecoratorString",
-                  "value": "Client ID"
+                  "value": "Informe o CPF ou CNPJ"
                 }
               ]
             }
@@ -74,7 +74,7 @@
               "arguments": [
                 {
                   "$class": "concerto.metamodel@1.0.0.DecoratorString",
-                  "value": "Consultation Date"
+                  "value": "Data da consulta"
                 }
               ]
             }
@@ -92,7 +92,7 @@
               "arguments": [
                 {
                   "$class": "concerto.metamodel@1.0.0.DecoratorString",
-                  "value": "Address"
+                  "value": "Endereço"
                 }
               ]
             }
@@ -110,7 +110,7 @@
               "arguments": [
                 {
                   "$class": "concerto.metamodel@1.0.0.DecoratorString",
-                  "value": "Current Plan"
+                  "value": "Plano atual"
                 }
               ]
             }
@@ -125,6 +125,16 @@
         {
           "$class": "concerto.metamodel@1.0.0.Decorator",
           "name": "VerifiableType"
+        },
+        {
+          "$class": "concerto.metamodel@1.0.0.Decorator",
+          "name": "Term",
+          "arguments": [
+            {
+              "$class": "concerto.metamodel@1.0.0.DecoratorString",
+              "value": "Verificação de cliente"
+            }
+          ]
         }
       ],
       "$class": "concerto.metamodel@1.0.0.ConceptDeclaration"

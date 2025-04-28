@@ -1,18 +1,6 @@
-const axios = require('axios');
-
 exports.handler = async function(event, context) {
   try {
-    // Pega o clienteId do querystring
-    const clienteId = event.queryStringParameters?.cliente_id;
-
-    if (!clienteId) {
-      throw new Error('cliente_id não informado');
-    }
-
-    // Aqui poderia ter uma chamada real à API se precisar
-    // Exemplo omitido porque você disse que o ID vem do usuário
-    // Então, vamos devolver campos fixos mesmo.
-
+    // Mesmo se o cliente_id não for passado, agora não vai quebrar mais
     const typeNames = [
       { typeName: "clienteId", label: "Cliente Id" },
       { typeName: "score", label: "Score" },

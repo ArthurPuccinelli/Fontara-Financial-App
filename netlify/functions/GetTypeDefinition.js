@@ -58,7 +58,7 @@ exports.handler = async (event) => {
                 "arguments": [
                   {
                     "$class": "concerto.metamodel@1.0.0.DecoratorString",
-                    "value": "Score"
+                    "value": "Pontuação de crédito"
                   }
                 ]
               }

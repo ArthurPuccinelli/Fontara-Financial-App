@@ -7,7 +7,7 @@ const path = require('path');
 exports.handler = async (event) => {
   try {
     // 📄 Define o caminho absoluto para o arquivo model.cto
-    const modelPath = path.resolve(__dirname, 'model.cto');
+    const modelPath = path.join(__dirname, './model.cto');
 
     // 📚 Lê o conteúdo do model.cto como string
     const modelContent = fs.readFileSync(modelPath, 'utf-8');

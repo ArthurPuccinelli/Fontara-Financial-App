@@ -25,7 +25,6 @@ exports.handler = async () => {
         propertyType = 'concerto.metamodel@1.0.0.IntegerProperty';
       }
 
-      // Ignora campos com tipo desconhecido
       if (!propertyType) return null;
 
       return {
@@ -73,6 +72,7 @@ exports.handler = async () => {
       body: JSON.stringify({ declarations: definitions })
     };
   } catch (error) {
+    console.error('Erro no GetTypeDefinition:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({

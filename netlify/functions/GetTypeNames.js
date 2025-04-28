@@ -9,8 +9,8 @@ exports.handler = async function(event, context) {
     console.log("Resposta da API:", data);
 
     const typeNames = Object.keys(data).map((key) => ({
-      typeName: key, // mantém o camelCase original
-      label: key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()) // bonito no rótulo
+      typeName: key,
+      label: key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
     }));
 
     return {

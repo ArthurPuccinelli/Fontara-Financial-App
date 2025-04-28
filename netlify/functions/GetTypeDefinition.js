@@ -9,14 +9,35 @@ exports.handler = async (event) => {
             name: "clienteId",
             isArray: false,
             isOptional: false,
-            $class: "concerto.metamodel@1.0.0.StringProperty"
+            $class: "concerto.metamodel@1.0.0.StringProperty",
+            decorators: [
+              {
+                "$class": "concerto.metamodel@1.0.0.Decorator",
+                "name": "IsRequiredForVerifyingType"
+              },
+              {
+                "$class": "concerto.metamodel@1.0.0.Decorator",
+                "name": "Term",
+                "arguments": [
+                  {
+                    "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                    "value": "Client ID"
+                  }
+                ]
+              }
+            ]
           }
         ],
         identified: {
           name: "clienteId",
           $class: "concerto.metamodel@1.0.0.IdentifiedBy"
         },
-        decorators: [],
+        decorators: [
+          {
+            "$class": "concerto.metamodel@1.0.0.Decorator",
+            "name": "VerifiableType"
+          }
+        ],
         $class: "concerto.metamodel@1.0.0.ConceptDeclaration"
       },
       {
@@ -27,44 +48,125 @@ exports.handler = async (event) => {
             name: "clienteId",
             isArray: false,
             isOptional: false,
-            $class: "concerto.metamodel@1.0.0.StringProperty"
+            $class: "concerto.metamodel@1.0.0.StringProperty",
+            decorators: [
+              {
+                "$class": "concerto.metamodel@1.0.0.Decorator",
+                "name": "IsRequiredForVerifyingType"
+              },
+              {
+                "$class": "concerto.metamodel@1.0.0.Decorator",
+                "name": "Term",
+                "arguments": [
+                  {
+                    "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                    "value": "Client ID"
+                  }
+                ]
+              }
+            ]
           },
           {
             name: "score",
             isArray: false,
-            isOptional: true,  // Atualizado para opcional
-            $class: "concerto.metamodel@1.0.0.IntegerProperty"
+            isOptional: true,
+            $class: "concerto.metamodel@1.0.0.IntegerProperty",
+            decorators: [
+              {
+                "$class": "concerto.metamodel@1.0.0.Decorator",
+                "name": "Term",
+                "arguments": [
+                  {
+                    "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                    "value": "Score"
+                  }
+                ]
+              }
+            ]
           },
           {
             name: "status",
             isArray: false,
-            isOptional: true,  // Atualizado para opcional
-            $class: "concerto.metamodel@1.0.0.StringProperty"
+            isOptional: true,
+            $class: "concerto.metamodel@1.0.0.StringProperty",
+            decorators: [
+              {
+                "$class": "concerto.metamodel@1.0.0.Decorator",
+                "name": "Term",
+                "arguments": [
+                  {
+                    "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                    "value": "Status"
+                  }
+                ]
+              }
+            ]
           },
           {
             name: "dataConsulta",
             isArray: false,
-            isOptional: true,  // Atualizado para opcional
-            $class: "concerto.metamodel@1.0.0.DateTimeProperty"
+            isOptional: true,
+            $class: "concerto.metamodel@1.0.0.DateTimeProperty",
+            decorators: [
+              {
+                "$class": "concerto.metamodel@1.0.0.Decorator",
+                "name": "Term",
+                "arguments": [
+                  {
+                    "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                    "value": "Consultation Date"
+                  }
+                ]
+              }
+            ]
           },
           {
             name: "endereco",
             isArray: false,
-            isOptional: true,  // Atualizado para opcional
-            $class: "concerto.metamodel@1.0.0.StringProperty"
+            isOptional: true,
+            $class: "concerto.metamodel@1.0.0.StringProperty",
+            decorators: [
+              {
+                "$class": "concerto.metamodel@1.0.0.Decorator",
+                "name": "Term",
+                "arguments": [
+                  {
+                    "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                    "value": "Address"
+                  }
+                ]
+              }
+            ]
           },
           {
             name: "planoAtual",
             isArray: false,
-            isOptional: true,  // Atualizado para opcional
-            $class: "concerto.metamodel@1.0.0.StringProperty"
+            isOptional: true,
+            $class: "concerto.metamodel@1.0.0.StringProperty",
+            decorators: [
+              {
+                "$class": "concerto.metamodel@1.0.0.Decorator",
+                "name": "Term",
+                "arguments": [
+                  {
+                    "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                    "value": "Current Plan"
+                  }
+                ]
+              }
+            ]
           }
         ],
         identified: {
           name: "clienteId",
           $class: "concerto.metamodel@1.0.0.IdentifiedBy"
         },
-        decorators: [],
+        decorators: [
+          {
+            "$class": "concerto.metamodel@1.0.0.Decorator",
+            "name": "VerifiableType"
+          }
+        ],
         $class: "concerto.metamodel@1.0.0.ConceptDeclaration"
       }
     ];

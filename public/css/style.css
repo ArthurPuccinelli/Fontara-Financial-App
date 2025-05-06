@@ -1,0 +1,83 @@
+/* Estilos gerais */
+body {
+    font-family: 'Merriweather', serif; /* Uma fonte serifada elegante - ajuste conforme necessário */
+    margin: 0;
+    padding: 0;
+    background-color: #f8f8f8; /* Um fundo mais claro */
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    background-color: #fff;
+    padding: 20px 0;
+    border-bottom: 1px solid #eee;
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+.logo-icon {
+    color: #30d5c8; /* Verde claro/turquesa - cor primária */
+    font-size: 2em; /* Ajuste conforme necessário */
+    margin-right: 10px;
+}
+
+.logo-text {
+    color: #4f6f52; /* Verde escuro/acinzentado - cor secundária */
+    font-family: 'Merriweather', serif; /* Mantendo a fonte serifada */
+    font-size: 1.5em; /* Ajuste conforme necessário */
+    font-weight: bold;
+}
+
+.logo img {
+    height: 50px; /* Caso você queira usar a imagem da logo diretamente */
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+}
+
+nav ul li {
+    margin-left: 20px;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: #4f6f52; /* Cor secundária para os links */
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+nav ul li a:hover {
+    color: #30d5c8; /* Cor primária no hover */
+}
+
+.button {
+    display: inline-block;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.button.primary {
+    background-color: #30d5c8; /* Cor primária para botões primários

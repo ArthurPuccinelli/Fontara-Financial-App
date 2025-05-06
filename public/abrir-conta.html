@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abrir Conta - Fontara Financial</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo-container">
+                <span class="logo-icon">F</span> <span class="logo-text">fontara financial</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Página Inicial</a></li>
+                    <li><a href="login.html">Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section>
+            <h1>Simulação de Abertura de Conta</h1>
+            <p>Preencha o formulário abaixo para iniciar a simulação.</p>
+            <form id="form-abrir-conta">
+                <div>
+                    <label for="nome">Nome:</label>
+                    <input type="text" id="nome" name="nome" required>
+                </div>
+                <div>
+                    <label for="email">E-mail:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <button type="submit" class="button primary">Enviar Simulação</button>
+            </form>
+
+            <div id="mensagem-agradecimento" style="display: none; margin-top: 20px;">
+                <h2>Obrigado!</h2>
+                <p>Seu interesse em abrir uma conta foi registrado. Em breve entraremos em contato.</p>
+                <p><a href="index.html">Voltar para a página inicial</a></p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Fontara Financial. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('form-abrir-conta').addEventListener('submit', function(event) {
+            event.preventDefault();
+            document.getElementById('form-abrir-conta').style.display = 'none';
+            document.getElementById('mensagem-agradecimento').style.display = 'block';
+            console.log('Dados da simulação:', {
+                nome: document.getElementById('nome').value,
+                email: document.getElementById('email').value
+            });
+        });
+    </script>
+</body>
+</html>

@@ -103,7 +103,9 @@ hr{
     cursor: pointer;
     transition: background-color 0.5s, color 0.3s;
 }
-
+.content {
+    transition: max-height 0.4s ease, padding 0.4s ease;
+  }
 .header-links::after {
     content: '';
     position: absolute;

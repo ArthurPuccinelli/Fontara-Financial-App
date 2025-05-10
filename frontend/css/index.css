@@ -11,7 +11,7 @@
 
     
     --header-link-hover: #000000;
-    --header-link-hover-bg: #bababa36;
+    --header-link-hover-bg: #33e99d;
 
     --input-hover-bd-color: #232323;
     
@@ -40,8 +40,8 @@
     --btn-color: #000000;/* button color*/
     --btn-bg: #ffffff;/* button bg color*/
 
-    --header-link-hover: #ffffff;
-    --header-link-hover-bg: #8a8a8a5e;
+    --header-link-hover: #000000;
+    --header-link-hover-bg: #33e99d;
 
     --input-hover-bd-color: #f8f8f8;
 
@@ -104,8 +104,8 @@ hr{
     transition: background-color 0.5s, color 0.3s;
 }
 .content {
-    transition: max-height 0.4s ease, padding 0.4s ease;
-  }
+  transition: max-height 0.4s ease, padding 0.4s ease;
+}
 .header-links::after {
     content: '';
     position: absolute;

@@ -12,6 +12,10 @@
       rel="shortcut icon"
       href="../assets/logo/logo.png" type="image/x-icon"
     />
+    <meta property="og:title" content="Obrigado pela sua Confiança - Fontara Financial" />
+    <meta property="og:description" content="Sua contratação foi recebida com sucesso!" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://fontarafinancial.netlify.app/agradecimento/" />
     <link rel="stylesheet" href="../css/tailwind-build.css" /> <link rel="stylesheet" href="../css/index.css" /> <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"
@@ -21,7 +25,7 @@
     />
     <style>
       .thank-you-container {
-        min-height: 60vh;
+        min-height: 60vh; /* Garante que o conteúdo fique mais centralizado verticalmente */
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -194,41 +198,60 @@
       </div>
       <hr class="tw-mt-8" />
       <div class="tw-mt-2 tw-flex tw-gap-2 tw-flex-col tw-text-gray-700 dark:tw-text-gray-300 tw-place-items-center tw-text-[12px] tw-w-full tw-text-center tw-place-content-around">
-        <span>Copyright &#169; 2023-2025 Fontara Financial. Todos os direitos reservados.</span>
+        <span>Copyright &#169; 2023-<span id="current-year"></span> Fontara Financial. Todos os direitos reservados.</span>
         <span>Todas as marcas registradas e direitos autorais pertencem aos seus respectivos proprietários.</span>
       </div>
     </footer>
 
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-        try {
-          const pathParts = window.location.pathname.split('/');
-          // Pega o último segmento da URL, que esperamos ser o nome do cliente.
-          // Se o path for algo como "/agradecimento/Joao%20Silva", clientNameSegment será "Joao%20Silva"
-          // Se o path for "/Joao%20Silva" (caso de reescrita na raiz), também funcionaria.
-          const clientNameSegment = pathParts.pop() || pathParts.pop(); // Lida com trailing slash
+        // Atualiza o ano no rodapé
+        const yearSpan = document.getElementById('current-year');
+        if (yearSpan) {
+          yearSpan.textContent = new Date().getFullYear();
+        }
 
+        // Lógica para extrair e exibir o nome do cliente
+        try {
+          const pathName = window.location.pathname; // Ex: "/agradecimento/Arthur+Puccinelli"
+          let clientNameSegment = '';
+
+          // Esperamos que o path seja "/agradecimento/NOME"
+          // Remove a parte "/agradecimento/" se presente
+          const basePath = '/agradecimento/';
+          if (pathName.startsWith(basePath)) {
+            clientNameSegment = pathName.substring(basePath.length);
+          } else {
+            // Fallback se, por algum motivo, "/agradecimento/" não estiver presente
+            // e o nome for o último segmento após uma barra.
+            const pathParts = pathName.split('/');
+            clientNameSegment = pathParts.pop() || pathParts.pop(); // Lida com trailing slash
+          }
+          
           if (clientNameSegment) {
-            const decodedClientName = decodeURIComponent(clientNameSegment.replace(/\+/g, ' ')); // Decodifica e substitui '+' por espaço se houver
+            const nameWithSpaces = clientNameSegment.replace(/\+/g, ' ');
+            const decodedClientName = decodeURIComponent(nameWithSpaces);
+            
+            const clientNameElement = document.getElementById('client-name');
+            if (clientNameElement && decodedClientName.trim() !== '') {
+              clientNameElement.textContent = decodedClientName;
+            } else if (clientNameElement) {
+              clientNameElement.textContent = "Valioso Cliente"; // Fallback se nome extraído for vazio
+            }
+          } else {
             const clientNameElement = document.getElementById('client-name');
             if (clientNameElement) {
-              clientNameElement.textContent = decodedClientName;
+              clientNameElement.textContent = "Estimado Cliente"; // Fallback se nenhum segmento de nome for encontrado
             }
           }
         } catch (error) {
           console.error('Erro ao extrair nome do cliente da URL:', error);
-          // Mantém "Cliente" como padrão em caso de erro.
+          const clientNameElement = document.getElementById('client-name');
+          if (clientNameElement) {
+               clientNameElement.textContent = "Prezado(a) Cliente"; // Fallback em caso de erro de script
+          }
         }
-
-        // Mantém os scripts existentes para funcionalidade do menu e tema
-        // Se os scripts de components.js e index.js forem modulares e não dependerem de elementos
-        // específicos da index.html que não estão aqui, eles devem funcionar.
-        // Caso contrário, pode ser necessário criar um script específico para esta página ou
-        // garantir que os scripts globais lidem com a ausência de certos elementos.
       });
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.10/typed.min.js"></script>
     <script src="../scripts/components.js"></script> <script src="../scripts/index.js"></script> </body>
 </html>

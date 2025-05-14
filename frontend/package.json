@@ -1,0 +1,15 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "* This template uses tailwind css every tailwind class are prefixed with `tw-`, to help differentiate   between tailwind classes and other classes",
+  "main": "tailwind.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@netlify/blobs": "^9.1.1"
+  }
+}

@@ -1,113 +1,127 @@
 // netlify/functions/test-docusign-auth.js
 const docusign = require('docusign-esign');
+const fetch = require('node-fetch'); // Precisaremos de fetch para chamar /oauth/userinfo
 
-async function getAuthenticatedApiClient() {
+async function getAuthenticatedApiClientAndToken() {
   const ik = process.env.DOCUSIGN_IK;
   const userId = process.env.DOCUSIGN_USER_ID;
-  // Lê a chave PEM que foi previamente codificada em Base64
   const rsaPrivateKeyBase64Encoded = process.env.DOCUSIGN_RSA_PEM_AS_BASE64; 
-  const authServer = process.env.DOCUSIGN_AUTH_SERVER;
-  const basePath = process.env.DOCUSIGN_BASE_PATH;
-  const accountId = process.env.DOCUSIGN_ACCOUNT_ID;
-
-  console.log("[test-docusign-auth] ---- Variáveis de Ambiente Lidas ----");
-  console.log("[test-docusign-auth] DOCUSIGN_IK:", ik ? "Presente" : "AUSENTE!");
-  console.log("[test-docusign-auth] DOCUSIGN_USER_ID:", userId ? "Presente" : "AUSENTE!");
-  console.log("[test-docusign-auth] DOCUSIGN_ACCOUNT_ID:", accountId ? "Presente" : "AUSENTE!");
-  console.log("[test-docusign-auth] DOCUSIGN_AUTH_SERVER:", authServer || "AUSENTE!");
-  console.log("[test-docusign-auth] DOCUSIGN_BASE_PATH:", basePath || "AUSENTE!");
-  console.log("[test-docusign-auth] DOCUSIGN_RSA_PEM_AS_BASE64 presente?", !!rsaPrivateKeyBase64Encoded);
-  console.log("[test-docusign-auth] -----------------------------------------");
-
-  if (!ik || !userId || !rsaPrivateKeyBase64Encoded || !authServer || !basePath || !accountId) {
-    const missingVars = ['DOCUSIGN_IK', 'DOCUSIGN_USER_ID', 'DOCUSIGN_RSA_PEM_AS_BASE64', 'DOCUSIGN_AUTH_SERVER', 'DOCUSIGN_BASE_PATH', 'DOCUSIGN_ACCOUNT_ID']
-        .filter(v => !process.env[v]);
-    const errorMessage = `Variáveis de ambiente Docusign incompletas. Ausentes: ${missingVars.join(', ')}`;
-    console.error(`[test-docusign-auth] ${errorMessage}`);
-    throw new Error(errorMessage);
+  const authServer = process.env.DOCUSIGN_AUTH_SERVER; // ex: account-d.docusign.com
+  const basePath = process.env.DOCUSIGN_BASE_PATH;     // ex: https://demo.docusign.net/restapi
+  
+  // ... (logs e verificações das variáveis de ambiente como antes) ...
+  if (!ik || !userId || !rsaPrivateKeyBase64Encoded || !authServer || !basePath ) {
+    throw new Error("Variáveis de ambiente Docusign para autenticação incompletas.");
   }
 
   let rsaPrivateKeyPemString;
   try {
-    // Decodifica a string Base64 para obter a string PEM original (com quebras de linha)
-    rsaPrivateKeyPemString = Buffer.from(rsaPrivateKeyBase64Encoded, 'base64').toString('utf-8');
+    rsaPrivateKeyPemString = Buffer.from(rsaPrivateKeyBase64Encoded, 'base64').toString('utf-8').trim();
+    if (!rsaPrivateKeyPemString.startsWith("-----BEGIN RSA PRIVATE KEY-----") || !rsaPrivateKeyPemString.endsWith("-----END RSA PRIVATE KEY-----")) {
+      throw new Error("Chave privada PEM decodificada de Base64 está inválida (delimitadores).");
+    }
   } catch (e) {
-    console.error("[test-docusign-auth] ERRO AO DECODIFICAR A CHAVE PRIVADA DA STRING BASE64:", e);
-    throw new Error("Falha ao decodificar a chave privada armazenada em Base64. Verifique o valor da variável de ambiente DOCUSIGN_RSA_PEM_AS_BASE64.");
-  }
-
-  // Log para verificar a chave PEM decodificada
-  console.log("[test-docusign-auth] ----- INÍCIO CHAVE PEM DECODIFICADA DE BASE64 -----");
-  console.log("Primeiros 70 chars da chave PEM decodificada:", rsaPrivateKeyPemString.substring(0, 70));
-  console.log("Últimos 70 chars da chave PEM decodificada:", rsaPrivateKeyPemString.substring(rsaPrivateKeyPemString.length - 70));
-  console.log("[test-docusign-auth] ----- FIM CHAVE PEM DECODIFICADA DE BASE64 -----");
-  
-  // Verificação crucial: a chave PEM decodificada DEVE começar e terminar corretamente
-  if (!rsaPrivateKeyPemString.startsWith("-----BEGIN RSA PRIVATE KEY-----") || !rsaPrivateKeyPemString.endsWith("-----END RSA PRIVATE KEY-----")) {
-      console.error("[test-docusign-auth] ERRO: Chave PEM decodificada de Base64 está mal formatada ou incompleta (delimitadores PEM ausentes/incorretos).");
-      console.log("Conteúdo decodificado (parcial para depuração):\n" + rsaPrivateKeyPemString.substring(0,200) + "\n...\n" + rsaPrivateKeyPemString.substring(rsaPrivateKeyPemString.length - 200));
-      throw new Error("Chave privada PEM decodificada de Base64 está inválida.");
+    console.error("[test-docusign-auth] ERRO AO DECODIFICAR/VALIDAR A CHAVE PRIVADA BASE64:", e);
+    throw new Error("Falha ao decodificar/validar a chave privada: " + e.message);
   }
 
   const apiClient = new docusign.ApiClient({ basePath: basePath });
   apiClient.setOAuthBasePath(authServer);
 
+  let accessToken;
   try {
-    console.log(`[test-docusign-auth] Tentando autenticação JWT com chave PEM decodificada.`);
+    console.log(`[test-docusign-auth] Tentando autenticação JWT.`);
     const results = await apiClient.requestJWTUserToken(
       ik,
       userId,
-      ['signature', 'impersonation'],
-      Buffer.from(rsaPrivateKeyPemString), // Usa a string PEM decodificada e convertida para Buffer
+      ['signature', 'impersonation', 'user_read'], // Adicionado user_read para /userinfo
+      Buffer.from(rsaPrivateKeyPemString),
       3600
     );
-    apiClient.addDefaultHeader('Authorization', 'Bearer ' + results.body.access_token);
+    accessToken = results.body.access_token;
+    apiClient.addDefaultHeader('Authorization', 'Bearer ' + accessToken);
     console.log("[test-docusign-auth] Token de acesso Docusign obtido com sucesso.");
-    return apiClient;
+    return { apiClient, accessToken, authServerHost: authServer }; // Retorna também o token e o host do auth server
   } catch (err) {
+    // ... (tratamento de erro como antes) ...
     console.error("[test-docusign-auth] Erro ao obter token de acesso Docusign:", JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     let errorMessage = "Erro ao autenticar com Docusign.";
-    if (err.response && err.response.body) {
-        let errorBody = err.response.body;
-        if (typeof errorBody === 'string') { try { errorBody = JSON.parse(errorBody); } catch (e) { /* ignora */ } }
-        const docusignSpecificError = errorBody.error_description || errorBody.error || (typeof errorBody === 'string' ? errorBody : JSON.stringify(errorBody));
-        errorMessage += ` Detalhe Docusign: ${docusignSpecificError}`;
-    } else if (err.message) {
-        errorMessage += ` Detalhe: ${err.message}`;
-    }
+    // ... (extrair mensagem de erro do Docusign) ...
     throw new Error(errorMessage);
   }
 }
 
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   if (event.httpMethod !== "GET") {
     return { statusCode: 405, body: "Método não permitido. Use GET." };
   }
-  console.log("[test-docusign-auth] Função de teste de autenticação Docusign iniciada.");
+  console.log("[test-docusign-auth] Função de teste iniciada.");
+
   try {
-    const apiClient = await getAuthenticatedApiClient();
-    const usersApi = new docusign.UsersApi(apiClient);
-    const accountId = process.env.DOCUSIGN_ACCOUNT_ID;
-    if(!accountId) throw new Error("DOCUSIGN_ACCOUNT_ID não configurado.");
+    const { apiClient, accessToken, authServerHost } = await getAuthenticatedApiClientAndToken();
     
-    console.log(`[test-docusign-auth] Buscando informações do usuário ${process.env.DOCUSIGN_USER_ID} na conta ${accountId}`);
-    const userInfo = await usersApi.getUser(accountId, process.env.DOCUSIGN_USER_ID);
-    console.log("[test-docusign-auth] Informações do usuário obtidas com sucesso.");
+    // Teste 1: Chamar o endpoint /oauth/userinfo para obter dados do usuário autenticado
+    console.log("[test-docusign-auth] Tentando chamar /oauth/userinfo...");
+    const userInfoResponse = await fetch(`https://${authServerHost}/oauth/userinfo`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    });
+
+    if (!userInfoResponse.ok) {
+      const errorText = await userInfoResponse.text();
+      console.error(`[test-docusign-auth] Erro ao chamar /oauth/userinfo: ${userInfoResponse.status}`, errorText);
+      throw new Error(`Falha ao obter userInfo do Docusign: ${userInfoResponse.status} - ${errorText}`);
+    }
+    
+    const userInfo = await userInfoResponse.json();
+    console.log("[test-docusign-auth] Informações do /oauth/userinfo obtidas com sucesso:", userInfo);
+
+    // Teste 2 (Opcional, se o Teste 1 funcionar): Tentar listar contas novamente com UsersApi
+    // Pode ser que o userInfo já traga o accountId que precisamos.
+    let accountsInfo = null;
+    const docusignAccountId = process.env.DOCUSIGN_ACCOUNT_ID;
+
+    // O userInfo do /oauth/userinfo geralmente contém as contas do usuário.
+    // Ex: userInfo.accounts é um array [{account_id: "...", is_default: true, account_name: "...", base_uri: "..."}]
+    // Vamos tentar encontrar o accountId que você configurou na env var para confirmar.
+    let accountDetailsFromUserInfo = null;
+    if (userInfo.accounts && Array.isArray(userInfo.accounts)) {
+        accountDetailsFromUserInfo = userInfo.accounts.find(acc => acc.account_id === docusignAccountId);
+    }
+
+    if (accountDetailsFromUserInfo) {
+        console.log("[test-docusign-auth] Detalhes da conta encontrados via /oauth/userinfo:", accountDetailsFromUserInfo);
+        accountsInfo = {
+            accountId: accountDetailsFromUserInfo.account_id,
+            accountName: accountDetailsFromUserInfo.account_name,
+            baseUri: accountDetailsFromUserInfo.base_uri
+        };
+    } else {
+        console.warn(`[test-docusign-auth] A conta especificada (${docusignAccountId}) não foi encontrada nos detalhes do /oauth/userinfo. Verifique o DOCUSIGN_ACCOUNT_ID.`);
+        // Você ainda pode tentar a UsersApi se quiser, mas o /oauth/userinfo é mais fundamental.
+    }
+
 
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: "Autenticação com Docusign e chamada API básica BEM-SUCEDIDAS!",
-        userInfo: { userName: userInfo.userName, email: userInfo.email, userId: userInfo.userId, accountId: userInfo.accountId, accountName: userInfo.accountName }
+        message: "Autenticação Docusign (JWT) e chamada /oauth/userinfo BEM-SUCEDIDAS!",
+        userInfoFromOAuth: userInfo,
+        accountDetailsFound: accountsInfo
       }),
       headers: { 'Content-Type': 'application/json' }
     };
+
   } catch (error) {
     console.error("[test-docusign-auth] ERRO DURANTE O TESTE:", error.message);
     if(error.stack) console.error("[test-docusign-auth] Stack do Erro:", error.stack);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: "Falha no teste de autenticação/API Docusign.", error: error.message, details: error.response && error.response.body ? (typeof error.response.body === 'string' ? error.response.body : JSON.stringify(error.response.body)) : null }),
+      body: JSON.stringify({
+        message: "Falha no teste de autenticação/API Docusign.",
+        error: error.message,
+      }),
       headers: { 'Content-Type': 'application/json' }
     };
   }

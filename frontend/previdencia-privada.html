@@ -30,6 +30,29 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
+    <style>
+      .modal-iframe-container {
+        flex-grow: 1; /* Garante que o container do iframe ocupe o espaço vertical restante */
+        display: flex; /* Para o iframe interno poder usar height: 100% corretamente */
+        min-height: 0; /* Ajuda com flexibilidade em alguns navegadores */
+      }
+      .modal-iframe-container iframe {
+        width: 100%;
+        height: 100%; /* Iframe preenche totalmente seu container */
+        border: none;
+      }
+      .modal-header {
+        padding: 1rem;
+        border-bottom: 1px solid #e5e7eb; /* dark:border-gray-700 */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0; /* Impede que o header encolha */
+      }
+      .dark .modal-header {
+        border-bottom: 1px solid rgb(55 65 81); 
+      }
+    </style>
   </head>
   <body
     class="tw-flex tw-min-h-[100vh] tw-flex-col tw-bg-[#fcfcfc] tw-text-black dark:tw-bg-black dark:tw-text-white"
@@ -133,11 +156,9 @@
     </header>
 
     <main class="tw-mt-20 tw-pt-10 tw-pb-10 tw-px-[5%] lg:tw-px-[10%]">
-
       <br />
       <section class="tw-container tw-mx-auto">
         <h1 class="tw-text-5xl tw-font-semibold tw-text-center tw-mb-12">Previdência Privada Fontara</h1>
-        <br />
         <div class="tw-bg-white dark:tw-bg-[#171717] tw-p-8 tw-rounded-xl tw-shadow-lg">
           <h2 class="tw-text-3xl tw-font-medium tw-mb-6"><i class="bi bi-shield-shaded"></i> Garanta Tranquilidade Para o Seu Futuro</h2>
           <p class="tw-text-lg tw-text-gray-700 dark:tw-text-gray-300 tw-mb-4">
@@ -146,7 +167,7 @@
           <p class="tw-text-lg tw-text-gray-700 dark:tw-text-gray-300 tw-mb-6">
             Nossos especialistas estão à disposição para ajudá-lo a escolher o melhor plano, considerando suas expectativas de renda futura, tolerância a riscos e prazo de investimento. Comece hoje a construir um amanhã mais seguro.
           </p>
-          <br />
+      <br />
           <div class="tw-grid md:tw-grid-cols-2 tw-gap-8 tw-mb-8">
             <div class="tw-p-6 tw-bg-[#f6f7fb] dark:tw-bg-black tw-rounded-lg">
               <h3 class="tw-text-2xl tw-font-medium tw-mb-3">Vantagens da Previdência Fontara:</h3>
@@ -169,15 +190,16 @@
               </ol>
             </div>
           </div>
+          <br />
           <div class="tw-text-center">
-            <br />
-            <a href="#" class="btn tw-inline-flex tw-items-center tw-gap-3 tw-px-6 tw-py-3 tw-text-lg tw-transition-transform tw-duration-[0.3s] hover:tw-scale-x-[1.03]">
-              <span>Simule Sua Previdência</span>
+            <button type="button" id="openDocusignModalBtn" class="btn tw-inline-flex tw-items-center tw-gap-3 tw-px-6 tw-py-3 tw-text-lg tw-transition-transform tw-duration-[0.3s] hover:tw-scale-x-[1.03]">
+              <span>Contrate Sua Previdência</span>
               <i class="bi bi-graph-up"></i>
-            </a>
+            </button>
           </div>
         </div>
       </section>
+      <br />
     </main>
 
     <footer class="tw-mt-auto tw-flex tw-flex-col tw-w-full tw-gap-4 tw-text-sm tw-pt-[5%] tw-pb-10 tw-px-[5%] md:tw-px-[10%] tw-text-black dark:tw-text-white max-md:tw-flex-col">
@@ -225,13 +247,82 @@
       </div>
       <hr class="tw-mt-8" />
       <div class="tw-mt-2 tw-flex tw-gap-2 tw-flex-col tw-text-gray-700 dark:tw-text-gray-300 tw-place-items-center tw-text-[12px] tw-w-full tw-text-center tw-place-content-around">
-        <span>Copyright &#169; 2023-2025 Fontara Financial. Todos os direitos reservados.</span>
+        <span>Copyright &#169; 2023-<span id="current-year">2025</span> Fontara Financial. Todos os direitos reservados.</span>
         <span>Todas as marcas registradas e direitos autorais pertencem aos seus respectivos proprietários.</span>
       </div>
     </footer>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.10/typed.min.js"></script>
+
+    <div
+      class="tw-hidden tw-fixed tw-bg-[#000000af] dark:tw-bg-[#1f2937e6] tw-top-0 tw-left-0 tw-z-50 tw-w-full tw-h-full tw-flex tw-place-content-center tw-place-items-center tw-p-4"
+      id="docusignModalOverlay"
+    >
+      <div
+        class="tw-w-full tw-max-w-4xl tw-h-[90vh] tw-bg-white dark:tw-bg-gray-800 tw-rounded-lg tw-shadow-xl tw-flex tw-flex-col tw-overflow-hidden" 
+        id="docusignModalContent"
+      >
+        <div class="modal-header">
+          <h3 class="tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-white">Simulação de Previdência</h3>
+          <button
+            type="button"
+            id="closeDocusignModalBtn"
+            class="tw-text-gray-400 hover:tw-text-gray-600 dark:hover:tw-text-gray-200 tw-text-2xl"
+            title="Fechar"
+          >
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+<div class="modal-iframe-container tw-flex-grow"> 
+          <iframe id="docusignIframe" src="" title="Simulação de Previdência Docusign"></iframe>
+        </div>
+
+      </div>
+    </div>
+
+    <script>
+      // Atualiza o ano no rodapé
+      const yearSpan = document.getElementById('current-year');
+      if (yearSpan) {
+        yearSpan.textContent = new Date().getFullYear();
+      }
+
+      // Lógica do Modal Docusign
+      const openDocusignModalBtn = document.getElementById('openDocusignModalBtn');
+      const docusignModalOverlay = document.getElementById('docusignModalOverlay');
+      const closeDocusignModalBtn = document.getElementById('closeDocusignModalBtn');
+      const docusignIframe = document.getElementById('docusignIframe');
+      const docusignUrl = 'https://apps-d.docusign.com/api/maestro/v1/accounts/ec21792a-93fd-42e6-b819-8ae005bf5023/workflow_definitions/9cb25e72-231c-46ca-8ff3-415b19b3a130/trigger?mtid=9abc7b4f-4086-41d5-b8be-e972ffe93191&mtsec=Fw2QDXxJ3Lin28LvomDOHq9cVYSheBbnsgTXw65wnSA';
+
+      function openDocusignModal() {
+        if (docusignIframe && docusignModalOverlay) {
+          docusignIframe.src = docusignUrl;
+          docusignModalOverlay.classList.remove('tw-hidden');
+          document.body.classList.add('modal-open'); 
+        }
+      }
+
+      function closeDocusignModal() {
+        if (docusignIframe && docusignModalOverlay) {
+          docusignIframe.src = ''; 
+          docusignModalOverlay.classList.add('tw-hidden');
+          document.body.classList.remove('modal-open');
+        }
+      }
+
+      if (openDocusignModalBtn) {
+        openDocusignModalBtn.addEventListener('click', openDocusignModal);
+      }
+      if (closeDocusignModalBtn) {
+        closeDocusignModalBtn.addEventListener('click', closeDocusignModal);
+      }
+      if (docusignModalOverlay) {
+        docusignModalOverlay.addEventListener('click', function(event) {
+          if (event.target === docusignModalOverlay) { 
+            closeDocusignModal();
+          }
+        });
+      }
+
+    </script>
     <script src="./scripts/components.js"></script>
     <script src="./scripts/index.js"></script>
   </body>

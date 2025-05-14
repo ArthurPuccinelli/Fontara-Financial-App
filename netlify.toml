@@ -1,6 +1,21 @@
 [build]
-  publish = "frontend"
-  command = ""
+  publish = "frontend/" # Adicionar a barra no final é uma boa prática, mas opcional
+  command = ""          # Mantenha se não houver comando de build para o frontend
+  functions = "netlify/functions/" # Diretório das funções
+
+[build.environment]
+  NODE_VERSION = "20" # Ou "20". Especifica a versão do Node.js para o build e runtime das funções
 
 [functions]
-  directory = "netlify/functions"
+  # directory = "netlify/functions/" # Já definido na seção [build], não precisa repetir aqui
+  node_bundler = "esbuild" # Força o uso do esbuild, que é o padrão moderno
+
+# Esta seção instrui o bundler a tratar esses módulos como externos,
+# esperando que o ambiente de runtime do Netlify os forneça (o que deveria acontecer
+# se estiverem no package.json da raiz e forem instalados corretamente).
+# Isso pode ajudar a evitar problemas de bundling com módulos que têm dependências complexas
+# ou misturam CJS/ESM internamente.
+[[functions."*"]] # Aplica a todas as funções
+  external_node_modules = ["docusign-esign", "@netlify/blobs", "jsonwebtoken", "node-fetch"]
+  # Adicione outros módulos que suas funções usam e que você suspeita que possam estar causando problemas de bundling.
+  # Se você não estiver usando jsonwebtoken ou node-fetch diretamente nas funções que usam docusign-esign, pode omiti-los daqui.

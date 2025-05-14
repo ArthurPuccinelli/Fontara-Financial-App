@@ -16,9 +16,7 @@ exports.handler = async function(event, context) {
   }
 
   // 3. Obter a(s) assinatura(s) do cabeçalho da requisição
-  // Docusign envia como 'x-docusign-signature-1', 'x-docusign-signature-2', etc.
-  // Os cabeçalhos chegam em minúsculas no objeto 'event.headers'.
-  const receivedSignatureHeader = event.headers['x-docusign-signature-1'];
+  const receivedSignatureHeader = event.headers['x-docusign-signature-1']; // Cabeçalhos em minúsculas
 
   if (!receivedSignatureHeader) {
     console.warn("Webhook recebido sem o cabeçalho de assinatura HMAC (x-docusign-signature-1).");
@@ -26,10 +24,6 @@ exports.handler = async function(event, context) {
   }
 
   // 4. O corpo do payload para cálculo do HMAC deve ser o corpo bruto (raw bytes)
-  // A Netlify Functions/AWS API Gateway passa o corpo como string. Se `isBase64Encoded` for true,
-  // o `event.body` é uma string Base64 do corpo binário original.
-  // Se `isBase64Encoded` for false, `event.body` é a string do corpo (ex: um payload JSON ou XML como string).
-  // Docusign calcula o HMAC sobre os bytes brutos do payload.
   let requestBodyBytes;
   try {
     requestBodyBytes = Buffer.from(event.body, event.isBase64Encoded ? 'base64' : 'utf-8');
@@ -38,23 +32,20 @@ exports.handler = async function(event, context) {
     return { statusCode: 400, body: "Corpo da requisição inválido."}
   }
   
-
   // 5. Calcular a assinatura HMAC esperada
-  // Docusign usa SHA256 para HMAC por padrão.
   const hmac = crypto.createHmac('sha256', docusignHmacSecret);
   hmac.update(requestBodyBytes);
   const computedSignatureBase64 = hmac.digest('base64');
 
   // 6. Comparar a assinatura computada com a assinatura recebida
-  // O formato do cabeçalho é 'algoritmo=assinatura_base64', ex: 'sha256=VALUESHERE=='
-  // Precisamos extrair apenas a parte da assinatura em base64.
-  const signatureParts = receivedSignatureHeader.split('=');
-  let receivedSignatureBase64 = '';
-  if (signatureParts.length === 2 && signatureParts[0].toLowerCase() === 'sha256') {
-    receivedSignatureBase64 = signatureParts[1];
-  } else {
-    console.warn("Formato inesperado para o cabeçalho de assinatura HMAC:", receivedSignatureHeader);
-    return { statusCode: 401, body: "Autenticação falhou: formato de assinatura inválido." };
+  // O log indicou que o cabeçalho contém APENAS a assinatura em Base64.
+  let receivedSignatureBase64 = receivedSignatureHeader.trim();
+
+  const base64Regex = /^[A-Za-z0-9+/]+={0,2}$/; // Regex para validar string base64
+  if (!receivedSignatureBase64 || !base64Regex.test(receivedSignatureBase64)) {
+    console.warn("Conteúdo do cabeçalho de assinatura HMAC parece inválido ou está vazio. Conteúdo recebido:", receivedSignatureHeader);
+    console.log("Cabeçalho x-docusign-signature-1 original:", event.headers['x-docusign-signature-1']); // Log do valor bruto do header
+    return { statusCode: 401, body: "Autenticação falhou: assinatura recebida em formato inesperado ou inválida." };
   }
   
   // Comparação segura para evitar ataques de timing
@@ -64,10 +55,11 @@ exports.handler = async function(event, context) {
   if (computedSigBuffer.length !== receivedSigBuffer.length || 
       !crypto.timingSafeEqual(computedSigBuffer, receivedSigBuffer)) {
     console.warn("Falha na verificação HMAC. Assinaturas não correspondem.");
-    console.log("  -> Assinatura Recebida (Base64):", receivedSignatureBase64);
-    console.log("  -> Assinatura Computada (Base64):", computedSignatureBase64);
-    // Para depuração, você pode logar o corpo que foi usado para o cálculo:
-    // console.log("  -> Corpo usado para cálculo HMAC (string):", requestBodyBytes.toString('utf-8'));
+    console.log("  -> Assinatura Recebida no Cabeçalho (Base64):", receivedSignatureBase64);
+    console.log("  -> Assinatura Computada pela Função (Base64):", computedSignatureBase64);
+    // Para depuração mais profunda, se as assinaturas ainda não baterem:
+    // console.log("  -> Corpo usado para cálculo HMAC (string UTF-8):", requestBodyBytes.toString('utf-8'));
+    // console.log("  -> Segredo HMAC usado (primeiros/últimos chars para verificação):", `${docusignHmacSecret.substring(0, 3)}...${docusignHmacSecret.substring(docusignHmacSecret.length - 3)}`);
     return { statusCode: 401, body: "Autenticação falhou: assinatura inválida." };
   }
 
@@ -76,7 +68,7 @@ exports.handler = async function(event, context) {
   console.log("Webhook do Docusign Recebido e Autenticado com HMAC!");
   console.log("Data/Hora:", new Date().toISOString());
   
-  const payloadBodyString = requestBodyBytes.toString('utf-8'); // Agora podemos usar a string
+  const payloadBodyString = requestBodyBytes.toString('utf-8');
   console.log("--- Corpo do Payload (Bruto Autenticado) ---");
   console.log(payloadBodyString);
   console.log("--------------------------------------------");

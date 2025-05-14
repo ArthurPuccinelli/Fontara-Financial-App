@@ -49,7 +49,6 @@
       .dark .modal-header {
         border-bottom: 1px solid rgb(55 65 81);
       }
-      /* O CSS do spinner foi removido */
     </style>
   </head>
   <body
@@ -114,7 +113,7 @@
     </footer>
 
     <div
-      class="tw-hidden tw-fixed tw-bg-[#000000af] dark:tw-bg-[#1f2937e6] tw-top-0 tw-left-0 tw-z-[100] tw-w-full tw-h-full tw-flex tw-place-content-center tw-place-items-center tw-p-4"
+      class="tw-hidden tw-fixed tw-bg-[#000000af] dark:tw-bg-[#1f2937e6] tw-top-0 tw-left-0 tw-z-[9999] tw-w-full tw-h-full tw-flex tw-place-content-center tw-place-items-center tw-p-4" 
       id="docusignSigningModalOverlay"
     >
       <div
@@ -153,13 +152,12 @@
         const useUploadedDocRadio = document.getElementById('useUploadedDoc');
         const fileUploadContainer = document.getElementById('fileUploadContainer');
         const uploadedDocInput = document.getElementById('uploadedDoc');
-        // const loadingIndicator = document.getElementById('loadingIndicator'); // Removido
         const submitEnvelopeBtn = document.getElementById('submitEnvelopeBtn');
 
         const docusignModalOverlay = document.getElementById('docusignSigningModalOverlay');
         const closeDocusignSigningModalBtn = document.getElementById('closeDocusignSigningModalBtn');
         const docusignIframe = document.getElementById('docusignSigningIframe');
-
+        
         function showFileUpload(show) {
           if (fileUploadContainer && uploadedDocInput) {
             if (show) {
@@ -205,10 +203,9 @@
         if(envelopeForm) {
             envelopeForm.addEventListener('submit', async function(event) {
               event.preventDefault();
-              // Lógica do spinner removida do início do submit
               if(submitEnvelopeBtn) {
                 submitEnvelopeBtn.disabled = true;
-                submitEnvelopeBtn.textContent = 'Processando...'; // Feedback no botão
+                submitEnvelopeBtn.innerHTML = '<div class="spinner" style="width: 20px; height: 20px; border-width: 3px; margin: auto;"></div> Processando...';
               }
 
               const signerName = document.getElementById('signerName').value;
@@ -282,13 +279,13 @@
                 });
 
                 if (!response.ok) {
-                  const errorData = await response.json().catch(() => ({ error: `Erro ao criar envelope: ${response.statusText}` }));
+                  const errorData = await response.json().catch(() => ({ error: `Erro ao criar envelope: ${response.statusText} (Status: ${response.status})` }));
                   throw new Error(errorData.error || `Erro HTTP ${response.status} ao criar envelope.`);
                 }
                 const envelopeResult = await response.json();
                 const envelopeId = envelopeResult.envelopeId;
 
-                if (!envelopeId) throw new Error("ID do envelope não foi retornado.");
+                if (!envelopeId) throw new Error("ID do envelope não foi retornado pela função.");
                 
                 const recipientViewPayload = {
                   envelopeId: envelopeId,
@@ -321,10 +318,8 @@
                 console.error("Erro no processo Docusign:", error);
                 alert(`Ocorreu um erro: ${error.message}`);
               } finally {
-                // Lógica do spinner removida do finally
                 if(submitEnvelopeBtn) {
                     submitEnvelopeBtn.disabled = false;
-                    // Restaura o ícone e o texto do botão
                     submitEnvelopeBtn.innerHTML = '<i class="bi bi-pencil-square tw-mr-2"></i>Assinar e Enviar Documento';
                 }
               }

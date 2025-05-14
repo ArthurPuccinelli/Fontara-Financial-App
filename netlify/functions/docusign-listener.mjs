@@ -1,12 +1,12 @@
-// netlify/functions/docusign-listener.js
-const crypto = require('crypto');
-const { getStore } = require("@netlify/blobs");
+// netlify/functions/docusign-listener.mjs
+import crypto from 'crypto';
+import { getStore } from "@netlify/blobs"; // Usando import
 
 const MAX_EVENTS_TO_STORE = 20;
 const BLOB_STORE_NAME = "docusignEvents";
 const BLOB_KEY_EVENT_LIST = "recent_event_list";
 
-exports.handler = async function(event, context) {
+export const handler = async function(event, context) { // Usando export const handler
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Método não permitido." };
   }
@@ -19,6 +19,7 @@ exports.handler = async function(event, context) {
 
   const receivedSignatureHeader = event.headers['x-docusign-signature-1'];
   if (!receivedSignatureHeader) {
+    console.warn("Webhook recebido sem o cabeçalho de assinatura HMAC (x-docusign-signature-1).");
     return { statusCode: 401, body: "Autenticação falhou: assinatura ausente." };
   }
 
@@ -46,7 +47,9 @@ exports.handler = async function(event, context) {
 
   if (computedSigBuffer.length !== receivedSigBuffer.length || 
       !crypto.timingSafeEqual(computedSigBuffer, receivedSigBuffer)) {
-    console.warn("Falha na verificação HMAC.");
+    console.warn("Falha na verificação HMAC. Assinaturas não correspondem.");
+    console.log("  -> Assinatura Recebida no Cabeçalho (Base64):", receivedSignatureBase64);
+    console.log("  -> Assinatura Computada pela Função (Base64):", computedSignatureBase64);
     return { statusCode: 401, body: "Autenticação falhou: assinatura inválida." };
   }
 
@@ -56,27 +59,23 @@ exports.handler = async function(event, context) {
   console.log("Payload Bruto Autenticado:", payloadBodyString);
 
   let newEventData = {
-    id: context.awsRequestId, // ID único para o evento (pode usar outro se Docusign fornecer um melhor)
+    id: context.awsRequestId,
     receivedAt: new Date().toISOString(),
-    // rawPayload: payloadBodyString, // Decida se quer guardar o payload bruto para cada um dos 20
     parsedPayload: null,
     relevantInfo: { message: "Nenhuma informação relevante extraída ou payload não é JSON." }
   };
 
   try {
     const parsedPayload = JSON.parse(payloadBodyString);
-    newEventData.parsedPayload = parsedPayload; // Armazena o payload parseado no evento individual
+    newEventData.parsedPayload = parsedPayload;
     console.log("Payload JSON Parseado:", JSON.stringify(parsedPayload, null, 2));
 
-    // **Foque em extrair APENAS o essencial para o objeto relevantInfo**
-    // para manter o tamanho da lista gerenciável.
     if (parsedPayload && parsedPayload.envelopeStatus) {
       newEventData.relevantInfo = {
         envelopeId: parsedPayload.envelopeStatus.envelopeID,
         status: parsedPayload.envelopeStatus.status,
         subject: parsedPayload.envelopeStatus.subject,
         timeGenerated: parsedPayload.envelopeStatus.timeGenerated,
-        // Adicione outros campos relevantes e concisos aqui
       };
     }
   } catch (error) {
@@ -84,26 +83,19 @@ exports.handler = async function(event, context) {
     newEventData.relevantInfo.rawPreview = payloadBodyString.substring(0, 200) + (payloadBodyString.length > 200 ? "..." : "");
   }
 
-  // Lógica para ler, adicionar e truncar a lista de eventos no Netlify Blobs
   try {
     const store = getStore(BLOB_STORE_NAME);
     let eventList = await store.get(BLOB_KEY_EVENT_LIST, { type: "json" });
 
     if (!eventList || !Array.isArray(eventList)) {
-      eventList = []; // Inicia uma nova lista se não existir ou for inválida
+      eventList = [];
     }
-
-    // Adiciona o novo evento no início da lista
-    eventList.unshift(newEventData.relevantInfo); // Salva apenas as info relevantes na lista principal
-
-    // Mantém apenas os últimos MAX_EVENTS_TO_STORE eventos
+    eventList.unshift(newEventData.relevantInfo);
     if (eventList.length > MAX_EVENTS_TO_STORE) {
       eventList = eventList.slice(0, MAX_EVENTS_TO_STORE);
     }
-
-    await store.setJSON(BLOB_KEY_EVENT_LIST, eventList); // Salva a lista atualizada
+    await store.setJSON(BLOB_KEY_EVENT_LIST, eventList);
     console.log(`Lista de eventos atualizada no Netlify Blobs. Total: ${eventList.length}`);
-
   } catch (blobError) {
     console.error("Erro ao manipular lista de eventos no Netlify Blobs:", blobError);
   }

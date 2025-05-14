@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="tw-dark"> <head>
+<html lang="pt-BR"> <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Obrigado - Fontara Financial</title>
@@ -43,12 +43,24 @@
         padding: 0.5rem;
         border-radius: 0.375rem; /* rounded-md */
         transition: background-color 0.2s;
-        cursor: pointer; /* Garante que o cursor mude para indicar clicabilidade */
+        cursor: pointer;
       }
       .footer-theme-toggle:hover {
-        background-color: rgba(128, 128, 128, 0.1); /* Um hover sutil */
+        background-color: rgba(128, 128, 128, 0.1);
       }
     </style>
+    <script>
+      // Script para forçar o tema claro ANTES que o index.js principal rode
+      // e potencialmente defina o tema escuro baseado no localStorage geral do site.
+      // Para esta página específica, queremos que comece clara.
+      (function() {
+        document.documentElement.classList.remove('tw-dark');
+        // Opcional: Se você quiser que esta página "esqueça" uma preferência global por escuro:
+        // localStorage.setItem('color-mode', 'light'); 
+        // No entanto, isso afetaria a próxima página visitada. É melhor apenas forçar visualmente aqui
+        // e deixar o index.js atualizar o botão para refletir "claro".
+      })();
+    </script>
   </head>
   <body
     class="tw-flex tw-min-h-[100vh] tw-flex-col tw-bg-[#fcfcfc] tw-text-black dark:tw-bg-black dark:tw-text-white"
@@ -132,35 +144,18 @@
         <div class="tw-order-1 md:tw-order-2">
           <button
             type="button"
-            onclick="toggleMode()"
+            onclick="toggleMode()" 
             class="footer-theme-toggle tw-text-gray-600 dark:tw-text-gray-300 tw-text-xl"
             title="Alternar tema"
             id="theme-toggle" 
           >
-            <i class="bi" id="toggle-mode-icon"></i> </button>
+            <i class="bi" id="toggle-mode-icon"></i>
+          </button>
         </div>
       </div>
     </footer>
 
     <script>
-      // Função para definir o tema (claro ou escuro) e atualizar o botão
-      // Esta função é uma versão simplificada do que está no seu index.js,
-      // focada apenas em ATUALIZAR o botão após a carga do tema.
-      // A lógica principal de decidir o tema inicial (localStorage/system)
-      // ainda virá do seu index.js global.
-      function localUpdateToggleModeBtn(){
-          const toggleIcon = document.querySelector("#toggle-mode-icon");
-          if (toggleIcon) { // Verifica se o ícone existe
-              if (document.documentElement.classList.contains("tw-dark")){
-                  toggleIcon.classList.remove("bi-sun");
-                  toggleIcon.classList.add("bi-moon");
-              } else {
-                  toggleIcon.classList.add("bi-sun");
-                  toggleIcon.classList.remove("bi-moon");
-              }
-          }
-      }
-
       document.addEventListener('DOMContentLoaded', function() {
         // Atualiza o ano no rodapé
         const yearSpan = document.getElementById('current-year');
@@ -205,20 +200,18 @@
           }
         }
 
-        // Chama a função local para garantir que o ícone do botão de tema seja atualizado
-        // após o index.js (que é carregado depois) ter definido o tema inicial.
-        // Se o index.js já chama updateToggleModeBtn e não dá erro, isso pode ser redundante
-        // ou pode garantir que funcione mesmo se houver problemas de timing.
-        // Uma alternativa é garantir que o index.js execute updateToggleModeBtn após o DOMContentLoaded.
-        if (typeof updateToggleModeBtn === "function") {
-             // Se a função global de index.js estiver disponível, use-a.
-             updateToggleModeBtn();
-        } else {
-            // Caso contrário, use a versão local (menos ideal se a global for mais completa).
-            localUpdateToggleModeBtn();
+        // Força o tema claro visualmente após o DOM estar pronto
+        // e antes que o index.js (carregado depois) possa ter atualizado o botão.
+        document.documentElement.classList.remove('tw-dark');
+        
+        // Tenta chamar updateToggleModeBtn se estiver disponível globalmente (do index.js)
+        // para garantir que o ícone do botão reflita o estado claro.
+        // Se index.js ainda não foi totalmente processado, o botão pode não atualizar imediatamente.
+        if (typeof updateToggleModeBtnGlobal === "function") { // Renomeei para evitar conflito se você definir localmente
+            updateToggleModeBtnGlobal();
         }
       });
     </script>
     <script src="../scripts/index.js"></script> 
-    </body>
+  </body>
 </html>

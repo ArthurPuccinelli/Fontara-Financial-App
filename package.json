@@ -20,6 +20,7 @@
     "@accordproject/concerto-cli": "^3.16.6",
     "@accordproject/concerto-core": "~3.19.6",
     "@accordproject/concerto-types": "~3.19.6",
+    "@netlify/blobs": "^9.1.1",
     "ajv": "^8.17.1",
     "csv-parse": "^5.6.0",
     "dotenv": "^16.0.3",

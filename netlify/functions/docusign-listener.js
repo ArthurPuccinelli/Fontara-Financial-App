@@ -1,109 +1,115 @@
 // netlify/functions/docusign-listener.js
 const crypto = require('crypto');
+const { getStore } = require("@netlify/blobs");
+
+const MAX_EVENTS_TO_STORE = 20;
+const BLOB_STORE_NAME = "docusignEvents";
+const BLOB_KEY_EVENT_LIST = "recent_event_list";
 
 exports.handler = async function(event, context) {
-  // 1. Verificar se é um POST
   if (event.httpMethod !== "POST") {
-    console.warn("Método não permitido recebido:", event.httpMethod);
     return { statusCode: 405, body: "Método não permitido." };
   }
 
-  // 2. Obter o segredo HMAC das variáveis de ambiente
   const docusignHmacSecret = process.env.DOCUSIGN_HMAC_SECRET;
   if (!docusignHmacSecret) {
-    console.error("ERRO DE CONFIGURAÇÃO: Segredo HMAC (DOCUSIGN_HMAC_SECRET) não está definido nas variáveis de ambiente do Netlify.");
-    return { statusCode: 500, body: "Erro de configuração interna do servidor." };
+    console.error("ERRO DE CONFIGURAÇÃO: Segredo HMAC (DOCUSIGN_HMAC_SECRET) não definido.");
+    return { statusCode: 500, body: "Erro de configuração interna." };
   }
 
-  // 3. Obter a(s) assinatura(s) do cabeçalho da requisição
-  const receivedSignatureHeader = event.headers['x-docusign-signature-1']; // Cabeçalhos em minúsculas
-
+  const receivedSignatureHeader = event.headers['x-docusign-signature-1'];
   if (!receivedSignatureHeader) {
-    console.warn("Webhook recebido sem o cabeçalho de assinatura HMAC (x-docusign-signature-1).");
     return { statusCode: 401, body: "Autenticação falhou: assinatura ausente." };
   }
 
-  // 4. O corpo do payload para cálculo do HMAC deve ser o corpo bruto (raw bytes)
   let requestBodyBytes;
   try {
     requestBodyBytes = Buffer.from(event.body, event.isBase64Encoded ? 'base64' : 'utf-8');
   } catch (e) {
-    console.error("Erro ao criar buffer do corpo da requisição:", e);
-    return { statusCode: 400, body: "Corpo da requisição inválido."}
+    console.error("Erro ao criar buffer do corpo:", e);
+    return { statusCode: 400, body: "Corpo da requisição inválido."};
   }
   
-  // 5. Calcular a assinatura HMAC esperada
   const hmac = crypto.createHmac('sha256', docusignHmacSecret);
   hmac.update(requestBodyBytes);
   const computedSignatureBase64 = hmac.digest('base64');
-
-  // 6. Comparar a assinatura computada com a assinatura recebida
-  // O log indicou que o cabeçalho contém APENAS a assinatura em Base64.
+  
   let receivedSignatureBase64 = receivedSignatureHeader.trim();
-
-  const base64Regex = /^[A-Za-z0-9+/]+={0,2}$/; // Regex para validar string base64
+  const base64Regex = /^[A-Za-z0-9+/]+={0,2}$/;
   if (!receivedSignatureBase64 || !base64Regex.test(receivedSignatureBase64)) {
-    console.warn("Conteúdo do cabeçalho de assinatura HMAC parece inválido ou está vazio. Conteúdo recebido:", receivedSignatureHeader);
-    console.log("Cabeçalho x-docusign-signature-1 original:", event.headers['x-docusign-signature-1']); // Log do valor bruto do header
-    return { statusCode: 401, body: "Autenticação falhou: assinatura recebida em formato inesperado ou inválida." };
+    console.warn("Assinatura HMAC recebida em formato inválido:", receivedSignatureHeader);
+    return { statusCode: 401, body: "Autenticação falhou: formato de assinatura inválido." };
   }
   
-  // Comparação segura para evitar ataques de timing
   const computedSigBuffer = Buffer.from(computedSignatureBase64);
   const receivedSigBuffer = Buffer.from(receivedSignatureBase64);
 
   if (computedSigBuffer.length !== receivedSigBuffer.length || 
       !crypto.timingSafeEqual(computedSigBuffer, receivedSigBuffer)) {
-    console.warn("Falha na verificação HMAC. Assinaturas não correspondem.");
-    console.log("  -> Assinatura Recebida no Cabeçalho (Base64):", receivedSignatureBase64);
-    console.log("  -> Assinatura Computada pela Função (Base64):", computedSignatureBase64);
-    // Para depuração mais profunda, se as assinaturas ainda não baterem:
-    // console.log("  -> Corpo usado para cálculo HMAC (string UTF-8):", requestBodyBytes.toString('utf-8'));
-    // console.log("  -> Segredo HMAC usado (primeiros/últimos chars para verificação):", `${docusignHmacSecret.substring(0, 3)}...${docusignHmacSecret.substring(docusignHmacSecret.length - 3)}`);
+    console.warn("Falha na verificação HMAC.");
     return { statusCode: 401, body: "Autenticação falhou: assinatura inválida." };
   }
 
-  // Se chegou até aqui, a assinatura HMAC é válida!
-  console.log("==================================================");
-  console.log("Webhook do Docusign Recebido e Autenticado com HMAC!");
-  console.log("Data/Hora:", new Date().toISOString());
+  console.log("Webhook do Docusign autenticado com HMAC!");
   
   const payloadBodyString = requestBodyBytes.toString('utf-8');
-  console.log("--- Corpo do Payload (Bruto Autenticado) ---");
-  console.log(payloadBodyString);
-  console.log("--------------------------------------------");
+  console.log("Payload Bruto Autenticado:", payloadBodyString);
+
+  let newEventData = {
+    id: context.awsRequestId, // ID único para o evento (pode usar outro se Docusign fornecer um melhor)
+    receivedAt: new Date().toISOString(),
+    // rawPayload: payloadBodyString, // Decida se quer guardar o payload bruto para cada um dos 20
+    parsedPayload: null,
+    relevantInfo: { message: "Nenhuma informação relevante extraída ou payload não é JSON." }
+  };
 
   try {
     const parsedPayload = JSON.parse(payloadBodyString);
-    console.log("--- Corpo do Payload (JSON Parseado) ---");
-    console.log(JSON.stringify(parsedPayload, null, 2));
-    console.log("--------------------------------------");
+    newEventData.parsedPayload = parsedPayload; // Armazena o payload parseado no evento individual
+    console.log("Payload JSON Parseado:", JSON.stringify(parsedPayload, null, 2));
 
+    // **Foque em extrair APENAS o essencial para o objeto relevantInfo**
+    // para manter o tamanho da lista gerenciável.
     if (parsedPayload && parsedPayload.envelopeStatus) {
-      console.log("== Informações Relevantes do Envelope (Exemplo) ==");
-      console.log("  ID do Envelope:", parsedPayload.envelopeStatus.envelopeID);
-      console.log("  Status do Envelope:", parsedPayload.envelopeStatus.status);
-      console.log("  Assunto:", parsedPayload.envelopeStatus.subject);
-      
-      if (parsedPayload.envelopeStatus.recipients && parsedPayload.envelopeStatus.recipients.recipient) {
-        const recipients = Array.isArray(parsedPayload.envelopeStatus.recipients.recipient) 
-                           ? parsedPayload.envelopeStatus.recipients.recipient 
-                           : [parsedPayload.envelopeStatus.recipients.recipient];
-        recipients.forEach(recipient => {
-          if(recipient) {
-            console.log(`  -> Destinatário: ${recipient.userName} (Email: ${recipient.email || 'N/A'}, Rota: ${recipient.routingOrder || 'N/A'}, Status: ${recipient.status || 'N/A'})`);
-          }
-        });
-      }
-      console.log("================================================");
+      newEventData.relevantInfo = {
+        envelopeId: parsedPayload.envelopeStatus.envelopeID,
+        status: parsedPayload.envelopeStatus.status,
+        subject: parsedPayload.envelopeStatus.subject,
+        timeGenerated: parsedPayload.envelopeStatus.timeGenerated,
+        // Adicione outros campos relevantes e concisos aqui
+      };
+    }
+  } catch (error) {
+    console.warn("Payload não é JSON. Armazenando com mensagem de erro. Erro:", error.message);
+    newEventData.relevantInfo.rawPreview = payloadBodyString.substring(0, 200) + (payloadBodyString.length > 200 ? "..." : "");
+  }
+
+  // Lógica para ler, adicionar e truncar a lista de eventos no Netlify Blobs
+  try {
+    const store = getStore(BLOB_STORE_NAME);
+    let eventList = await store.get(BLOB_KEY_EVENT_LIST, { type: "json" });
+
+    if (!eventList || !Array.isArray(eventList)) {
+      eventList = []; // Inicia uma nova lista se não existir ou for inválida
     }
 
-  } catch (error) {
-    console.warn("Não foi possível fazer o parse do payload como JSON. Pode ser XML.");
+    // Adiciona o novo evento no início da lista
+    eventList.unshift(newEventData.relevantInfo); // Salva apenas as info relevantes na lista principal
+
+    // Mantém apenas os últimos MAX_EVENTS_TO_STORE eventos
+    if (eventList.length > MAX_EVENTS_TO_STORE) {
+      eventList = eventList.slice(0, MAX_EVENTS_TO_STORE);
+    }
+
+    await store.setJSON(BLOB_KEY_EVENT_LIST, eventList); // Salva a lista atualizada
+    console.log(`Lista de eventos atualizada no Netlify Blobs. Total: ${eventList.length}`);
+
+  } catch (blobError) {
+    console.error("Erro ao manipular lista de eventos no Netlify Blobs:", blobError);
   }
 
   return {
     statusCode: 200,
-    body: "Webhook HMAC verificado e recebido com sucesso.",
+    body: "Webhook HMAC verificado e evento processado.",
   };
 };

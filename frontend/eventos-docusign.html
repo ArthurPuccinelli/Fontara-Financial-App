@@ -3,8 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Eventos dos Envelopes - Fontara Financial</title>
-    <meta
+    <title>Eventos dos Envelopes - Fontara Financial</title> <meta
       name="description"
       content="Visualização dos últimos 100 eventos de envelopes Docusign com opções de filtro e exclusão."
     />
@@ -47,8 +46,15 @@
       .form-checkbox-label { 
         @apply tw-ml-2 tw-block tw-text-sm tw-font-normal tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer;
       }
-      /* Removidas classes .form-label, .filter-group-title, .filter-fieldset-legend, .fieldset-grid-cols
-         Os estilos serão aplicados diretamente com Tailwind no HTML. */
+      .filter-group-heading { /* Para todos os títulos de seções de filtro */
+        @apply tw-flex tw-justify-between tw-items-center tw-mb-2;
+      }
+      .filter-group-title {
+        @apply tw-text-base tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100;
+      }
+      .checkbox-grid { /* Grade para os checkboxes dentro de cada filtro */
+        @apply tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-x-4 tw-gap-y-2;
+      }
     </style>
   </head>
   <body class="tw-flex tw-min-h-[100vh] tw-flex-col tw-bg-[#fcfcfc] tw-text-black dark:tw-bg-black dark:tw-text-white">
@@ -71,26 +77,50 @@
             <h2 class="tw-text-xl tw-font-bold tw-mb-6 tw-pb-3 tw-border-b dark:tw-border-gray-700 tw-text-gray-900 dark:tw-text-gray-100">
                 <i class="bi bi-funnel-fill tw-mr-2"></i>Opções de Filtro e Visualização
             </h2>
-            <div class="tw-grid md:tw-grid-cols-2 md:tw-gap-x-8 lg:tw-gap-x-12">
-                <div class="tw-space-y-6">
-                    <div>
-                        <label for="filterInput" class="tw-block tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100 tw-mb-2">Filtrar por Texto:</label>
-                        <p class="tw-text-sm tw-text-gray-600 dark:tw-text-gray-400 tw-mb-1">Busque em qualquer informação do evento.</p>
-                        <input type="text" id="filterInput" class="filter-input" placeholder="Digite para filtrar...">
-                    </div>
-                    
-                    <div class="tw-pt-2"> 
-                        <h3 class="tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100 tw-mb-3">Campos Visíveis por Evento:</h3>
-                        <div id="fieldVisibilityFiltersContainer" class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-x-4 tw-gap-y-2">
-                            {/* Checkboxes de visibilidade de campo serão inseridos aqui */}
+            
+            <div class="tw-mb-6">
+                <label for="filterInput" class="filter-group-title">Filtrar por texto:</label>
+                <p class="tw-text-xs tw-text-gray-600 dark:tw-text-gray-400 tw-mb-1">Busque em IDs, status, assunto, etc.</p>
+                <input type="text" id="filterInput" class="filter-input md:tw-max-w-lg" placeholder="Digite para filtrar...">
+            </div>
+
+            <div class="tw-grid md:tw-grid-cols-3 md:tw-gap-x-6 lg:tw-gap-x-8">
+                <div class="tw-mb-6 md:tw-mb-0"> 
+                    <div class="filter-group-heading">
+                        <span class="filter-group-title">Campos Visíveis:</span>
+                        <div class="tw-flex tw-items-center">
+                            <input type="checkbox" id="selectAllVisibleFields" class="form-checkbox select-all-checkbox" data-group="fieldVisibility">
+                            <label for="selectAllVisibleFields" class="form-checkbox-label tw-text-xs">Todos</label>
                         </div>
+                    </div>
+                    <div id="fieldVisibilityFiltersContainer" class="checkbox-grid tw-mt-2">
+                        {/* Checkboxes de visibilidade de campo serão inseridos aqui */}
                     </div>
                 </div>
 
-                <div class="tw-mt-6 md:tw-mt-0">
-                    <h3 class="tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100 tw-mb-3">Filtrar por Tipo de Evento:</h3>
-                    <div id="eventTypeFiltersContainer" class="tw-space-y-4">
-                        {/* Checkboxes de tipo de evento (com fieldsets) serão inseridos aqui */}
+                <div class="tw-mb-6 md:tw-mb-0">
+                    <div class="filter-group-heading">
+                        <span class="filter-group-title">Eventos do Envelope:</span>
+                        <div class="tw-flex tw-items-center">
+                            <input type="checkbox" id="selectAllEnvelopeEvents" class="form-checkbox select-all-checkbox" data-group="envelopeEvents">
+                            <label for="selectAllEnvelopeEvents" class="form-checkbox-label tw-text-xs">Todos</label>
+                        </div>
+                    </div>
+                    <div id="envelopeEventTypeFiltersContainer" class="checkbox-grid tw-mt-2">
+                        {/* Checkboxes populados por JS */}
+                    </div>
+                </div>
+                
+                <div class="tw-mb-6 md:tw-mb-0">
+                    <div class="filter-group-heading">
+                        <span class="filter-group-title">Eventos de Destinatários:</span>
+                        <div class="tw-flex tw-items-center">
+                            <input type="checkbox" id="selectAllRecipientEvents" class="form-checkbox select-all-checkbox" data-group="recipientEvents">
+                            <label for="selectAllRecipientEvents" class="form-checkbox-label tw-text-xs">Todos</label>
+                        </div>
+                    </div>
+                    <div id="recipientEventTypeFiltersContainer" class="checkbox-grid tw-mt-2">
+                        {/* Checkboxes populados por JS */}
                     </div>
                 </div>
             </div>
@@ -115,7 +145,10 @@
         const loadingMessage = document.getElementById('loadingMessage');
         const refreshDataBtn = document.getElementById('refreshDataBtn');
         const filterInput = document.getElementById('filterInput');
-        const eventTypeFiltersContainer = document.getElementById('eventTypeFiltersContainer');
+        
+        // Containers para os grupos de checkboxes de tipo de evento
+        const envelopeEventTypeFiltersContainer = document.getElementById('envelopeEventTypeFiltersContainer');
+        const recipientEventTypeFiltersContainer = document.getElementById('recipientEventTypeFiltersContainer');
         const fieldVisibilityFiltersContainer = document.getElementById('fieldVisibilityFiltersContainer');
 
         let allFetchedEvents = []; 
@@ -123,7 +156,9 @@
         const eventFilterConfig = {
             groups: [
                 {
-                    name: "Eventos do Envelope",
+                    name: "Eventos do Envelope", // Usado como legenda do fieldset
+                    containerId: 'envelopeEventTypeFiltersContainer', // ID do div para estes checkboxes
+                    selectAllId: 'selectAllEnvelopeEvents',
                     events: [
                         { label: "Enviado", value: "envelope-sent" }, { label: "Entregue", value: "envelope-delivered" },
                         { label: "Concluído", value: "envelope-completed" }, { label: "Recusado", value: "envelope-declined" },
@@ -134,19 +169,21 @@
                 },
                 {
                     name: "Eventos de Destinatários",
+                    containerId: 'recipientEventTypeFiltersContainer',
+                    selectAllId: 'selectAllRecipientEvents',
                     events: [
                         { label: "Enviado (Dest.)", value: "recipient-sent" }, { label: "Entregue (Dest.)", value: "recipient-delivered" },
                         { label: "Concluído (Dest.)", value: "recipient-completed" }, { label: "Recusado (Dest.)", value: "recipient-declined" },
-                        { label: "Falha Autenticação", value: "recipient-authenticationfailed" }, // Label mais curto
-                        { label: "Reatribuído", value: "recipient-reassign"}, { label: "Concluir Depois", value: "recipient-finish-later"}, // Label mais curto
+                        { label: "Falha Autenticação", value: "recipient-authenticationfailed" },
+                        { label: "Reatribuído", value: "recipient-reassign"}, { label: "Concluir Depois", value: "recipient-finish-later"},
                         { label: "Resp. Automática", value: "recipient-autoresponded" }, { label: "Reenviado (Dest.)", value: "recipient-resent"}
                     ]
                 }
             ],
             displayableFields: [
-                { key: "id", label: "ID Função", defaultChecked: false, path: 'id' }, // Label mais curto
+                { key: "id", label: "ID Função", defaultChecked: false, path: 'id' },
                 { key: "receivedAt", label: "Recebido em", defaultChecked: true, path: 'receivedAt', type: 'datetime' },
-                { key: "eventType", label: "Tipo Evento", defaultChecked: true, path: 'eventType', isEventType: true }, // Label mais curto
+                { key: "eventType", label: "Tipo Evento", defaultChecked: true, path: 'eventType', isEventType: true },
                 { key: "envelopeId", label: "ID Envelope", defaultChecked: true, path: 'relevantInfo.envelopeId' },
                 { key: "status", label: "Status Envelope", defaultChecked: true, path: 'relevantInfo.status' },
                 { key: "subject", label: "Assunto", defaultChecked: true, path: 'relevantInfo.subject' },
@@ -154,67 +191,131 @@
                 { key: "statusChangedDateTime", label: "Status Alterado", defaultChecked: false, path: 'relevantInfo.statusChangedDateTime', type: 'datetime' },
                 { key: "senderName", label: "Remetente", defaultChecked: false, path: 'relevantInfo.senderName' },
                 { key: "recipients", label: "Destinatários", defaultChecked: false, path: 'relevantInfo.recipientsPreview', isArray: true },
-                { key: "documentNames", label: "Documentos", defaultChecked: false, path: 'relevantInfo.documentNames' }, // Label mais curto
-                { key: "extractionMessage", label: "Msg Extração", defaultChecked: true, path: 'relevantInfo.message' }, // Label mais curto
-                { key: "rawPreview", label: "Preview Payload", defaultChecked: false, path: 'relevantInfo.rawPreview', isPre: true } // Label mais curto
+                { key: "documentNames", label: "Documentos", defaultChecked: false, path: 'relevantInfo.documentNames' },
+                { key: "extractionMessage", label: "Msg Extração", defaultChecked: true, path: 'relevantInfo.message' },
+                { key: "rawPreview", label: "Preview Payload", defaultChecked: false, path: 'relevantInfo.rawPreview', isPre: true }
             ]
         };
 
         function getNestedValue(obj, path) {
             if (!path || !obj) return undefined;
-            return path.split('.').reduce((acc, part) => acc && typeof acc === 'object' && acc[part], obj);
+            return path.split('.').reduce((acc, part) => acc && typeof acc === 'object' && acc[part] !== undefined && acc[part] !== null ? acc[part] : undefined, obj);
         }
         
-        function populateFilters(container, items, filterGroupName, isVisibilityFilter = false) {
-            if (!container) return;
+        function populateCheckboxes(targetContainer, items, groupNameAttribute, isVisibility, selectAllCheckboxId) {
+            if (!targetContainer) return;
+            targetContainer.innerHTML = ''; // Limpa antes de popular
+
             items.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'tw-flex tw-items-center';
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
-                const idSuffix = isVisibilityFilter ? item.key.replace(/\./g, '-') : item.value.replace(/\-/g, '');
-                checkbox.id = `filter-${filterGroupName}-${idSuffix}`;
-                checkbox.name = filterGroupName;
-                checkbox.value = isVisibilityFilter ? item.key : item.value;
-                checkbox.className = isVisibilityFilter ? 'form-checkbox field-visibility-filter' : 'form-checkbox event-type-filter';
-                if (isVisibilityFilter) checkbox.checked = item.defaultChecked;
-                checkbox.addEventListener('change', applyFilters);
+                const idSuffix = isVisibility ? item.key.replace(/\./g, '-') : item.value.replace(/[\s-]/g, '');
+                checkbox.id = `filter-${groupNameAttribute}-${idSuffix}`;
+                checkbox.name = groupNameAttribute;
+                checkbox.value = isVisibility ? item.key : item.value;
+                checkbox.className = isVisibility ? 'form-checkbox field-visibility-filter' : 'form-checkbox event-type-filter';
+                checkbox.dataset.group = selectAllCheckboxId; // Para vincular ao "select all"
+                if (isVisibility) checkbox.checked = item.defaultChecked;
+                
+                checkbox.addEventListener('change', function() {
+                    applyFilters();
+                    updateSelectAllCheckboxState(selectAllCheckboxId);
+                });
+
                 const label = document.createElement('label');
                 label.htmlFor = checkbox.id;
                 label.className = 'form-checkbox-label';
                 label.textContent = item.label;
                 div.appendChild(checkbox);
                 div.appendChild(label);
-                container.appendChild(div);
+                targetContainer.appendChild(div);
             });
         }
 
-        function populateAllFilters() {
-            if(eventTypeFiltersContainer) {
-                eventTypeFiltersContainer.innerHTML = ''; 
-                eventFilterConfig.groups.forEach(group => {
-                    const fieldset = document.createElement('fieldset');
-                    fieldset.className = 'tw-mb-4';
-                    const legend = document.createElement('legend');
-                    legend.className = 'tw-text-md tw-font-semibold tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2'; // Estilo da legenda do fieldset
-                    legend.textContent = group.name;
-                    fieldset.appendChild(legend);
+        function setupSelectAllCheckboxes() {
+            document.querySelectorAll('.select-all-checkbox').forEach(selectAllCb => {
+                selectAllCb.addEventListener('change', function() {
+                    const groupName = this.dataset.group; // ex: 'fieldVisibility', 'envelopeEvents', 'recipientEvents'
+                    let checkboxesInGroup;
+                    if (groupName === 'fieldVisibility') {
+                        checkboxesInGroup = fieldVisibilityFiltersContainer.querySelectorAll('.field-visibility-filter');
+                    } else if (groupName === 'envelopeEvents') {
+                        checkboxesInGroup = envelopeEventTypeFiltersContainer.querySelectorAll('.event-type-filter');
+                    } else if (groupName === 'recipientEvents') {
+                        checkboxesInGroup = recipientEventTypeFiltersContainer.querySelectorAll('.event-type-filter');
+                    }
                     
-                    const itemsGridContainer = document.createElement('div');
-                    itemsGridContainer.className = 'checkbox-grid'; 
-                    populateFilters(itemsGridContainer, group.events, 'eventType');
-                    fieldset.appendChild(itemsGridContainer);
-                    eventTypeFiltersContainer.appendChild(fieldset);
+                    if (checkboxesInGroup) {
+                        checkboxesInGroup.forEach(cb => cb.checked = this.checked);
+                    }
+                    applyFilters();
                 });
+            });
+        }
+        
+        function updateSelectAllCheckboxState(selectAllId) {
+            const selectAllCheckbox = document.getElementById(selectAllId);
+            if (!selectAllCheckbox) return;
+
+            const groupName = selectAllCheckbox.dataset.group;
+            let checkboxesInGroup, container;
+
+            if (groupName === 'fieldVisibility') {
+                container = fieldVisibilityFiltersContainer;
+                checkboxesInGroup = container.querySelectorAll('.field-visibility-filter');
+            } else if (groupName === 'envelopeEvents') {
+                container = envelopeEventTypeFiltersContainer;
+                checkboxesInGroup = container.querySelectorAll('.event-type-filter');
+            } else if (groupName === 'recipientEvents') {
+                container = recipientEventTypeFiltersContainer;
+                checkboxesInGroup = container.querySelectorAll('.event-type-filter');
             }
-            if(fieldVisibilityFiltersContainer) {
-                 fieldVisibilityFiltersContainer.innerHTML = ''; 
-                 populateFilters(fieldVisibilityFiltersContainer, eventFilterConfig.displayableFields, 'fieldVisibility', true);
+
+            if (!checkboxesInGroup || checkboxesInGroup.length === 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+                return;
+            }
+
+            const totalCheckboxes = checkboxesInGroup.length;
+            const checkedCount = Array.from(checkboxesInGroup).filter(cb => cb.checked).length;
+
+            if (checkedCount === 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            } else if (checkedCount === totalCheckboxes) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else {
+                selectAllCheckbox.checked = false; // Ou true, dependendo da preferência para estado misto
+                selectAllCheckbox.indeterminate = true;
             }
         }
 
+
+        function populateAllFilters() {
+            // Popular filtros de tipo de evento
+            eventFilterConfig.groups.forEach(group => {
+                const container = document.getElementById(group.containerId);
+                if (container) {
+                    populateCheckboxes(container, group.events, 'eventType', false, group.selectAllId);
+                    updateSelectAllCheckboxState(group.selectAllId); // Define estado inicial do "select all"
+                }
+            });
+            // Popular filtros de visibilidade de campo
+            if (fieldVisibilityFiltersContainer) {
+                populateCheckboxes(fieldVisibilityFiltersContainer, eventFilterConfig.displayableFields, 'fieldVisibility', true, 'selectAllVisibleFields');
+                 updateSelectAllCheckboxState('selectAllVisibleFields'); // Define estado inicial
+            }
+            setupSelectAllCheckboxes(); // Configura os listeners dos "select all"
+        }
+
+
         function renderEvents(eventsToDisplay) {
-            eventListContainer.innerHTML = ''; 
+            // ... (função renderEvents como na resposta anterior, com verificações de nulidade e getNestedValue) ...
+             eventListContainer.innerHTML = ''; 
             if (!eventsToDisplay || eventsToDisplay.length === 0) {
                 eventListContainer.innerHTML = '<p class="tw-text-center tw-py-10">Nenhum evento encontrado com os critérios atuais.</p>';
                 return;
@@ -288,6 +389,7 @@
             });
         }
 
+
         async function fetchDocusignEvents() {
             if (loadingMessage && !eventListContainer.contains(loadingMessage) && eventListContainer.innerHTML === '') {
                 eventListContainer.appendChild(loadingMessage);
@@ -300,7 +402,7 @@
                     throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
                 }
                 allFetchedEvents = await response.json(); 
-                populateAllFilters();
+                populateAllFilters(); // Popula todos os filtros (tipos e visibilidade)
                 if (loadingMessage) loadingMessage.remove();
                 applyFilters(); 
             } catch (error) { 
@@ -311,6 +413,8 @@
         }
 
         function applyFilters() {
+            // ... (função applyFilters como na resposta anterior, ela já usa a estrutura de filtro de texto e tipo) ...
+            // A renderEvents() agora lida com a visibilidade dos campos.
             const filterText = filterInput.value.toLowerCase().trim();
             const selectedEventTypes = Array.from(document.querySelectorAll('.event-type-filter:checked')).map(cb => cb.value.toLowerCase());
             let eventsToDisplay = allFetchedEvents;
@@ -332,6 +436,9 @@
                             else searchableText += String(value).toLowerCase() + ' ';
                         }
                     });
+                    // Adiciona também o eventType e ID do evento na busca por texto
+                    searchableText += (eventEntry.eventType ? eventEntry.eventType.toLowerCase() : '') + ' ';
+                    searchableText += (eventEntry.id ? eventEntry.id.toLowerCase() : '');
                     return searchableText.includes(filterText);
                 });
             }

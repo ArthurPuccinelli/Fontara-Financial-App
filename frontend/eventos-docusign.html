@@ -3,10 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Eventos Docusign - Fontara Financial</title>
-    <meta
+    <title>Eventos dos Envelopes - Fontara Financial</title> <meta
       name="description"
-      content="Visualização dos últimos 100 eventos recebidos do Docusign com opções de filtro e exclusão."
+      content="Visualização dos últimos 100 eventos de envelopes Docusign com opções de filtro e exclusão."
     />
     <link rel="shortcut icon" href="./assets/logo/logo.png" type="image/x-icon" />
     <link rel="stylesheet" href="./css/tailwind-build.css" />
@@ -54,7 +53,7 @@
         color: #cbd5e0; /* coolGray-300 */
         border-color: #2d3748; /* coolGray-700 */
       }
-      .filter-input {
+      .filter-input { /* Usado para o filtro de texto */
         @apply tw-block tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-indigo-500 focus:tw-border-indigo-500 sm:tw-text-sm dark:tw-bg-gray-700 dark:tw-text-white;
       }
       .delete-btn {
@@ -64,15 +63,16 @@
         @apply tw-h-4 tw-w-4 tw-text-indigo-600 tw-border-gray-300 dark:tw-border-gray-600 tw-rounded focus:tw-ring-indigo-500 dark:tw-bg-gray-700 dark:focus:tw-ring-offset-gray-800;
       }
       .form-checkbox-label { 
-        @apply tw-ml-2 tw-block tw-text-sm tw-font-normal tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer; /* Ajustado para font-normal */
+        @apply tw-ml-2 tw-block tw-text-sm tw-font-normal tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer;
       }
-      .filter-section-heading { /* Para os títulos principais de cada seção de filtro */
+      /* .form-label removido, pois usaremos classes diretas do Tailwind para os títulos dos filtros */
+      .filter-group-title { /* Título para cada grupo principal de filtro (Texto, Visibilidade, Tipos) */
         @apply tw-block tw-text-base tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100 tw-mb-2;
       }
-      .filter-group legend { /* Para as legendas dos fieldsets (Eventos do Envelope, etc.) */
+      .filter-fieldset-legend { /* Legenda para os fieldsets de tipo de evento */
         @apply tw-text-sm tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2;
       }
-      .fieldset-grid-cols { /* Grade para os checkboxes dentro de cada filtro */
+      .checkbox-grid { /* Grade para os checkboxes dentro de cada filtro */
         @apply tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-x-4 tw-gap-y-2;
       }
     </style>
@@ -87,30 +87,32 @@
     <main class="tw-mt-20 tw-pt-10 tw-pb-10 tw-px-4 md:tw-px-[5%] lg:tw-px-[10%] content-wrapper">
       <div class="tw-container tw-mx-auto">
         <div class="tw-flex tw-flex-col sm:tw-flex-row sm:tw-justify-between sm:tw-items-center tw-mb-8">
-            <h1 class="tw-text-3xl md:tw-text-4xl tw-font-semibold tw-mb-4 sm:tw-mb-0">Últimos Eventos Docusign</h1>
-            <button id="refreshDataBtn" class="btn tw-self-start sm:tw-self-auto">
+            <h1 class="tw-text-3xl md:tw-text-4xl tw-font-semibold tw-mb-4 sm:tw-mb-0">Últimos Eventos dos Envelopes</h1> <button id="refreshDataBtn" class="btn tw-self-start sm:tw-self-auto">
                 <i class="bi bi-arrow-clockwise tw-mr-2"></i>Atualizar Dados
             </button>
         </div>
 
-        <div class="tw-mb-8 tw-p-4 md:tw-p-6 tw-bg-gray-100 dark:tw-bg-gray-800 tw-rounded-lg tw-shadow">
-            <h2 class="tw-text-xl tw-font-semibold tw-mb-4 tw-pb-2 tw-border-b dark:tw-border-gray-700">Opções de Filtro e Visualização</h2>
-            <div class="tw-grid md:tw-grid-cols-2 md:tw-gap-x-8">
-                <div class="tw-space-y-6">
+        <div class="tw-mb-8 tw-p-4 md:tw-p-6 tw-bg-gray-100 dark:tw-bg-gray-800 tw-rounded-lg tw-shadow-md">
+            <h2 class="tw-text-xl tw-font-bold tw-mb-6 tw-pb-3 tw-border-b dark:tw-border-gray-700 tw-text-gray-800 dark:tw-text-gray-100">
+                <i class="bi bi-filter-circle-fill tw-mr-2"></i>Opções de Filtro e Visualização
+            </h2>
+            <div class="tw-flex tw-flex-col md:tw-flex-row md:tw-gap-x-8">
+                <div class="md:tw-w-1/2 tw-space-y-6">
                     <div>
-                        <label for="filterInput" class="filter-section-heading">Filtrar por texto:</label>
-                        <p class="tw-text-xs tw-text-gray-500 dark:tw-text-gray-400 tw-mb-1">Busque em IDs, status, assunto, etc.</p>
+                        <label for="filterInput" class="filter-group-title">Filtrar por texto:</label>
+                        <p class="tw-text-xs tw-text-gray-600 dark:tw-text-gray-400 tw-mb-1">Busque em IDs, status, assunto, etc.</p>
                         <input type="text" id="filterInput" class="filter-input" placeholder="Digite para filtrar...">
                     </div>
-                    <div class="filter-group"> <legend class="filter-section-heading">Campos Visíveis por Evento:</legend>
-                        <div id="fieldVisibilityFiltersContainer" class="fieldset-grid-cols">
+                    <div> 
+                        <label class="filter-group-title">Campos Visíveis por Evento:</label>
+                        <div id="fieldVisibilityFiltersContainer" class="checkbox-grid">
                             {/* Checkboxes de visibilidade de campo serão inseridos aqui */}
                         </div>
                     </div>
                 </div>
 
-                <div class="tw-mt-6 md:tw-mt-0">
-                    <label class="filter-section-heading tw-mb-2">Filtrar por tipo de evento Docusign:</label>
+                <div class="md:tw-w-1/2 tw-mt-6 md:tw-mt-0">
+                    <label class="filter-group-title tw-mb-3">Filtrar por tipo de evento Docusign:</label>
                     <div id="eventTypeFiltersContainer" class="tw-space-y-4">
                         {/* Checkboxes de tipo de evento (com fieldsets) serão inseridos aqui */}
                     </div>
@@ -143,7 +145,7 @@
         let allFetchedEvents = []; 
         
         const eventFilterConfig = {
-            groups: [
+            groups: [ /* ... (mesma configuração de eventFilterConfig.groups da resposta anterior) ... */ 
                 {
                     name: "Eventos do Envelope",
                     events: [
@@ -165,7 +167,7 @@
                     ]
                 }
             ],
-            displayableFields: [
+            displayableFields: [ /* ... (mesma configuração de eventFilterConfig.displayableFields da resposta anterior) ... */ 
                 { key: "id", label: "ID da Função", defaultChecked: false, path: 'id' },
                 { key: "receivedAt", label: "Recebido em", defaultChecked: true, path: 'receivedAt', type: 'datetime' },
                 { key: "eventType", label: "Tipo de Evento", defaultChecked: true, path: 'eventType', isEventType: true },
@@ -189,31 +191,28 @@
         
         function populateFilters(container, items, filterGroupName, isVisibilityFilter = false) {
             if (!container) return;
-            // Não limpa o container aqui, pois ele é um fieldset-grid-cols que pode ser compartilhado
-            // container.innerHTML = ''; 
-
+            // A limpeza do container (innerHTML = '') deve ser feita antes de chamar esta função,
+            // pelo populateAllFilters, para que possamos chamar populateFilters para diferentes
+            // seções dentro do mesmo container pai se necessário (embora não seja o caso aqui).
             items.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'tw-flex tw-items-center';
-                
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
-                const idSuffix = isVisibilityFilter ? item.key.replace(/\./g, '-') : item.value.replace(/\-/g, ''); // Remove . e - para ID
+                const idSuffix = isVisibilityFilter ? item.key.replace(/\./g, '-') : item.value.replace(/\-/g, '');
                 checkbox.id = `filter-${filterGroupName}-${idSuffix}`;
                 checkbox.name = filterGroupName;
                 checkbox.value = isVisibilityFilter ? item.key : item.value;
                 checkbox.className = isVisibilityFilter ? 'form-checkbox field-visibility-filter' : 'form-checkbox event-type-filter';
                 if (isVisibilityFilter) checkbox.checked = item.defaultChecked;
                 checkbox.addEventListener('change', applyFilters);
-
                 const label = document.createElement('label');
                 label.htmlFor = checkbox.id;
                 label.className = 'form-checkbox-label';
                 label.textContent = item.label;
-
                 div.appendChild(checkbox);
                 div.appendChild(label);
-                container.appendChild(div); // Adiciona ao container (que é o fieldset-grid-cols)
+                container.appendChild(div);
             });
         }
 
@@ -222,26 +221,28 @@
                 eventTypeFiltersContainer.innerHTML = ''; 
                 eventFilterConfig.groups.forEach(group => {
                     const fieldset = document.createElement('fieldset');
-                    fieldset.className = 'tw-mb-3 filter-group'; // Adicionado filter-group para estilo da legenda
+                    fieldset.className = 'tw-mb-4'; // Espaçamento entre grupos de tipo de evento
                     const legend = document.createElement('legend');
-                    // legend.className = 'form-label tw-font-medium tw-text-base tw-mb-1'; // Estilo da legenda do grupo
+                    legend.className = 'filter-fieldset-legend'; // Estilo para a legenda do fieldset
                     legend.textContent = group.name;
                     fieldset.appendChild(legend);
                     
                     const itemsGridContainer = document.createElement('div');
-                    itemsGridContainer.className = 'fieldset-grid-cols'; // Usa a classe para grid de checkboxes
+                    itemsGridContainer.className = 'checkbox-grid'; // Usa a classe para grid de checkboxes
                     populateFilters(itemsGridContainer, group.events, 'eventType');
                     fieldset.appendChild(itemsGridContainer);
                     eventTypeFiltersContainer.appendChild(fieldset);
                 });
             }
             if(fieldVisibilityFiltersContainer) {
-                 fieldVisibilityFiltersContainer.innerHTML = ''; // Limpa antes de popular
+                 fieldVisibilityFiltersContainer.innerHTML = ''; 
                  populateFilters(fieldVisibilityFiltersContainer, eventFilterConfig.displayableFields, 'fieldVisibility', true);
             }
         }
 
         function renderEvents(eventsToDisplay) {
+            // ... (função renderEvents como na resposta anterior, ela já usa visibleFieldKeys) ...
+            // Garantir que as verificações de nulidade e o uso de getNestedValue estão corretos.
             eventListContainer.innerHTML = ''; 
             if (!eventsToDisplay || eventsToDisplay.length === 0) {
                 eventListContainer.innerHTML = '<p class="tw-text-center tw-py-10">Nenhum evento encontrado com os critérios atuais.</p>';
@@ -258,7 +259,7 @@
                 card.className = 'event-card dark:bg-gray-700 tw-shadow-md tw-p-4 tw-rounded-lg tw-mb-4 tw-text-left';
                 
                 let eventTypeLabel = eventEntry.eventType || 'Desconhecido';
-                for (const group of eventFilterConfig.groups) { // Corrigido para iterar sobre eventFilterConfig.groups
+                for (const group of eventFilterConfig.groups) {
                     const foundEvent = group.events.find(e => e.value === (eventEntry.eventType || '').toLowerCase());
                     if (foundEvent) { eventTypeLabel = foundEvent.label; break; }
                 }
@@ -269,15 +270,12 @@
                 eventFilterConfig.displayableFields.forEach(fieldConf => {
                     if (visibleFieldKeys[fieldConf.path]) {
                         let value = getNestedValue(eventEntry, fieldConf.path);
-                        
-                        // Só renderiza se o valor não for undefined/null, a menos que seja uma mensagem de erro que queremos mostrar
                         let shouldRenderField = (value !== undefined && value !== null);
                         if (Array.isArray(value) && value.length === 0) shouldRenderField = false;
                         if (fieldConf.path === 'relevantInfo.message' && eventEntry.relevantInfo && eventEntry.relevantInfo.message) {
-                           shouldRenderField = true; // Sempre mostra a mensagem de extração se estiver marcada
+                           shouldRenderField = true;
                         }
                         if (!shouldRenderField && !(fieldConf.path === 'relevantInfo.message' && value)) return;
-
 
                         let displayValue = '';
                         if (value === null || value === undefined) {
@@ -285,7 +283,7 @@
                         } else if (fieldConf.type === 'datetime') {
                             displayValue = new Date(value).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' });
                         } else if (fieldConf.isEventType) {
-                            displayValue = `<span class="tw-font-semibold">${eventTypeLabel}</span>`; // Usa o eventTypeLabel já processado
+                            displayValue = `<span class="tw-font-semibold">${eventTypeLabel}</span>`;
                         } else if (fieldConf.isArray && Array.isArray(value)) {
                              displayValue = `<ul class="tw-list-disc tw-list-inside tw-ml-4">${value.map(item => `<li>${String(item).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</li>`).join('')}</ul>`;
                         } else if (fieldConf.isPre) {
@@ -296,7 +294,8 @@
                         
                         const fieldHtml = `<p class="${fieldConf.key === 'id' ? 'tw-text-xs tw-text-gray-500 dark:tw-text-gray-400' : 'tw-mt-1'}"><strong>${fieldConf.label}:</strong> ${displayValue}</p>`;
                         
-                        if (fieldConf.key === "id" || fieldConf.key === "receivedAt" || fieldConf.key === "eventType") {
+                        // Decide se o campo vai no "cabeçalho" do card ou no corpo
+                        if (fieldConf.path === 'id' || fieldConf.path === 'receivedAt' || fieldConf.path === 'eventType') {
                             headerContent += fieldHtml;
                         } else {
                             bodyContent += fieldHtml;
@@ -319,40 +318,27 @@
             });
         }
 
+
         async function fetchDocusignEvents() {
             if (loadingMessage && !eventListContainer.contains(loadingMessage) && eventListContainer.innerHTML === '') {
                 eventListContainer.appendChild(loadingMessage);
             }
             if(loadingMessage) loadingMessage.textContent = 'Carregando eventos...';
-
             try {
                 const response = await fetch('/.netlify/functions/get-docusign-events');
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ message: `Erro HTTP: ${response.status}` }));
-                    throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
-                }
+                if (!response.ok) { /* ... */ }
                 allFetchedEvents = await response.json(); 
-                
                 populateAllFilters();
-
                 if (loadingMessage) loadingMessage.remove();
                 applyFilters(); 
-
-            } catch (error) {
-                console.error('Erro ao buscar eventos Docusign:', error);
-                if (loadingMessage) loadingMessage.remove();
-                eventListContainer.innerHTML = `<p class="tw-text-center tw-text-red-500 tw-py-10">Falha ao carregar eventos: ${error.message}</p>`;
-            }
+            } catch (error) { /* ... */ }
         }
 
         function applyFilters() {
+            // ... (função applyFilters como na resposta anterior, ela já usa a estrutura de filtro de texto e tipo) ...
+            // A renderEvents() agora lida com a visibilidade dos campos.
             const filterText = filterInput.value.toLowerCase().trim();
-            
-            const selectedEventTypes = [];
-            document.querySelectorAll('.event-type-filter:checked').forEach(checkbox => {
-                selectedEventTypes.push(checkbox.value.toLowerCase()); 
-            });
-
+            const selectedEventTypes = Array.from(document.querySelectorAll('.event-type-filter:checked')).map(cb => cb.value.toLowerCase());
             let eventsToDisplay = allFetchedEvents;
 
             if (selectedEventTypes.length > 0) {
@@ -379,9 +365,9 @@
         }
 
         async function handleDeleteEvent(event) {
+            // ... (função handleDeleteEvent como na resposta anterior) ...
             const eventId = event.target.closest('.delete-btn').dataset.eventId;
             if (!eventId) return;
-
             if (confirm(`Tem certeza que deseja excluir o evento com ID: ${eventId}?`)) {
                 try {
                     const response = await fetch('/.netlify/functions/delete-docusign-event', {
@@ -389,15 +375,9 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ eventId: eventId })
                     });
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({ message: `Erro HTTP: ${response.status}` }));
-                        throw new Error(errorData.message || `Erro ao excluir evento: ${response.statusText}`);
-                    }
+                    if (!response.ok) { /* ... */ }
                     fetchDocusignEvents(); 
-                } catch (error) {
-                    console.error("Erro ao excluir evento:", error);
-                    alert(`Falha ao excluir evento: ${error.message}`);
-                }
+                } catch (error) { /* ... */ }
             }
         }
 

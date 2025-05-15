@@ -4,7 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Eventos Docusign - Fontara Financial</title>
-    <meta name="description" content="Visualização dos últimos 100 eventos recebidos do Docusign." />
+    <meta
+      name="description"
+      content="Visualização dos últimos 100 eventos recebidos do Docusign com opções de filtro e exclusão."
+    />
     <link rel="shortcut icon" href="./assets/logo/logo.png" type="image/x-icon" />
     <link rel="stylesheet" href="./css/tailwind-build.css" />
     <link rel="stylesheet" href="./css/index.css" />
@@ -18,31 +21,60 @@
     <style>
       .content-wrapper { min-height: 70vh; }
       .event-card {
-        border: 1px solid #e2e8f0; padding: 1rem; margin-bottom: 1rem;
-        border-radius: 0.5rem; transition: box-shadow 0.2s ease-in-out;
+        border: 1px solid #e2e8f0; /* coolGray-200 */
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 0.5rem; /* rounded-lg */
+        transition: box-shadow 0.2s ease-in-out;
       }
-      .dark .event-card { border-color: #4a5568; background-color: #2d3748; }
-      .event-card:hover { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); }
-      .dark .event-card:hover { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2); }
-      .event-card strong { color: #2b6cb0; }
-      .dark .event-card strong { color: #63b3ed; }
+      .dark .event-card {
+        border-color: #4a5568; /* coolGray-700 */
+        background-color: #2d3748; /* coolGray-800 */
+      }
+      .event-card:hover {
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+      }
+      .dark .event-card:hover {
+         box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2);
+      }
+      .event-card strong { color: #2b6cb0; /* blue-600 */ }
+      .dark .event-card strong { color: #63b3ed; /* blue-300 */ }
       pre {
-        background-color: #f7fafc; padding: 0.75em 1em; border-radius: 0.375rem;
-        overflow-x: auto; font-size: 0.8em; margin-top: 0.5rem;
-        border: 1px solid #e2e8f0; max-height: 200px;
+        background-color: #f7fafc; /* coolGray-100 */
+        padding: 0.75em 1em;
+        border-radius: 0.375rem; /* rounded-md */
+        overflow-x: auto;
+        font-size: 0.8em;
+        margin-top: 0.5rem;
+        border: 1px solid #e2e8f0; /* coolGray-200 */
+        max-height: 200px; 
       }
-      .dark pre { background-color: #1a202c; color: #cbd5e0; border-color: #2d3748; }
+      .dark pre {
+        background-color: #1a202c; /* coolGray-900 */
+        color: #cbd5e0; /* coolGray-300 */
+        border-color: #2d3748; /* coolGray-700 */
+      }
       .filter-input {
-        @apply tw-block tw-w-full md:tw-w-1/2 tw-px-3 tw-py-2 tw-mb-4 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-indigo-500 focus:tw-border-indigo-500 sm:tw-text-sm dark:tw-bg-gray-700 dark:tw-text-white;
+        @apply tw-block tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-indigo-500 focus:tw-border-indigo-500 sm:tw-text-sm dark:tw-bg-gray-700 dark:tw-text-white;
       }
       .delete-btn {
         @apply tw-ml-auto tw-px-3 tw-py-1 tw-bg-red-500 hover:tw-bg-red-600 tw-text-white tw-text-xs tw-font-semibold tw-rounded tw-shadow focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-red-500 focus:tw-ring-opacity-50 tw-transition-colors;
       }
-      .form-checkbox { @apply tw-h-4 tw-w-4 tw-text-indigo-600 tw-border-gray-300 dark:tw-border-gray-600 tw-rounded focus:tw-ring-indigo-500 dark:tw-bg-gray-700 dark:focus:tw-ring-offset-gray-800; }
-      .form-checkbox-label { @apply tw-ml-2 tw-block tw-text-sm tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer; }
-      .form-label { @apply tw-block tw-text-sm tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-1; }
-      .filter-group legend { @apply tw-text-base tw-font-semibold tw-mb-2 tw-mt-3; }
-      .fieldset-grid { @apply tw-grid tw-grid-cols-2 sm:tw-grid-cols-3 md:tw-grid-cols-4 tw-gap-x-4 tw-gap-y-2; }
+      .form-checkbox { 
+        @apply tw-h-4 tw-w-4 tw-text-indigo-600 tw-border-gray-300 dark:tw-border-gray-600 tw-rounded focus:tw-ring-indigo-500 dark:tw-bg-gray-700 dark:focus:tw-ring-offset-gray-800;
+      }
+      .form-checkbox-label { 
+        @apply tw-ml-2 tw-block tw-text-sm tw-font-normal tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer; /* Ajustado para font-normal */
+      }
+      .filter-section-heading { /* Para os títulos principais de cada seção de filtro */
+        @apply tw-block tw-text-base tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100 tw-mb-2;
+      }
+      .filter-group legend { /* Para as legendas dos fieldsets (Eventos do Envelope, etc.) */
+        @apply tw-text-sm tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2;
+      }
+      .fieldset-grid-cols { /* Grade para os checkboxes dentro de cada filtro */
+        @apply tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-x-4 tw-gap-y-2;
+      }
     </style>
   </head>
   <body class="tw-flex tw-min-h-[100vh] tw-flex-col tw-bg-[#fcfcfc] tw-text-black dark:tw-bg-black dark:tw-text-white">
@@ -61,22 +93,27 @@
             </button>
         </div>
 
-        <div class="tw-mb-6 tw-p-4 md:tw-p-6 tw-bg-gray-50 dark:tw-bg-gray-800 tw-rounded-lg tw-shadow">
-            <div class="tw-mb-4">
-                <label for="filterInput" class="form-label">Filtrar por texto:</label>
-                <input type="text" id="filterInput" class="filter-input" placeholder="ID do envelope, status, assunto, etc.">
-            </div>
-            
-            <div class="tw-mb-4">
-                <div id="eventTypeFiltersContainer">
-                    {/* Checkboxes de tipo de evento serão inseridos aqui pelo JavaScript */}
+        <div class="tw-mb-8 tw-p-4 md:tw-p-6 tw-bg-gray-100 dark:tw-bg-gray-800 tw-rounded-lg tw-shadow">
+            <h2 class="tw-text-xl tw-font-semibold tw-mb-4 tw-pb-2 tw-border-b dark:tw-border-gray-700">Opções de Filtro e Visualização</h2>
+            <div class="tw-grid md:tw-grid-cols-2 md:tw-gap-x-8">
+                <div class="tw-space-y-6">
+                    <div>
+                        <label for="filterInput" class="filter-section-heading">Filtrar por texto:</label>
+                        <p class="tw-text-xs tw-text-gray-500 dark:tw-text-gray-400 tw-mb-1">Busque em IDs, status, assunto, etc.</p>
+                        <input type="text" id="filterInput" class="filter-input" placeholder="Digite para filtrar...">
+                    </div>
+                    <div class="filter-group"> <legend class="filter-section-heading">Campos Visíveis por Evento:</legend>
+                        <div id="fieldVisibilityFiltersContainer" class="fieldset-grid-cols">
+                            {/* Checkboxes de visibilidade de campo serão inseridos aqui */}
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div>
-                <label class="form-label tw-text-lg tw-font-semibold tw-mb-2">Campos Visíveis por Evento:</label>
-                <div id="fieldVisibilityFiltersContainer" class="fieldset-grid">
-                    {/* Checkboxes de visibilidade de campo serão inseridos aqui */}
+                <div class="tw-mt-6 md:tw-mt-0">
+                    <label class="filter-section-heading tw-mb-2">Filtrar por tipo de evento Docusign:</label>
+                    <div id="eventTypeFiltersContainer" class="tw-space-y-4">
+                        {/* Checkboxes de tipo de evento (com fieldsets) serão inseridos aqui */}
+                    </div>
                 </div>
             </div>
         </div>
@@ -88,7 +125,7 @@
     </main>
 
     <footer class="tw-mt-auto tw-flex tw-flex-col tw-w-full tw-gap-4 tw-text-sm tw-pt-[5%] tw-pb-10 tw-px-[5%] md:tw-px-[10%] tw-text-black dark:tw-text-white max-md:tw-flex-col">
-      <div class="tw-flex max-md:tw-flex-col max-md:tw-gap-6 tw-gap-3 tw-w-full tw-place-content-around"><div class="tw-flex tw-h-full tw-w-[250px] tw-flex-col tw-place-items-center tw-gap-6 max-md:tw-w-full"><a href="index.html" class="tw-w-full tw-place-items-center tw-flex tw-flex-col tw-gap-6"><img src="./assets/logo/logo.png" alt="Fontara Financial Logo" class="tw-max-w-[120px] dark:tw-invert"/></a><div class="tw-flex tw-gap-4 tw-text-lg"><a href="https://github.com/PaulleDemon/" aria-label="Github" target="_blank" rel="noopener"><i class="bi bi-github"></i></a><a href="https://twitter.com/pauls_freeman" aria-label="Twitter" target="_blank" rel="noopener"><i class="bi bi-twitter"></i></a><a href="https://www.linkedin.com/" aria-label="Linkedin" target="_blank" rel="noopener"><i class="bi bi-linkedin"></i></a></div></div><div class="tw-flex max-md:tw-flex-col tw-flex-wrap tw-gap-6 tw-h-full tw-w-full tw-justify-around"><div class="tw-flex tw-h-full tw-w-[200px] tw-flex-col tw-gap-4"><h2 class="tw-text-xl">Recursos</h2><div class="tw-flex tw-flex-col tw-gap-3"><a href="#" class="footer-link">Blog Financeiro</a><a href="#" class="footer-link">Simuladores</a><a href="#" class="footer-link">Glossário Financeiro</a><a href="#" class="footer-link">Status dos Serviços</a><a href="#" class="footer-link">Taxas e Tarifas</a></div></div><div class="tw-flex tw-h-full tw-w-[200px] tw-flex-col tw-gap-4"><h2 class="tw-text-xl">Fontara</h2><div class="tw-flex tw-flex-col tw-gap-3"><a href="#" class="footer-link">Sobre Nós</a><a href="#" class="footer-link">Carreiras</a><a href="#" class="footer-link">Imprensa</a><a href="#" class="footer-link">Fale Conosco</a><a href="#" class="footer-link">Compliance</a></div></div><div class="tw-flex tw-h-full tw-w-[200px] tw-flex-col tw-gap-4"><h2 class="tw-text-xl">Legal</h2><div class="tw-flex tw-flex-col tw-gap-3"><a href="#" class="footer-link">Termos de Uso</a><a href="#" class="footer-link">Política de Privacidade</a><a href="#" class="footer-link">Ouvidoria</a></div></div></div></div><hr class="tw-mt-8" /><div class="tw-mt-2 tw-flex tw-gap-2 tw-flex-col tw-text-gray-700 dark:tw-text-gray-300 tw-place-items-center tw-text-[12px] tw-w-full tw-text-center tw-place-content-around"><span>Copyright &#169; 2023-<span id="current-year"></span> Fontara Financial. Todos os direitos reservados.</span><span>Todas as marcas registradas e direitos autorais pertencem aos seus respectivos proprietários.</span></div>
+        <div class="tw-flex max-md:tw-flex-col max-md:tw-gap-6 tw-gap-3 tw-w-full tw-place-content-around"><div class="tw-flex tw-h-full tw-w-[250px] tw-flex-col tw-place-items-center tw-gap-6 max-md:tw-w-full"><a href="index.html" class="tw-w-full tw-place-items-center tw-flex tw-flex-col tw-gap-6"><img src="./assets/logo/logo.png" alt="Fontara Financial Logo" class="tw-max-w-[120px] dark:tw-invert"/></a><div class="tw-flex tw-gap-4 tw-text-lg"><a href="https://github.com/PaulleDemon/" aria-label="Github" target="_blank" rel="noopener"><i class="bi bi-github"></i></a><a href="https://twitter.com/pauls_freeman" aria-label="Twitter" target="_blank" rel="noopener"><i class="bi bi-twitter"></i></a><a href="https://www.linkedin.com/" aria-label="Linkedin" target="_blank" rel="noopener"><i class="bi bi-linkedin"></i></a></div></div><div class="tw-flex max-md:tw-flex-col tw-flex-wrap tw-gap-6 tw-h-full tw-w-full tw-justify-around"><div class="tw-flex tw-h-full tw-w-[200px] tw-flex-col tw-gap-4"><h2 class="tw-text-xl">Recursos</h2><div class="tw-flex tw-flex-col tw-gap-3"><a href="#" class="footer-link">Blog Financeiro</a><a href="#" class="footer-link">Simuladores</a><a href="#" class="footer-link">Glossário Financeiro</a><a href="#" class="footer-link">Status dos Serviços</a><a href="#" class="footer-link">Taxas e Tarifas</a></div></div><div class="tw-flex tw-h-full tw-w-[200px] tw-flex-col tw-gap-4"><h2 class="tw-text-xl">Fontara</h2><div class="tw-flex tw-flex-col tw-gap-3"><a href="#" class="footer-link">Sobre Nós</a><a href="#" class="footer-link">Carreiras</a><a href="#" class="footer-link">Imprensa</a><a href="#" class="footer-link">Fale Conosco</a><a href="#" class="footer-link">Compliance</a></div></div><div class="tw-flex tw-h-full tw-w-[200px] tw-flex-col tw-gap-4"><h2 class="tw-text-xl">Legal</h2><div class="tw-flex tw-flex-col tw-gap-3"><a href="#" class="footer-link">Termos de Uso</a><a href="#" class="footer-link">Política de Privacidade</a><a href="#" class="footer-link">Ouvidoria</a></div></div></div></div><hr class="tw-mt-8" /><div class="tw-mt-2 tw-flex tw-gap-2 tw-flex-col tw-text-gray-700 dark:tw-text-gray-300 tw-place-items-center tw-text-[12px] tw-w-full tw-text-center tw-place-content-around"><span>Copyright &#169; 2023-<span id="current-year"></span> Fontara Financial. Todos os direitos reservados.</span><span>Todas as marcas registradas e direitos autorais pertencem aos seus respectivos proprietários.</span></div>
     </footer>
 
     <script>
@@ -115,23 +152,19 @@
                         { label: "Anulado", value: "envelope-voided" }, { label: "Reenviado", value: "envelope-resent" },
                         { label: "Corrigido", value: "envelope-corrected" }, { label: "Criado", value: "envelope-created" },
                         { label: "Excluído", value: "envelope-deleted" }, { label: "Descartado", value: "envelope-discard" }
-                        // 'envelope-purge' pode ser muito técnico, omitido por padrão
                     ]
                 },
                 {
                     name: "Eventos de Destinatários",
                     events: [
-                        { label: "Enviado (Dest.)", value: "recipient-sent" }, { label: "Entregue (Dest.)", value: "recipient-delivered" },
-                        { label: "Concluído (Dest.)", value: "recipient-completed" }, { label: "Recusado (Dest.)", value: "recipient-declined" },
+                        { label: "Enviado para Dest.", value: "recipient-sent" }, { label: "Entregue ao Dest.", value: "recipient-delivered" },
+                        { label: "Concluído pelo Dest.", value: "recipient-completed" }, { label: "Recusado pelo Dest.", value: "recipient-declined" },
                         { label: "Falha na Autenticação", value: "recipient-authenticationfailed" },
                         { label: "Reatribuído", value: "recipient-reassign"}, { label: "Concluir Mais Tarde", value: "recipient-finish-later"},
                         { label: "Resp. Automática", value: "recipient-autoresponded" }, { label: "Reenviado (Dest.)", value: "recipient-resent"}
                     ]
                 }
-                // Você pode adicionar mais grupos aqui (ClickWraps, etc.)
             ],
-            // Campos do payload que podem ser mostrados/ocultos
-            // A chave 'path' indica o caminho no objeto eventEntry (ex: 'relevantInfo.envelopeId')
             displayableFields: [
                 { key: "id", label: "ID da Função", defaultChecked: false, path: 'id' },
                 { key: "receivedAt", label: "Recebido em", defaultChecked: true, path: 'receivedAt', type: 'datetime' },
@@ -142,7 +175,7 @@
                 { key: "timeGeneratedEvent", label: "Gerado (Docusign)", defaultChecked: false, path: 'relevantInfo.timeGeneratedEvent', type: 'datetime' },
                 { key: "statusChangedDateTime", label: "Status Alterado", defaultChecked: false, path: 'relevantInfo.statusChangedDateTime', type: 'datetime' },
                 { key: "senderName", label: "Remetente", defaultChecked: false, path: 'relevantInfo.senderName' },
-                { key: "recipients", label: "Destinatários", defaultChecked: false, path: 'relevantInfo.recipientsPreview', isArray: true }, // 'recipientsPreview' já é um array de strings
+                { key: "recipients", label: "Destinatários", defaultChecked: false, path: 'relevantInfo.recipientsPreview', isArray: true },
                 { key: "documentNames", label: "Nomes Documentos", defaultChecked: false, path: 'relevantInfo.documentNames' },
                 { key: "extractionMessage", label: "Msg Extração/Erro", defaultChecked: true, path: 'relevantInfo.message' },
                 { key: "rawPreview", label: "Preview Payload Bruto", defaultChecked: false, path: 'relevantInfo.rawPreview', isPre: true }
@@ -151,15 +184,13 @@
 
         function getNestedValue(obj, path) {
             if (!path || !obj) return undefined;
-            return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+            return path.split('.').reduce((acc, part) => acc && typeof acc === 'object' && acc[part], obj);
         }
         
         function populateFilters(container, items, filterGroupName, isVisibilityFilter = false) {
             if (!container) return;
-            container.innerHTML = ''; 
-
-            const gridDiv = document.createElement('div');
-            gridDiv.className = 'fieldset-grid';
+            // Não limpa o container aqui, pois ele é um fieldset-grid-cols que pode ser compartilhado
+            // container.innerHTML = ''; 
 
             items.forEach(item => {
                 const div = document.createElement('div');
@@ -167,7 +198,7 @@
                 
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
-                const idSuffix = isVisibilityFilter ? item.key.replace('.', '-') : item.value;
+                const idSuffix = isVisibilityFilter ? item.key.replace(/\./g, '-') : item.value.replace(/\-/g, ''); // Remove . e - para ID
                 checkbox.id = `filter-${filterGroupName}-${idSuffix}`;
                 checkbox.name = filterGroupName;
                 checkbox.value = isVisibilityFilter ? item.key : item.value;
@@ -182,28 +213,30 @@
 
                 div.appendChild(checkbox);
                 div.appendChild(label);
-                gridDiv.appendChild(div);
+                container.appendChild(div); // Adiciona ao container (que é o fieldset-grid-cols)
             });
-            container.appendChild(gridDiv);
         }
 
         function populateAllFilters() {
             if(eventTypeFiltersContainer) {
-                eventTypeFiltersContainer.innerHTML = ''; // Limpa antes de popular
+                eventTypeFiltersContainer.innerHTML = ''; 
                 eventFilterConfig.groups.forEach(group => {
                     const fieldset = document.createElement('fieldset');
-                    fieldset.className = 'tw-mb-3 filter-group';
+                    fieldset.className = 'tw-mb-3 filter-group'; // Adicionado filter-group para estilo da legenda
                     const legend = document.createElement('legend');
+                    // legend.className = 'form-label tw-font-medium tw-text-base tw-mb-1'; // Estilo da legenda do grupo
                     legend.textContent = group.name;
                     fieldset.appendChild(legend);
                     
-                    const itemsContainer = document.createElement('div');
-                    fieldset.appendChild(itemsContainer);
-                    populateFilters(itemsContainer, group.events, 'eventType');
+                    const itemsGridContainer = document.createElement('div');
+                    itemsGridContainer.className = 'fieldset-grid-cols'; // Usa a classe para grid de checkboxes
+                    populateFilters(itemsGridContainer, group.events, 'eventType');
+                    fieldset.appendChild(itemsGridContainer);
                     eventTypeFiltersContainer.appendChild(fieldset);
                 });
             }
             if(fieldVisibilityFiltersContainer) {
+                 fieldVisibilityFiltersContainer.innerHTML = ''; // Limpa antes de popular
                  populateFilters(fieldVisibilityFiltersContainer, eventFilterConfig.displayableFields, 'fieldVisibility', true);
             }
         }
@@ -224,49 +257,49 @@
                 const card = document.createElement('div');
                 card.className = 'event-card dark:bg-gray-700 tw-shadow-md tw-p-4 tw-rounded-lg tw-mb-4 tw-text-left';
                 
+                let eventTypeLabel = eventEntry.eventType || 'Desconhecido';
+                for (const group of eventFilterConfig.groups) { // Corrigido para iterar sobre eventFilterConfig.groups
+                    const foundEvent = group.events.find(e => e.value === (eventEntry.eventType || '').toLowerCase());
+                    if (foundEvent) { eventTypeLabel = foundEvent.label; break; }
+                }
+
                 let headerContent = `<div class="tw-flex tw-justify-between tw-items-start"><div>`;
                 let bodyContent = '';
 
-                // Renderiza campos com base na visibilidade e configuração
                 eventFilterConfig.displayableFields.forEach(fieldConf => {
-                    if (visibleFieldKeys[fieldConf.path]) { // Verifica se o campo deve ser visível
+                    if (visibleFieldKeys[fieldConf.path]) {
                         let value = getNestedValue(eventEntry, fieldConf.path);
-                        if (value === undefined || value === null || (Array.isArray(value) && value.length === 0)) {
-                            // Não mostra o campo se o valor for nulo, indefinido ou array vazio (exceto para mensagens de erro)
-                            if (fieldConf.path === 'relevantInfo.message' && eventEntry.relevantInfo && eventEntry.relevantInfo.message) {
-                                // Garante que a mensagem de erro seja exibida se marcada
-                            } else {
-                                return; 
-                            }
-                        }
                         
+                        // Só renderiza se o valor não for undefined/null, a menos que seja uma mensagem de erro que queremos mostrar
+                        let shouldRenderField = (value !== undefined && value !== null);
+                        if (Array.isArray(value) && value.length === 0) shouldRenderField = false;
+                        if (fieldConf.path === 'relevantInfo.message' && eventEntry.relevantInfo && eventEntry.relevantInfo.message) {
+                           shouldRenderField = true; // Sempre mostra a mensagem de extração se estiver marcada
+                        }
+                        if (!shouldRenderField && !(fieldConf.path === 'relevantInfo.message' && value)) return;
+
+
                         let displayValue = '';
-                        if (fieldConf.type === 'datetime' && value) {
+                        if (value === null || value === undefined) {
+                            displayValue = 'N/A';
+                        } else if (fieldConf.type === 'datetime') {
                             displayValue = new Date(value).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' });
-                        } else if (fieldConf.isEventType && value) {
-                            let label = value;
-                            for (const group of eventFilterConfig.groups) {
-                                const foundEvent = group.events.find(e => e.value === value.toLowerCase());
-                                if (foundEvent) { label = foundEvent.label; break; }
-                            }
-                            displayValue = `<span class="tw-font-semibold">${label}</span>`;
+                        } else if (fieldConf.isEventType) {
+                            displayValue = `<span class="tw-font-semibold">${eventTypeLabel}</span>`; // Usa o eventTypeLabel já processado
                         } else if (fieldConf.isArray && Array.isArray(value)) {
-                            if (value.length > 0) {
-                                displayValue = `<ul class="tw-list-disc tw-list-inside tw-ml-4">${value.map(item => `<li>${item}</li>`).join('')}</ul>`;
-                            } else {
-                                return; // Não mostra se o array estiver vazio
-                            }
-                        } else if (fieldConf.isPre && value) {
+                             displayValue = `<ul class="tw-list-disc tw-list-inside tw-ml-4">${value.map(item => `<li>${String(item).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</li>`).join('')}</ul>`;
+                        } else if (fieldConf.isPre) {
                             displayValue = `<pre class="tw-text-xs">${String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>`;
                         } else {
-                            displayValue = String(value);
+                            displayValue = String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;");
                         }
                         
-                        // Coloca os 3 primeiros campos (ID, Recebido, Tipo Evento) no header do card
+                        const fieldHtml = `<p class="${fieldConf.key === 'id' ? 'tw-text-xs tw-text-gray-500 dark:tw-text-gray-400' : 'tw-mt-1'}"><strong>${fieldConf.label}:</strong> ${displayValue}</p>`;
+                        
                         if (fieldConf.key === "id" || fieldConf.key === "receivedAt" || fieldConf.key === "eventType") {
-                            headerContent += `<p class="${fieldConf.key === 'id' ? 'tw-text-xs tw-text-gray-500 dark:tw-text-gray-400' : ''}"><strong>${fieldConf.label}:</strong> ${displayValue}</p>`;
+                            headerContent += fieldHtml;
                         } else {
-                            bodyContent += `<p class="tw-mt-1"><strong>${fieldConf.label}:</strong> ${displayValue}</p>`;
+                            bodyContent += fieldHtml;
                         }
                     }
                 });
@@ -287,7 +320,6 @@
         }
 
         async function fetchDocusignEvents() {
-          // ... (lógica de fetch e loadingMessage como antes) ...
             if (loadingMessage && !eventListContainer.contains(loadingMessage) && eventListContainer.innerHTML === '') {
                 eventListContainer.appendChild(loadingMessage);
             }
@@ -295,14 +327,22 @@
 
             try {
                 const response = await fetch('/.netlify/functions/get-docusign-events');
-                if (!response.ok) { /* ... tratamento de erro ... */ }
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: `Erro HTTP: ${response.status}` }));
+                    throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
+                }
                 allFetchedEvents = await response.json(); 
                 
-                populateAllFilters(); // Popula ambos os tipos de filtros
+                populateAllFilters();
 
                 if (loadingMessage) loadingMessage.remove();
                 applyFilters(); 
-            } catch (error) { /* ... tratamento de erro ... */ }
+
+            } catch (error) {
+                console.error('Erro ao buscar eventos Docusign:', error);
+                if (loadingMessage) loadingMessage.remove();
+                eventListContainer.innerHTML = `<p class="tw-text-center tw-text-red-500 tw-py-10">Falha ao carregar eventos: ${error.message}</p>`;
+            }
         }
 
         function applyFilters() {
@@ -324,7 +364,6 @@
 
             if (filterText) {
                 eventsToDisplay = eventsToDisplay.filter(eventEntry => {
-                    // Busca em todos os campos configurados em displayableFieldsConfig
                     let searchableText = '';
                     eventFilterConfig.displayableFields.forEach(fieldConf => {
                         const value = getNestedValue(eventEntry, fieldConf.path);
@@ -340,7 +379,26 @@
         }
 
         async function handleDeleteEvent(event) {
-            // ... (lógica de delete como antes) ...
+            const eventId = event.target.closest('.delete-btn').dataset.eventId;
+            if (!eventId) return;
+
+            if (confirm(`Tem certeza que deseja excluir o evento com ID: ${eventId}?`)) {
+                try {
+                    const response = await fetch('/.netlify/functions/delete-docusign-event', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ eventId: eventId })
+                    });
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: `Erro HTTP: ${response.status}` }));
+                        throw new Error(errorData.message || `Erro ao excluir evento: ${response.statusText}`);
+                    }
+                    fetchDocusignEvents(); 
+                } catch (error) {
+                    console.error("Erro ao excluir evento:", error);
+                    alert(`Falha ao excluir evento: ${error.message}`);
+                }
+            }
         }
 
         if (refreshDataBtn) refreshDataBtn.addEventListener('click', fetchDocusignEvents);

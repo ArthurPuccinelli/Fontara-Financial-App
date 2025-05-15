@@ -1,8 +1,7 @@
 // netlify/functions/get-docusign-events.js
-const { getStore } = require("@netlify/blobs"); // Usando require
+const { getStore } = require("@netlify/blobs");
 
-const BLOB_STORE_NAME = "docusignEvents";
-const BLOB_KEY_EVENT_LIST = "recent_event_list";
+// ... (BLOB_STORE_NAME, BLOB_KEY_EVENT_LIST como antes) ...
 
 exports.handler = async function(event, context) {
   if (event.httpMethod !== "GET") {
@@ -10,30 +9,30 @@ exports.handler = async function(event, context) {
   }
 
   try {
-    const store = getStore(BLOB_STORE_NAME); // Esta chamada pode ser o ponto do erro
+    const siteID = process.env.NETLIFY_SITE_ID;
+    const token = process.env.NETLIFY_API_ACCESS_TOKEN;
+
+    if (!siteID || !token) {
+      console.error("Variáveis de ambiente NETLIFY_SITE_ID ou NETLIFY_API_ACCESS_TOKEN não definidas para Netlify Blobs.");
+      throw new Error("Configuração de Blobs ausente.");
+    }
+
+    // Passando as opções manualmente
+    const store = getStore({
+      name: BLOB_STORE_NAME,
+      siteID: siteID,
+      token: token
+    });
+
     const eventList = await store.get(BLOB_KEY_EVENT_LIST, { type: "json" });
 
     if (!eventList || !Array.isArray(eventList) || eventList.length === 0) {
-      return {
-        statusCode: 200,
-        body: JSON.stringify([]),
-        headers: { 'Content-Type': 'application/json' }
-      };
+      return { /* ... retorna array vazio ... */ };
     }
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify(eventList),
-      headers: { 'Content-Type': 'application/json' }
-    };
+    return { /* ... retorna eventList ... */ };
 
   } catch (error) {
-    console.error("Erro ao buscar lista de eventos do Netlify Blobs:", error);
-    // Se o erro for ERR_REQUIRE_ESM, ele pode ocorrer aqui na chamada a getStore.
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "Erro ao buscar dados dos eventos.", error: error.message, stack: error.stack }),
-      headers: { 'Content-Type': 'application/json' }
-    };
+    console.error("Erro ao buscar lista de eventos do Netlify Blobs (manual config):", error);
+    return { /* ... retorna erro 500 ... */ };
   }
 };

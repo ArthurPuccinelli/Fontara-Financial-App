@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Últimos 100 Eventos Docusign - Fontara Financial</title>
+    <title>Eventos Docusign - Fontara Financial</title>
     <meta
       name="description"
       content="Visualização dos últimos 100 eventos recebidos do Docusign com opções de filtro e exclusão."
@@ -59,14 +59,17 @@
       .delete-btn {
         @apply tw-ml-auto tw-px-3 tw-py-1 tw-bg-red-500 hover:tw-bg-red-600 tw-text-white tw-text-xs tw-font-semibold tw-rounded tw-shadow focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-red-500 focus:tw-ring-opacity-50 tw-transition-colors;
       }
-      .form-checkbox { /* Reutilizando da assinatura-embarcada.html */
+      .form-checkbox { 
         @apply tw-h-5 tw-w-5 tw-text-indigo-600 tw-border-gray-300 dark:tw-border-gray-600 tw-rounded focus:tw-ring-indigo-500 dark:tw-bg-gray-700 dark:focus:tw-ring-offset-gray-800;
       }
-      .form-checkbox-label { /* Reutilizando da assinatura-embarcada.html */
+      .form-checkbox-label {
         @apply tw-ml-2 tw-block tw-text-sm tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer;
       }
-      .form-label { /* Reutilizando da assinatura-embarcada.html */
+      .form-label {
         @apply tw-block tw-text-sm tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-1;
+      }
+      .filter-group legend {
+        @apply tw-text-lg tw-font-semibold tw-mb-2 tw-mt-4;
       }
     </style>
   </head>
@@ -80,7 +83,7 @@
     <main class="tw-mt-20 tw-pt-10 tw-pb-10 tw-px-4 md:tw-px-[5%] lg:tw-px-[10%] content-wrapper">
       <div class="tw-container tw-mx-auto">
         <div class="tw-flex tw-flex-col sm:tw-flex-row sm:tw-justify-between sm:tw-items-center tw-mb-8">
-            <h1 class="tw-text-3xl md:tw-text-4xl tw-font-semibold tw-mb-4 sm:tw-mb-0">Últimos 100 Eventos Docusign</h1>
+            <h1 class="tw-text-3xl md:tw-text-4xl tw-font-semibold tw-mb-4 sm:tw-mb-0">Últimos Eventos Docusign</h1>
             <button id="refreshDataBtn" class="btn tw-self-start sm:tw-self-auto">
                 <i class="bi bi-arrow-clockwise tw-mr-2"></i>Atualizar Dados
             </button>
@@ -88,13 +91,12 @@
 
         <div class="tw-mb-6 tw-p-4 tw-bg-gray-50 dark:tw-bg-gray-800 tw-rounded-lg tw-shadow">
             <div class="tw-mb-4">
-                <label for="filterInput" class="form-label tw-mb-1">Filtrar por texto (ID do envelope, status, assunto):</label>
+                <label for="filterInput" class="form-label tw-mb-1">Filtrar por texto (ID envelope, status, assunto, etc.):</label>
                 <input type="text" id="filterInput" class="filter-input" placeholder="Digite para filtrar...">
             </div>
-            <div>
-                <label class="form-label tw-mb-2">Filtrar por tipo de evento Docusign:</label>
-                <div id="eventTypeFiltersContainer" class="tw-grid tw-grid-cols-2 sm:tw-grid-cols-3 md:tw-grid-cols-4 lg:tw-grid-cols-5 tw-gap-2">
-                    </div>
+            
+            <div id="filterCheckboxesContainer">
+                {/* Checkboxes de filtro serão inseridos aqui pelo JavaScript */}
             </div>
         </div>
 
@@ -115,56 +117,83 @@
         if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
         const eventListContainer = document.getElementById('eventListContainer');
-        const loadingMessage = document.getElementById('loadingMessage');
+        const loadingMessage = document.getElementById('loadingMessage'); // Assegure que este <p> existe em eventListContainer
         const refreshDataBtn = document.getElementById('refreshDataBtn');
         const filterInput = document.getElementById('filterInput');
-        const eventTypeFiltersContainer = document.getElementById('eventTypeFiltersContainer');
+        const filterCheckboxesContainer = document.getElementById('filterCheckboxesContainer');
 
         let allFetchedEvents = []; 
-        let availableEventTypes = new Set(); // Para popular os checkboxes de filtro
-
-        // Tipos de evento Docusign comuns (você pode adicionar mais ou traduzir)
-        const docusignEventLabels = {
-            "envelope-sent": "Envelope Enviado",
-            "envelope-delivered": "Envelope Entregue",
-            "recipient-delivered": "Destinatário Entregue",
-            "recipient-completed": "Destinatário Concluído",
-            "envelope-completed": "Envelope Concluído",
-            "envelope-declined": "Envelope Recusado",
-            "recipient-declined": "Destinatário Recusou",
-            "envelope-voided": "Envelope Anulado",
-            "recipient-sent": "Destinatário Enviado",
-            // Adicione outros eventos conforme necessário
-        };
-
+        
+        // Mapeamento de eventos técnicos para rótulos e grupos
+        // Os 'eventValue' devem corresponder exatamente aos valores do campo 'event' no payload Docusign
+        const eventFiltersConfig = [
+            {
+                groupName: "Eventos do Envelope",
+                events: [
+                    { label: "Enviado", eventValue: "envelope-sent" },
+                    { label: "Entregue", eventValue: "envelope-delivered" },
+                    { label: "Concluído", eventValue: "envelope-completed" },
+                    { label: "Recusado", eventValue: "envelope-declined" },
+                    { label: "Anulado", eventValue: "envelope-voided" },
+                    { label: "Reenviado", eventValue: "envelope-resent" },
+                    { label: "Corrigido", eventValue: "envelope-corrected" },
+                    // Adicione 'envelope-purge', 'envelope-deleted', 'envelope-created' se forem relevantes e vierem do Connect
+                ]
+            },
+            {
+                groupName: "Eventos de Destinatários",
+                events: [
+                    { label: "Enviado para Destinatário", eventValue: "recipient-sent" },
+                    { label: "Entregue ao Destinatário", eventValue: "recipient-delivered" },
+                    { label: "Concluído pelo Destinatário", eventValue: "recipient-completed" },
+                    { label: "Recusado pelo Destinatário", eventValue: "recipient-declined" },
+                    { label: "Falha na Autenticação", eventValue: "recipient-authenticationfailed" },
+                    // Adicione outros como 'recipient-autoresponded', 'recipient-resent', 'recipient-reassign', 'recipient-finishlater'
+                ]
+            }
+        ];
 
         function populateEventTypeFilters() {
-            if (!eventTypeFiltersContainer) return;
-            eventTypeFiltersContainer.innerHTML = ''; // Limpa filtros existentes
+            if (!filterCheckboxesContainer) return;
+            filterCheckboxesContainer.innerHTML = ''; // Limpa filtros existentes
 
-            availableEventTypes.forEach(eventType => {
-                const div = document.createElement('div');
-                div.className = 'tw-flex tw-items-center';
+            eventFiltersConfig.forEach(group => {
+                const fieldset = document.createElement('fieldset');
+                fieldset.className = 'tw-mb-4';
                 
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.id = `filter-${eventType}`;
-                checkbox.name = 'eventTypeFilter';
-                checkbox.value = eventType;
-                checkbox.className = 'form-checkbox event-type-filter';
-                checkbox.addEventListener('change', applyFilters);
+                const legend = document.createElement('legend');
+                legend.className = 'form-label tw-font-semibold tw-text-base tw-mb-2';
+                legend.textContent = group.groupName;
+                fieldset.appendChild(legend);
 
-                const label = document.createElement('label');
-                label.htmlFor = `filter-${eventType}`;
-                label.className = 'form-checkbox-label';
-                label.textContent = docusignEventLabels[eventType.toLowerCase()] || eventType; // Usa label traduzido ou o tipo original
+                const gridDiv = document.createElement('div');
+                gridDiv.className = 'tw-grid tw-grid-cols-2 sm:tw-grid-cols-3 md:tw-grid-cols-4 tw-gap-x-4 tw-gap-y-2';
 
-                div.appendChild(checkbox);
-                div.appendChild(label);
-                eventTypeFiltersContainer.appendChild(div);
+                group.events.forEach(evt => {
+                    const div = document.createElement('div');
+                    div.className = 'tw-flex tw-items-center';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `filter-${evt.eventValue}`;
+                    checkbox.name = 'eventTypeFilter';
+                    checkbox.value = evt.eventValue;
+                    checkbox.className = 'form-checkbox event-type-filter';
+                    checkbox.addEventListener('change', applyFilters);
+
+                    const label = document.createElement('label');
+                    label.htmlFor = checkbox.id;
+                    label.className = 'form-checkbox-label';
+                    label.textContent = evt.label;
+
+                    div.appendChild(checkbox);
+                    div.appendChild(label);
+                    gridDiv.appendChild(div);
+                });
+                fieldset.appendChild(gridDiv);
+                filterCheckboxesContainer.appendChild(fieldset);
             });
         }
-
 
         function renderEvents(eventsToDisplay) {
             eventListContainer.innerHTML = ''; 
@@ -177,11 +206,21 @@
                 const card = document.createElement('div');
                 card.className = 'event-card dark:bg-gray-700 tw-shadow-md tw-p-4 tw-rounded-lg tw-mb-4 tw-text-left';
                 
+                // Encontra o rótulo amigável para o eventType
+                let eventTypeLabel = eventEntry.eventType || 'Desconhecido';
+                for (const group of eventFiltersConfig) {
+                    const foundEvent = group.events.find(e => e.eventValue === (eventEntry.eventType || '').toLowerCase());
+                    if (foundEvent) {
+                        eventTypeLabel = foundEvent.label;
+                        break;
+                    }
+                }
+
                 let content = `<div class="tw-flex tw-justify-between tw-items-start">`;
                 content += `<div>`;
-                content += `<p class="tw-text-xs tw-text-gray-500 dark:tw-text-gray-400"><strong>ID:</strong> ${eventEntry.id || 'N/A'}</p>`;
+                content += `<p class="tw-text-xs tw-text-gray-500 dark:tw-text-gray-400"><strong>ID da Função:</strong> ${eventEntry.id || 'N/A'}</p>`;
                 content += `<p><strong>Recebido em:</strong> ${eventEntry.receivedAt ? new Date(eventEntry.receivedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' }) : 'Data N/A'}</p>`;
-                content += `<p><strong>Tipo de Evento:</strong> <span class="tw-font-semibold">${docusignEventLabels[eventEntry.eventType.toLowerCase()] || eventEntry.eventType || 'Desconhecido'}</span></p>`;
+                content += `<p><strong>Tipo de Evento:</strong> <span class="tw-font-semibold">${eventTypeLabel}</span></p>`;
                 content += `</div>`;
                 content += `<button data-event-id="${eventEntry.id}" class="delete-btn tw-ml-4"><i class="bi bi-trash3"></i> Excluir</button>`;
                 content += `</div>`;
@@ -228,7 +267,6 @@
             }
             if(loadingMessage) loadingMessage.textContent = 'Carregando eventos...';
 
-
             try {
                 const response = await fetch('/.netlify/functions/get-docusign-events');
                 if (!response.ok) {
@@ -237,12 +275,7 @@
                 }
                 allFetchedEvents = await response.json(); 
                 
-                // Coleta todos os tipos de eventos únicos para popular os filtros
-                availableEventTypes.clear();
-                allFetchedEvents.forEach(event => {
-                    if (event.eventType) availableEventTypes.add(event.eventType.toLowerCase());
-                });
-                populateEventTypeFilters(); // Cria os checkboxes de filtro
+                populateEventTypeFilters(); // Popula os checkboxes com base nos tipos de evento definidos
 
                 if (loadingMessage) loadingMessage.remove();
                 applyFilters(); 
@@ -259,28 +292,35 @@
             
             const selectedEventTypes = [];
             document.querySelectorAll('.event-type-filter:checked').forEach(checkbox => {
-                selectedEventTypes.push(checkbox.value.toLowerCase());
+                selectedEventTypes.push(checkbox.value.toLowerCase()); 
             });
 
             let eventsToDisplay = allFetchedEvents;
 
             if (selectedEventTypes.length > 0) {
                 eventsToDisplay = eventsToDisplay.filter(eventEntry => 
-                    selectedEventTypes.includes(eventEntry.eventType && eventEntry.eventType.toLowerCase())
+                    eventEntry.eventType && 
+                    selectedEventTypes.includes(eventEntry.eventType.toLowerCase())
                 );
             }
 
             if (filterText) {
                 eventsToDisplay = eventsToDisplay.filter(eventEntry => {
                     const info = eventEntry.relevantInfo;
-                    const searchText = 
-                        (eventEntry.eventType || '') +
-                        (eventEntry.id || '') +
-                        (info && info.envelopeId || '') +
-                        (info && info.status || '') +
-                        (info && info.subject || '') +
-                        (info && info.message || '');
-                    return searchText.toLowerCase().includes(filterText);
+                    const eventTypeStr = eventEntry.eventType ? eventEntry.eventType.toLowerCase() : '';
+                    const idStr = eventEntry.id ? eventEntry.id.toLowerCase() : ''; // ID da função/entrada, não do envelope
+                    
+                    let infoStr = '';
+                    if (info) {
+                        infoStr += info.envelopeId ? info.envelopeId.toLowerCase() : '';
+                        infoStr += info.status ? info.status.toLowerCase() : '';
+                        infoStr += info.subject ? info.subject.toLowerCase() : '';
+                        infoStr += info.message ? info.message.toLowerCase() : '';
+                    }
+                    
+                    return eventTypeStr.includes(filterText) ||
+                           idStr.includes(filterText) || // Permite filtrar pelo ID da entrada
+                           infoStr.includes(filterText);
                 });
             }
             renderEvents(eventsToDisplay);
@@ -303,7 +343,6 @@
                     }
                     const result = await response.json();
                     console.log(result.message);
-                    // alert("Evento excluído com sucesso!"); // Pode ser um pouco intrusivo
                     fetchDocusignEvents(); 
                 } catch (error) {
                     console.error("Erro ao excluir evento:", error);

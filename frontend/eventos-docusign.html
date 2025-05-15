@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Eventos Docusign - Fontara Financial</title>
+    <title>Eventos Docusign Detalhados - Fontara Financial</title>
     <meta
       name="description"
-      content="Visualização dos últimos 100 eventos recebidos do Docusign com opções de filtro e exclusão."
+      content="Visualização detalhada e personalizável dos últimos 100 eventos Docusign."
     />
     <link rel="shortcut icon" href="./assets/logo/logo.png" type="image/x-icon" />
     <link rel="stylesheet" href="./css/tailwind-build.css" />
@@ -21,15 +21,15 @@
     <style>
       .content-wrapper { min-height: 70vh; }
       .event-card {
-        border: 1px solid #e2e8f0; /* coolGray-200 */
+        border: 1px solid #e2e8f0;
         padding: 1rem;
         margin-bottom: 1rem;
-        border-radius: 0.5rem; /* rounded-lg */
+        border-radius: 0.5rem;
         transition: box-shadow 0.2s ease-in-out;
       }
       .dark .event-card {
-        border-color: #4a5568; /* coolGray-700 */
-        background-color: #2d3748; /* coolGray-800 */
+        border-color: #4a5568; 
+        background-color: #2d3748;
       }
       .event-card:hover {
         box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
@@ -37,21 +37,22 @@
       .dark .event-card:hover {
          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2);
       }
-      .event-card strong { color: #2b6cb0; /* blue-600 */ }
-      .dark .event-card strong { color: #63b3ed; /* blue-300 */ }
+      .event-card strong { color: #2b6cb0; }
+      .dark .event-card strong { color: #63b3ed; }
       pre {
-        background-color: #f7fafc; /* coolGray-100 */
+        background-color: #f7fafc;
         padding: 0.75em 1em;
-        border-radius: 0.375rem; /* rounded-md */
+        border-radius: 0.375rem;
         overflow-x: auto;
         font-size: 0.8em;
         margin-top: 0.5rem;
-        border: 1px solid #e2e8f0; /* coolGray-200 */
+        border: 1px solid #e2e8f0;
+        max-height: 200px; /* Limita altura do pre */
       }
       .dark pre {
-        background-color: #1a202c; /* coolGray-900 */
-        color: #cbd5e0; /* coolGray-300 */
-        border-color: #2d3748; /* coolGray-700 */
+        background-color: #1a202c;
+        color: #cbd5e0;
+        border-color: #2d3748;
       }
       .filter-input {
         @apply tw-block tw-w-full md:tw-w-1/2 tw-px-3 tw-py-2 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-indigo-500 focus:tw-border-indigo-500 sm:tw-text-sm dark:tw-bg-gray-700 dark:tw-text-white;
@@ -60,7 +61,7 @@
         @apply tw-ml-auto tw-px-3 tw-py-1 tw-bg-red-500 hover:tw-bg-red-600 tw-text-white tw-text-xs tw-font-semibold tw-rounded tw-shadow focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-red-500 focus:tw-ring-opacity-50 tw-transition-colors;
       }
       .form-checkbox { 
-        @apply tw-h-5 tw-w-5 tw-text-indigo-600 tw-border-gray-300 dark:tw-border-gray-600 tw-rounded focus:tw-ring-indigo-500 dark:tw-bg-gray-700 dark:focus:tw-ring-offset-gray-800;
+        @apply tw-h-4 tw-w-4 tw-text-indigo-600 tw-border-gray-300 dark:tw-border-gray-600 tw-rounded focus:tw-ring-indigo-500 dark:tw-bg-gray-700 dark:focus:tw-ring-offset-gray-800;
       }
       .form-checkbox-label {
         @apply tw-ml-2 tw-block tw-text-sm tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer;
@@ -70,6 +71,9 @@
       }
       .filter-group legend {
         @apply tw-text-lg tw-font-semibold tw-mb-2 tw-mt-4;
+      }
+      .fieldset-grid {
+        @apply tw-grid tw-grid-cols-2 sm:tw-grid-cols-3 md:tw-grid-cols-4 tw-gap-x-4 tw-gap-y-2;
       }
     </style>
   </head>
@@ -83,20 +87,30 @@
     <main class="tw-mt-20 tw-pt-10 tw-pb-10 tw-px-4 md:tw-px-[5%] lg:tw-px-[10%] content-wrapper">
       <div class="tw-container tw-mx-auto">
         <div class="tw-flex tw-flex-col sm:tw-flex-row sm:tw-justify-between sm:tw-items-center tw-mb-8">
-            <h1 class="tw-text-3xl md:tw-text-4xl tw-font-semibold tw-mb-4 sm:tw-mb-0">Últimos Eventos Docusign</h1>
+            <h1 class="tw-text-3xl md:tw-text-4xl tw-font-semibold tw-mb-4 sm:tw-mb-0">Últimos 100 Eventos Docusign</h1>
             <button id="refreshDataBtn" class="btn tw-self-start sm:tw-self-auto">
                 <i class="bi bi-arrow-clockwise tw-mr-2"></i>Atualizar Dados
             </button>
         </div>
 
-        <div class="tw-mb-6 tw-p-4 tw-bg-gray-50 dark:tw-bg-gray-800 tw-rounded-lg tw-shadow">
+        <div class="tw-mb-6 tw-p-4 md:tw-p-6 tw-bg-gray-50 dark:tw-bg-gray-800 tw-rounded-lg tw-shadow">
             <div class="tw-mb-4">
-                <label for="filterInput" class="form-label tw-mb-1">Filtrar por texto (ID envelope, status, assunto, etc.):</label>
+                <label for="filterInput" class="form-label">Filtrar por texto (ID do envelope, status, assunto, etc.):</label>
                 <input type="text" id="filterInput" class="filter-input" placeholder="Digite para filtrar...">
             </div>
             
-            <div id="filterCheckboxesContainer">
-                {/* Checkboxes de filtro serão inseridos aqui pelo JavaScript */}
+            <div class="tw-mb-4">
+                <label class="form-label tw-mb-2">Filtrar por tipo de evento Docusign:</label>
+                <div id="eventTypeFiltersContainer" class="fieldset-grid">
+                    {/* Checkboxes de tipo de evento serão inseridos aqui pelo JavaScript */}
+                </div>
+            </div>
+
+            <div>
+                <label class="form-label tw-mb-2">Mostrar/Ocultar Campos de Informação:</label>
+                <div id="fieldVisibilityFiltersContainer" class="fieldset-grid">
+                    {/* Checkboxes de visibilidade de campo serão inseridos aqui */}
+                </div>
             </div>
         </div>
 
@@ -117,83 +131,116 @@
         if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
         const eventListContainer = document.getElementById('eventListContainer');
-        const loadingMessage = document.getElementById('loadingMessage'); // Assegure que este <p> existe em eventListContainer
+        const loadingMessage = document.getElementById('loadingMessage');
         const refreshDataBtn = document.getElementById('refreshDataBtn');
         const filterInput = document.getElementById('filterInput');
-        const filterCheckboxesContainer = document.getElementById('filterCheckboxesContainer');
+        const eventTypeFiltersContainer = document.getElementById('eventTypeFiltersContainer');
+        const fieldVisibilityFiltersContainer = document.getElementById('fieldVisibilityFiltersContainer');
 
         let allFetchedEvents = []; 
         
-        // Mapeamento de eventos técnicos para rótulos e grupos
-        // Os 'eventValue' devem corresponder exatamente aos valores do campo 'event' no payload Docusign
-        const eventFiltersConfig = [
+        const docusignEventGroups = [
             {
                 groupName: "Eventos do Envelope",
                 events: [
-                    { label: "Enviado", eventValue: "envelope-sent" },
-                    { label: "Entregue", eventValue: "envelope-delivered" },
-                    { label: "Concluído", eventValue: "envelope-completed" },
-                    { label: "Recusado", eventValue: "envelope-declined" },
-                    { label: "Anulado", eventValue: "envelope-voided" },
-                    { label: "Reenviado", eventValue: "envelope-resent" },
-                    { label: "Corrigido", eventValue: "envelope-corrected" },
-                    // Adicione 'envelope-purge', 'envelope-deleted', 'envelope-created' se forem relevantes e vierem do Connect
+                    { label: "Enviado", value: "envelope-sent" }, { label: "Entregue", value: "envelope-delivered" },
+                    { label: "Concluído", value: "envelope-completed" }, { label: "Recusado", value: "envelope-declined" },
+                    { label: "Anulado", value: "envelope-voided" }, { label: "Reenviado", value: "envelope-resent" },
+                    { label: "Corrigido", value: "envelope-corrected" }, { label: "Criado", value: "envelope-created" }
+                    // Adicione 'envelope-purge', 'envelope-deleted' se vierem do Connect
                 ]
             },
             {
                 groupName: "Eventos de Destinatários",
                 events: [
-                    { label: "Enviado para Destinatário", eventValue: "recipient-sent" },
-                    { label: "Entregue ao Destinatário", eventValue: "recipient-delivered" },
-                    { label: "Concluído pelo Destinatário", eventValue: "recipient-completed" },
-                    { label: "Recusado pelo Destinatário", eventValue: "recipient-declined" },
-                    { label: "Falha na Autenticação", eventValue: "recipient-authenticationfailed" },
-                    // Adicione outros como 'recipient-autoresponded', 'recipient-resent', 'recipient-reassign', 'recipient-finishlater'
+                    { label: "Enviado para Dest.", value: "recipient-sent" }, { label: "Entregue ao Dest.", value: "recipient-delivered" },
+                    { label: "Concluído pelo Dest.", value: "recipient-completed" }, { label: "Recusado pelo Dest.", value: "recipient-declined" },
+                    { label: "Falha na Autenticação", value: "recipient-authenticationfailed" },
+                    { label: "Reatribuído", value: "recipient-reassign"}, { label: "Concluir Mais Tarde", value: "recipient-finish-later"} // Docusign usa 'recipient-finish-later'
                 ]
             }
         ];
 
-        function populateEventTypeFilters() {
-            if (!filterCheckboxesContainer) return;
-            filterCheckboxesContainer.innerHTML = ''; // Limpa filtros existentes
+        // Campos que podem ser mostrados/ocultos
+        const displayableFieldsConfig = [
+            { key: "id", label: "ID da Função", defaultChecked: true },
+            { key: "receivedAt", label: "Recebido em", defaultChecked: true },
+            { key: "eventType", label: "Tipo de Evento", defaultChecked: true },
+            { key: "relevantInfo.envelopeId", label: "ID do Envelope", defaultChecked: true },
+            { key: "relevantInfo.status", label: "Status Envelope", defaultChecked: true },
+            { key: "relevantInfo.subject", label: "Assunto", defaultChecked: true },
+            { key: "relevantInfo.timeGeneratedEvent", label: "Gerado (Docusign)", defaultChecked: false },
+            { key: "relevantInfo.statusChangedDateTime", label: "Status Alterado (Docusign)", defaultChecked: false },
+            { key: "relevantInfo.recipientsPreview", label: "Destinatários", defaultChecked: false },
+            { key: "relevantInfo.message", label: "Msg Extração/Erro", defaultChecked: true },
+            { key: "relevantInfo.rawPreview", label: "Preview Payload Bruto", defaultChecked: false }
+        ];
 
-            eventFiltersConfig.forEach(group => {
+        function populateEventTypeFilters() {
+            if (!eventTypeFiltersContainer) return;
+            eventTypeFiltersContainer.innerHTML = ''; 
+
+            docusignEventGroups.forEach(group => {
                 const fieldset = document.createElement('fieldset');
-                fieldset.className = 'tw-mb-4';
-                
+                fieldset.className = 'tw-mb-3';
                 const legend = document.createElement('legend');
-                legend.className = 'form-label tw-font-semibold tw-text-base tw-mb-2';
+                legend.className = 'form-label tw-font-medium tw-text-base tw-mb-1';
                 legend.textContent = group.groupName;
                 fieldset.appendChild(legend);
-
                 const gridDiv = document.createElement('div');
-                gridDiv.className = 'tw-grid tw-grid-cols-2 sm:tw-grid-cols-3 md:tw-grid-cols-4 tw-gap-x-4 tw-gap-y-2';
+                gridDiv.className = 'fieldset-grid';
 
                 group.events.forEach(evt => {
                     const div = document.createElement('div');
                     div.className = 'tw-flex tw-items-center';
-                    
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
-                    checkbox.id = `filter-${evt.eventValue}`;
+                    checkbox.id = `filter-type-${evt.value}`;
                     checkbox.name = 'eventTypeFilter';
-                    checkbox.value = evt.eventValue;
+                    checkbox.value = evt.value;
                     checkbox.className = 'form-checkbox event-type-filter';
                     checkbox.addEventListener('change', applyFilters);
-
                     const label = document.createElement('label');
                     label.htmlFor = checkbox.id;
                     label.className = 'form-checkbox-label';
                     label.textContent = evt.label;
-
                     div.appendChild(checkbox);
                     div.appendChild(label);
                     gridDiv.appendChild(div);
                 });
                 fieldset.appendChild(gridDiv);
-                filterCheckboxesContainer.appendChild(fieldset);
+                eventTypeFiltersContainer.appendChild(fieldset);
             });
         }
+        
+        function populateFieldVisibilityFilters() {
+            if (!fieldVisibilityFiltersContainer) return;
+            fieldVisibilityFiltersContainer.innerHTML = '';
+            const gridDiv = document.createElement('div');
+            gridDiv.className = 'fieldset-grid';
+
+            displayableFieldsConfig.forEach(field => {
+                const div = document.createElement('div');
+                div.className = 'tw-flex tw-items-center';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `vis-filter-${field.key.replace('.', '-')}`;
+                checkbox.name = 'fieldVisibilityFilter';
+                checkbox.value = field.key;
+                checkbox.className = 'form-checkbox field-visibility-filter';
+                checkbox.checked = field.defaultChecked; // Define o estado padrão
+                checkbox.addEventListener('change', applyFilters); // Re-renderiza ao mudar visibilidade
+                const label = document.createElement('label');
+                label.htmlFor = checkbox.id;
+                label.className = 'form-checkbox-label';
+                label.textContent = field.label;
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                gridDiv.appendChild(div);
+            });
+            fieldVisibilityFiltersContainer.appendChild(gridDiv);
+        }
+
 
         function renderEvents(eventsToDisplay) {
             eventListContainer.innerHTML = ''; 
@@ -202,55 +249,66 @@
                 return;
             }
 
+            const visibleFields = {};
+            document.querySelectorAll('.field-visibility-filter:checked').forEach(cb => {
+                visibleFields[cb.value] = true;
+            });
+
             eventsToDisplay.forEach(eventEntry => {
                 const card = document.createElement('div');
                 card.className = 'event-card dark:bg-gray-700 tw-shadow-md tw-p-4 tw-rounded-lg tw-mb-4 tw-text-left';
                 
-                // Encontra o rótulo amigável para o eventType
                 let eventTypeLabel = eventEntry.eventType || 'Desconhecido';
-                for (const group of eventFiltersConfig) {
+                for (const group of docusignEventGroups) {
                     const foundEvent = group.events.find(e => e.eventValue === (eventEntry.eventType || '').toLowerCase());
-                    if (foundEvent) {
-                        eventTypeLabel = foundEvent.label;
-                        break;
-                    }
+                    if (foundEvent) { eventTypeLabel = foundEvent.label; break; }
                 }
 
-                let content = `<div class="tw-flex tw-justify-between tw-items-start">`;
-                content += `<div>`;
-                content += `<p class="tw-text-xs tw-text-gray-500 dark:tw-text-gray-400"><strong>ID da Função:</strong> ${eventEntry.id || 'N/A'}</p>`;
-                content += `<p><strong>Recebido em:</strong> ${eventEntry.receivedAt ? new Date(eventEntry.receivedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' }) : 'Data N/A'}</p>`;
-                content += `<p><strong>Tipo de Evento:</strong> <span class="tw-font-semibold">${eventTypeLabel}</span></p>`;
+                let content = `<div class="tw-flex tw-justify-between tw-items-start"><div>`;
+                if (visibleFields.id) content += `<p class="tw-text-xs tw-text-gray-500 dark:tw-text-gray-400"><strong>ID da Função:</strong> ${eventEntry.id || 'N/A'}</p>`;
+                if (visibleFields.receivedAt) content += `<p><strong>Recebido em:</strong> ${eventEntry.receivedAt ? new Date(eventEntry.receivedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' }) : 'Data N/A'}</p>`;
+                if (visibleFields.eventType) content += `<p><strong>Tipo de Evento:</strong> <span class="tw-font-semibold">${eventTypeLabel}</span></p>`;
                 content += `</div>`;
                 content += `<button data-event-id="${eventEntry.id}" class="delete-btn tw-ml-4"><i class="bi bi-trash3"></i> Excluir</button>`;
                 content += `</div>`;
                 
-                content += '<hr class="tw-my-3 dark:tw-border-gray-600">';
+                if (Object.keys(visibleFields).length > 0) { // Só adiciona HR se houver campos visíveis abaixo
+                    let hasRelevantInfoToShow = false;
+                    if (eventEntry.relevantInfo) {
+                        for(const key in eventEntry.relevantInfo){
+                           if(visibleFields[`relevantInfo.${key}`]) { hasRelevantInfoToShow = true; break; }
+                        }
+                    }
+                    if (hasRelevantInfoToShow || (eventEntry.relevantInfo && eventEntry.relevantInfo.message && visibleFields["relevantInfo.message"])) {
+                         content += '<hr class="tw-my-3 dark:tw-border-gray-600">';
+                    }
+                }
+
 
                 if (eventEntry.relevantInfo) {
-                    if (eventEntry.relevantInfo.message) {
+                    if (eventEntry.relevantInfo.message && visibleFields["relevantInfo.message"]) {
                         content += `<p class="tw-text-orange-600 dark:tw-text-orange-400"><strong>Info:</strong> ${eventEntry.relevantInfo.message}</p>`;
-                        if (eventEntry.relevantInfo.rawPreview) {
+                        if (eventEntry.relevantInfo.rawPreview && visibleFields["relevantInfo.rawPreview"]) {
                             content += `<p class="tw-mt-2"><strong>Preview Bruto:</strong></p><pre class="tw-text-xs">${eventEntry.relevantInfo.rawPreview.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>`;
                         }
-                    } else { 
-                        content += `<p><strong>ID do Envelope:</strong> ${eventEntry.relevantInfo.envelopeId || 'N/A'}</p>`;
-                        content += `<p><strong>Status Envelope:</strong> <span class="tw-font-semibold">${eventEntry.relevantInfo.status || 'N/A'}</span></p>`;
-                        content += `<p><strong>Assunto:</strong> ${eventEntry.relevantInfo.subject || 'N/A'}</p>`;
-                        if (eventEntry.relevantInfo.timeGeneratedEvent) {
+                    } else if (!eventEntry.relevantInfo.message) { // Só mostra outros campos se não houver mensagem de erro
+                        if (visibleFields["relevantInfo.envelopeId"]) content += `<p><strong>ID do Envelope:</strong> ${eventEntry.relevantInfo.envelopeId || 'N/A'}</p>`;
+                        if (visibleFields["relevantInfo.status"]) content += `<p><strong>Status Envelope:</strong> <span class="tw-font-semibold">${eventEntry.relevantInfo.status || 'N/A'}</span></p>`;
+                        if (visibleFields["relevantInfo.subject"]) content += `<p><strong>Assunto:</strong> ${eventEntry.relevantInfo.subject || 'N/A'}</p>`;
+                        if (eventEntry.relevantInfo.timeGeneratedEvent && visibleFields["relevantInfo.timeGeneratedEvent"]) {
                             content += `<p><strong>Gerado (Docusign):</strong> ${new Date(eventEntry.relevantInfo.timeGeneratedEvent).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' })}</p>`;
                         }
-                        if (eventEntry.relevantInfo.statusChangedDateTime && eventEntry.relevantInfo.statusChangedDateTime !== 'N/A') {
+                        if (eventEntry.relevantInfo.statusChangedDateTime && eventEntry.relevantInfo.statusChangedDateTime !== 'N/A' && visibleFields["relevantInfo.statusChangedDateTime"]) {
                             content += `<p><strong>Status Alterado (Docusign):</strong> ${new Date(eventEntry.relevantInfo.statusChangedDateTime).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' })}</p>`;
                         }
-                        if(eventEntry.relevantInfo.recipientsPreview && eventEntry.relevantInfo.recipientsPreview.length > 0){
+                        if(eventEntry.relevantInfo.recipientsPreview && eventEntry.relevantInfo.recipientsPreview.length > 0 && visibleFields["relevantInfo.recipientsPreview"]){
                             content += `<div class="tw-mt-2"><p><strong>Destinatários:</strong></p><ul class="tw-list-disc tw-list-inside tw-ml-4">`;
                             eventEntry.relevantInfo.recipientsPreview.forEach(recip => { content += `<li>${recip}</li>`; });
                             content += `</ul></div>`;
                         }
                     }
-                } else {
-                    content += `<p class="tw-text-red-500">Objeto 'relevantInfo' ausente.</p>`
+                } else if (visibleFields.id || visibleFields.receivedAt || visibleFields.eventType) { // Se relevantInfo está totalmente ausente, mas outros campos são visíveis
+                    content += `<p class="tw-text-red-500">Detalhes adicionais (relevantInfo) ausentes.</p>`
                 }
                 card.innerHTML = content;
                 eventListContainer.appendChild(card);
@@ -275,7 +333,8 @@
                 }
                 allFetchedEvents = await response.json(); 
                 
-                populateEventTypeFilters(); // Popula os checkboxes com base nos tipos de evento definidos
+                populateEventTypeFilters(); 
+                populateFieldVisibilityFilters(); // Popula os checkboxes de visibilidade de campos
 
                 if (loadingMessage) loadingMessage.remove();
                 applyFilters(); 
@@ -308,19 +367,17 @@
                 eventsToDisplay = eventsToDisplay.filter(eventEntry => {
                     const info = eventEntry.relevantInfo;
                     const eventTypeStr = eventEntry.eventType ? eventEntry.eventType.toLowerCase() : '';
-                    const idStr = eventEntry.id ? eventEntry.id.toLowerCase() : ''; // ID da função/entrada, não do envelope
+                    const idStr = eventEntry.id ? eventEntry.id.toLowerCase() : '';
                     
                     let infoStr = '';
-                    if (info) {
-                        infoStr += info.envelopeId ? info.envelopeId.toLowerCase() : '';
-                        infoStr += info.status ? info.status.toLowerCase() : '';
-                        infoStr += info.subject ? info.subject.toLowerCase() : '';
-                        infoStr += info.message ? info.message.toLowerCase() : '';
+                    if (info) { // Concatena todos os valores de relevantInfo para busca de texto
+                        Object.values(info).forEach(val => {
+                            if(typeof val === 'string') infoStr += val.toLowerCase() + ' ';
+                            else if (Array.isArray(val)) infoStr += val.join(' ').toLowerCase() + ' ';
+                        });
                     }
-                    
-                    return eventTypeStr.includes(filterText) ||
-                           idStr.includes(filterText) || // Permite filtrar pelo ID da entrada
-                           infoStr.includes(filterText);
+                    const combinedSearchableText = `${eventTypeStr} ${idStr} ${infoStr}`;
+                    return combinedSearchableText.includes(filterText);
                 });
             }
             renderEvents(eventsToDisplay);
@@ -341,8 +398,7 @@
                         const errorData = await response.json().catch(() => ({ message: `Erro HTTP: ${response.status}` }));
                         throw new Error(errorData.message || `Erro ao excluir evento: ${response.statusText}`);
                     }
-                    const result = await response.json();
-                    console.log(result.message);
+                    // const result = await response.json(); // Descomente se quiser usar a mensagem de sucesso
                     fetchDocusignEvents(); 
                 } catch (error) {
                     console.error("Erro ao excluir evento:", error);

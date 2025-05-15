@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Eventos dos Envelopes - Fontara Financial</title> <meta
+    <title>Eventos dos Envelopes - Fontara Financial</title>
+    <meta
       name="description"
       content="Visualização dos últimos 100 eventos de envelopes Docusign com opções de filtro e exclusão."
     />
@@ -20,40 +21,21 @@
     <style>
       .content-wrapper { min-height: 70vh; }
       .event-card {
-        border: 1px solid #e2e8f0; /* coolGray-200 */
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border-radius: 0.5rem; /* rounded-lg */
-        transition: box-shadow 0.2s ease-in-out;
+        border: 1px solid #e2e8f0; padding: 1rem; margin-bottom: 1rem;
+        border-radius: 0.5rem; transition: box-shadow 0.2s ease-in-out;
       }
-      .dark .event-card {
-        border-color: #4a5568; /* coolGray-700 */
-        background-color: #2d3748; /* coolGray-800 */
-      }
-      .event-card:hover {
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-      }
-      .dark .event-card:hover {
-         box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2);
-      }
-      .event-card strong { color: #2b6cb0; /* blue-600 */ }
-      .dark .event-card strong { color: #63b3ed; /* blue-300 */ }
+      .dark .event-card { border-color: #4a5568; background-color: #2d3748; }
+      .event-card:hover { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); }
+      .dark .event-card:hover { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2); }
+      .event-card strong { color: #2b6cb0; }
+      .dark .event-card strong { color: #63b3ed; }
       pre {
-        background-color: #f7fafc; /* coolGray-100 */
-        padding: 0.75em 1em;
-        border-radius: 0.375rem; /* rounded-md */
-        overflow-x: auto;
-        font-size: 0.8em;
-        margin-top: 0.5rem;
-        border: 1px solid #e2e8f0; /* coolGray-200 */
-        max-height: 200px; 
+        background-color: #f7fafc; padding: 0.75em 1em; border-radius: 0.375rem;
+        overflow-x: auto; font-size: 0.8em; margin-top: 0.5rem;
+        border: 1px solid #e2e8f0; max-height: 200px; 
       }
-      .dark pre {
-        background-color: #1a202c; /* coolGray-900 */
-        color: #cbd5e0; /* coolGray-300 */
-        border-color: #2d3748; /* coolGray-700 */
-      }
-      .filter-input { /* Usado para o filtro de texto */
+      .dark pre { background-color: #1a202c; color: #cbd5e0; border-color: #2d3748; }
+      .filter-input {
         @apply tw-block tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-indigo-500 focus:tw-border-indigo-500 sm:tw-text-sm dark:tw-bg-gray-700 dark:tw-text-white;
       }
       .delete-btn {
@@ -65,16 +47,8 @@
       .form-checkbox-label { 
         @apply tw-ml-2 tw-block tw-text-sm tw-font-normal tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer;
       }
-      /* .form-label removido, pois usaremos classes diretas do Tailwind para os títulos dos filtros */
-      .filter-group-title { /* Título para cada grupo principal de filtro (Texto, Visibilidade, Tipos) */
-        @apply tw-block tw-text-base tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100 tw-mb-2;
-      }
-      .filter-fieldset-legend { /* Legenda para os fieldsets de tipo de evento */
-        @apply tw-text-sm tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2;
-      }
-      .checkbox-grid { /* Grade para os checkboxes dentro de cada filtro */
-        @apply tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-x-4 tw-gap-y-2;
-      }
+      /* Removidas classes .form-label, .filter-group-title, .filter-fieldset-legend, .fieldset-grid-cols
+         Os estilos serão aplicados diretamente com Tailwind no HTML. */
     </style>
   </head>
   <body class="tw-flex tw-min-h-[100vh] tw-flex-col tw-bg-[#fcfcfc] tw-text-black dark:tw-bg-black dark:tw-text-white">
@@ -87,32 +61,34 @@
     <main class="tw-mt-20 tw-pt-10 tw-pb-10 tw-px-4 md:tw-px-[5%] lg:tw-px-[10%] content-wrapper">
       <div class="tw-container tw-mx-auto">
         <div class="tw-flex tw-flex-col sm:tw-flex-row sm:tw-justify-between sm:tw-items-center tw-mb-8">
-            <h1 class="tw-text-3xl md:tw-text-4xl tw-font-semibold tw-mb-4 sm:tw-mb-0">Últimos Eventos dos Envelopes</h1> <button id="refreshDataBtn" class="btn tw-self-start sm:tw-self-auto">
+            <h1 class="tw-text-3xl md:tw-text-4xl tw-font-semibold tw-mb-4 sm:tw-mb-0">Últimos Eventos dos Envelopes</h1>
+            <button id="refreshDataBtn" class="btn tw-self-start sm:tw-self-auto">
                 <i class="bi bi-arrow-clockwise tw-mr-2"></i>Atualizar Dados
             </button>
         </div>
 
-        <div class="tw-mb-8 tw-p-4 md:tw-p-6 tw-bg-gray-100 dark:tw-bg-gray-800 tw-rounded-lg tw-shadow-md">
-            <h2 class="tw-text-xl tw-font-bold tw-mb-6 tw-pb-3 tw-border-b dark:tw-border-gray-700 tw-text-gray-800 dark:tw-text-gray-100">
-                <i class="bi bi-filter-circle-fill tw-mr-2"></i>Opções de Filtro e Visualização
+        <div class="tw-mb-8 tw-p-4 md:tw-p-6 tw-bg-gray-100 dark:tw-bg-gray-800 tw-rounded-lg tw-shadow">
+            <h2 class="tw-text-xl tw-font-bold tw-mb-6 tw-pb-3 tw-border-b dark:tw-border-gray-700 tw-text-gray-900 dark:tw-text-gray-100">
+                <i class="bi bi-funnel-fill tw-mr-2"></i>Opções de Filtro e Visualização
             </h2>
-            <div class="tw-flex tw-flex-col md:tw-flex-row md:tw-gap-x-8">
-                <div class="md:tw-w-1/2 tw-space-y-6">
+            <div class="tw-grid md:tw-grid-cols-2 md:tw-gap-x-8 lg:tw-gap-x-12">
+                <div class="tw-space-y-6">
                     <div>
-                        <label for="filterInput" class="filter-group-title">Filtrar por texto:</label>
-                        <p class="tw-text-xs tw-text-gray-600 dark:tw-text-gray-400 tw-mb-1">Busque em IDs, status, assunto, etc.</p>
+                        <label for="filterInput" class="tw-block tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100 tw-mb-2">Filtrar por Texto:</label>
+                        <p class="tw-text-sm tw-text-gray-600 dark:tw-text-gray-400 tw-mb-1">Busque em qualquer informação do evento.</p>
                         <input type="text" id="filterInput" class="filter-input" placeholder="Digite para filtrar...">
                     </div>
-                    <div> 
-                        <label class="filter-group-title">Campos Visíveis por Evento:</label>
-                        <div id="fieldVisibilityFiltersContainer" class="checkbox-grid">
+                    
+                    <div class="tw-pt-2"> 
+                        <h3 class="tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100 tw-mb-3">Campos Visíveis por Evento:</h3>
+                        <div id="fieldVisibilityFiltersContainer" class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-x-4 tw-gap-y-2">
                             {/* Checkboxes de visibilidade de campo serão inseridos aqui */}
                         </div>
                     </div>
                 </div>
 
-                <div class="md:tw-w-1/2 tw-mt-6 md:tw-mt-0">
-                    <label class="filter-group-title tw-mb-3">Filtrar por tipo de evento Docusign:</label>
+                <div class="tw-mt-6 md:tw-mt-0">
+                    <h3 class="tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100 tw-mb-3">Filtrar por Tipo de Evento:</h3>
                     <div id="eventTypeFiltersContainer" class="tw-space-y-4">
                         {/* Checkboxes de tipo de evento (com fieldsets) serão inseridos aqui */}
                     </div>
@@ -145,7 +121,7 @@
         let allFetchedEvents = []; 
         
         const eventFilterConfig = {
-            groups: [ /* ... (mesma configuração de eventFilterConfig.groups da resposta anterior) ... */ 
+            groups: [
                 {
                     name: "Eventos do Envelope",
                     events: [
@@ -159,18 +135,18 @@
                 {
                     name: "Eventos de Destinatários",
                     events: [
-                        { label: "Enviado para Dest.", value: "recipient-sent" }, { label: "Entregue ao Dest.", value: "recipient-delivered" },
-                        { label: "Concluído pelo Dest.", value: "recipient-completed" }, { label: "Recusado pelo Dest.", value: "recipient-declined" },
-                        { label: "Falha na Autenticação", value: "recipient-authenticationfailed" },
-                        { label: "Reatribuído", value: "recipient-reassign"}, { label: "Concluir Mais Tarde", value: "recipient-finish-later"},
+                        { label: "Enviado (Dest.)", value: "recipient-sent" }, { label: "Entregue (Dest.)", value: "recipient-delivered" },
+                        { label: "Concluído (Dest.)", value: "recipient-completed" }, { label: "Recusado (Dest.)", value: "recipient-declined" },
+                        { label: "Falha Autenticação", value: "recipient-authenticationfailed" }, // Label mais curto
+                        { label: "Reatribuído", value: "recipient-reassign"}, { label: "Concluir Depois", value: "recipient-finish-later"}, // Label mais curto
                         { label: "Resp. Automática", value: "recipient-autoresponded" }, { label: "Reenviado (Dest.)", value: "recipient-resent"}
                     ]
                 }
             ],
-            displayableFields: [ /* ... (mesma configuração de eventFilterConfig.displayableFields da resposta anterior) ... */ 
-                { key: "id", label: "ID da Função", defaultChecked: false, path: 'id' },
+            displayableFields: [
+                { key: "id", label: "ID Função", defaultChecked: false, path: 'id' }, // Label mais curto
                 { key: "receivedAt", label: "Recebido em", defaultChecked: true, path: 'receivedAt', type: 'datetime' },
-                { key: "eventType", label: "Tipo de Evento", defaultChecked: true, path: 'eventType', isEventType: true },
+                { key: "eventType", label: "Tipo Evento", defaultChecked: true, path: 'eventType', isEventType: true }, // Label mais curto
                 { key: "envelopeId", label: "ID Envelope", defaultChecked: true, path: 'relevantInfo.envelopeId' },
                 { key: "status", label: "Status Envelope", defaultChecked: true, path: 'relevantInfo.status' },
                 { key: "subject", label: "Assunto", defaultChecked: true, path: 'relevantInfo.subject' },
@@ -178,9 +154,9 @@
                 { key: "statusChangedDateTime", label: "Status Alterado", defaultChecked: false, path: 'relevantInfo.statusChangedDateTime', type: 'datetime' },
                 { key: "senderName", label: "Remetente", defaultChecked: false, path: 'relevantInfo.senderName' },
                 { key: "recipients", label: "Destinatários", defaultChecked: false, path: 'relevantInfo.recipientsPreview', isArray: true },
-                { key: "documentNames", label: "Nomes Documentos", defaultChecked: false, path: 'relevantInfo.documentNames' },
-                { key: "extractionMessage", label: "Msg Extração/Erro", defaultChecked: true, path: 'relevantInfo.message' },
-                { key: "rawPreview", label: "Preview Payload Bruto", defaultChecked: false, path: 'relevantInfo.rawPreview', isPre: true }
+                { key: "documentNames", label: "Documentos", defaultChecked: false, path: 'relevantInfo.documentNames' }, // Label mais curto
+                { key: "extractionMessage", label: "Msg Extração", defaultChecked: true, path: 'relevantInfo.message' }, // Label mais curto
+                { key: "rawPreview", label: "Preview Payload", defaultChecked: false, path: 'relevantInfo.rawPreview', isPre: true } // Label mais curto
             ]
         };
 
@@ -191,9 +167,6 @@
         
         function populateFilters(container, items, filterGroupName, isVisibilityFilter = false) {
             if (!container) return;
-            // A limpeza do container (innerHTML = '') deve ser feita antes de chamar esta função,
-            // pelo populateAllFilters, para que possamos chamar populateFilters para diferentes
-            // seções dentro do mesmo container pai se necessário (embora não seja o caso aqui).
             items.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'tw-flex tw-items-center';
@@ -221,14 +194,14 @@
                 eventTypeFiltersContainer.innerHTML = ''; 
                 eventFilterConfig.groups.forEach(group => {
                     const fieldset = document.createElement('fieldset');
-                    fieldset.className = 'tw-mb-4'; // Espaçamento entre grupos de tipo de evento
+                    fieldset.className = 'tw-mb-4';
                     const legend = document.createElement('legend');
-                    legend.className = 'filter-fieldset-legend'; // Estilo para a legenda do fieldset
+                    legend.className = 'tw-text-md tw-font-semibold tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2'; // Estilo da legenda do fieldset
                     legend.textContent = group.name;
                     fieldset.appendChild(legend);
                     
                     const itemsGridContainer = document.createElement('div');
-                    itemsGridContainer.className = 'checkbox-grid'; // Usa a classe para grid de checkboxes
+                    itemsGridContainer.className = 'checkbox-grid'; 
                     populateFilters(itemsGridContainer, group.events, 'eventType');
                     fieldset.appendChild(itemsGridContainer);
                     eventTypeFiltersContainer.appendChild(fieldset);
@@ -241,8 +214,6 @@
         }
 
         function renderEvents(eventsToDisplay) {
-            // ... (função renderEvents como na resposta anterior, ela já usa visibleFieldKeys) ...
-            // Garantir que as verificações de nulidade e o uso de getNestedValue estão corretos.
             eventListContainer.innerHTML = ''; 
             if (!eventsToDisplay || eventsToDisplay.length === 0) {
                 eventListContainer.innerHTML = '<p class="tw-text-center tw-py-10">Nenhum evento encontrado com os critérios atuais.</p>';
@@ -279,7 +250,7 @@
 
                         let displayValue = '';
                         if (value === null || value === undefined) {
-                            displayValue = 'N/A';
+                            displayValue = '<span class="tw-italic tw-text-gray-500 dark:tw-text-gray-400">N/A</span>';
                         } else if (fieldConf.type === 'datetime') {
                             displayValue = new Date(value).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' });
                         } else if (fieldConf.isEventType) {
@@ -292,9 +263,8 @@
                             displayValue = String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;");
                         }
                         
-                        const fieldHtml = `<p class="${fieldConf.key === 'id' ? 'tw-text-xs tw-text-gray-500 dark:tw-text-gray-400' : 'tw-mt-1'}"><strong>${fieldConf.label}:</strong> ${displayValue}</p>`;
+                        const fieldHtml = `<p class="${fieldConf.path === 'id' ? 'tw-text-xs tw-text-gray-500 dark:tw-text-gray-400' : 'tw-mt-1'}"><strong>${fieldConf.label}:</strong> ${displayValue}</p>`;
                         
-                        // Decide se o campo vai no "cabeçalho" do card ou no corpo
                         if (fieldConf.path === 'id' || fieldConf.path === 'receivedAt' || fieldConf.path === 'eventType') {
                             headerContent += fieldHtml;
                         } else {
@@ -318,7 +288,6 @@
             });
         }
 
-
         async function fetchDocusignEvents() {
             if (loadingMessage && !eventListContainer.contains(loadingMessage) && eventListContainer.innerHTML === '') {
                 eventListContainer.appendChild(loadingMessage);
@@ -326,17 +295,22 @@
             if(loadingMessage) loadingMessage.textContent = 'Carregando eventos...';
             try {
                 const response = await fetch('/.netlify/functions/get-docusign-events');
-                if (!response.ok) { /* ... */ }
+                if (!response.ok) { 
+                    const errorData = await response.json().catch(() => ({ message: `Erro HTTP: ${response.status}` }));
+                    throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
+                }
                 allFetchedEvents = await response.json(); 
                 populateAllFilters();
                 if (loadingMessage) loadingMessage.remove();
                 applyFilters(); 
-            } catch (error) { /* ... */ }
+            } catch (error) { 
+                console.error('Erro ao buscar eventos Docusign:', error);
+                if (loadingMessage) loadingMessage.remove();
+                eventListContainer.innerHTML = `<p class="tw-text-center tw-text-red-500 tw-py-10">Falha ao carregar eventos: ${error.message}</p>`;
+            }
         }
 
         function applyFilters() {
-            // ... (função applyFilters como na resposta anterior, ela já usa a estrutura de filtro de texto e tipo) ...
-            // A renderEvents() agora lida com a visibilidade dos campos.
             const filterText = filterInput.value.toLowerCase().trim();
             const selectedEventTypes = Array.from(document.querySelectorAll('.event-type-filter:checked')).map(cb => cb.value.toLowerCase());
             let eventsToDisplay = allFetchedEvents;
@@ -365,7 +339,6 @@
         }
 
         async function handleDeleteEvent(event) {
-            // ... (função handleDeleteEvent como na resposta anterior) ...
             const eventId = event.target.closest('.delete-btn').dataset.eventId;
             if (!eventId) return;
             if (confirm(`Tem certeza que deseja excluir o evento com ID: ${eventId}?`)) {
@@ -375,9 +348,15 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ eventId: eventId })
                     });
-                    if (!response.ok) { /* ... */ }
+                    if (!response.ok) { 
+                        const errorData = await response.json().catch(() => ({ message: `Erro HTTP: ${response.status}` }));
+                        throw new Error(errorData.message || `Erro ao excluir evento: ${response.statusText}`);
+                    }
                     fetchDocusignEvents(); 
-                } catch (error) { /* ... */ }
+                } catch (error) { 
+                    console.error("Erro ao excluir evento:", error);
+                    alert(`Falha ao excluir evento: ${error.message}`);
+                }
             }
         }
 

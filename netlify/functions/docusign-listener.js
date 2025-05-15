@@ -2,7 +2,7 @@
 const crypto = require('crypto');
 const { getStore } = require("@netlify/blobs");
 
-const MAX_EVENTS_TO_STORE = 20;
+const MAX_EVENTS_TO_STORE = 100; // ATUALIZADO PARA 100
 const BLOB_STORE_NAME = "docusignEvents";
 const BLOB_KEY_EVENT_LIST = "recent_event_list";
 
@@ -48,18 +48,15 @@ exports.handler = async function(event, context) {
 
   if (computedSigBuffer.length !== receivedSigBuffer.length || 
       !crypto.timingSafeEqual(computedSigBuffer, receivedSigBuffer)) {
-    console.warn("[docusign-listener] Falha na verificação HMAC. Assinaturas não correspondem.");
-    // Não logue as assinaturas em produção se não for estritamente necessário para depuração.
+    console.warn("[docusign-listener] Falha na verificação HMAC.");
     return { statusCode: 401, body: "Autenticação falhou: assinatura inválida." };
   }
 
   console.log("[docusign-listener] Webhook do Docusign autenticado com HMAC!");
   
   const payloadBodyString = requestBodyBytes.toString('utf-8');
-  // Log truncado para payloads grandes
-  console.log("[docusign-listener] Payload Bruto Autenticado (preview):", payloadBodyString.substring(0, 500) + (payloadBodyString.length > 500 ? "..." : ""));
+  console.log("[docusign-listener] Payload Bruto Autenticado (preview):", payloadBodyString.substring(0, 250) + "...");
 
-  // Cria um ID de evento único e registra quando foi recebido
   const eventId = context.awsRequestId || `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   const receivedTimestamp = new Date().toISOString();
 
@@ -69,96 +66,64 @@ exports.handler = async function(event, context) {
     eventType: "desconhecido",
     relevantInfo: { 
         message: "Informações específicas do evento não extraídas ou payload não é JSON.",
-        rawPreview: payloadBodyString.substring(0, 250) + (payloadBodyString.length > 250 ? "..." : "") // Preview do payload bruto
+        rawPreview: payloadBodyString.substring(0, 200) + (payloadBodyString.length > 200 ? "..." : "")
     }
   };
 
   try {
     const parsedPayload = JSON.parse(payloadBodyString);
-    console.log("[docusign-listener] Payload JSON Parseado com sucesso.");
-    // console.log(JSON.stringify(parsedPayload, null, 2)); // Descomente para logar o payload completo se necessário para depuração
-
     newEventEntry.eventType = parsedPayload.event || "desconhecido";
 
-    // Lógica de extração ajustada para a estrutura observada: payload.data.envelopeSummary
     if (parsedPayload.data && parsedPayload.data.envelopeSummary) {
       const summary = parsedPayload.data.envelopeSummary;
       newEventEntry.relevantInfo = {
-        envelopeId: parsedPayload.data.envelopeId, // ID do envelope está em payload.data.envelopeId
-        status: summary.status,                     // Status está em payload.data.envelopeSummary.status
-        subject: summary.emailSubject || parsedPayload.emailSubject || "Assunto não disponível", // Tenta pegar o assunto de alguns lugares
-        timeGeneratedEvent: parsedPayload.generatedDateTime, // Quando o evento do webhook foi gerado
-        statusChangedDateTime: summary.statusChangedDateTime || "N/A", // Quando o status do envelope mudou
+        envelopeId: parsedPayload.data.envelopeId,
+        status: summary.status,
+        subject: summary.emailSubject || parsedPayload.emailSubject || "Assunto não disponível",
+        timeGeneratedEvent: parsedPayload.generatedDateTime,
+        statusChangedDateTime: summary.statusChangedDateTime || "N/A",
         recipientsPreview: []
       };
-
       if (summary.recipients && summary.recipients.signers && Array.isArray(summary.recipients.signers)) {
         summary.recipients.signers.forEach(signer => {
-          if (signer) {
-            newEventEntry.relevantInfo.recipientsPreview.push(
-              `Signer: ${signer.name || 'N/A'} (${signer.email || 'N/A'}) - Status: ${signer.status || 'N/A'}`
-            );
-          }
+          if (signer) newEventEntry.relevantInfo.recipientsPreview.push(`Signer: ${signer.name || 'N/A'} (${signer.email || 'N/A'}) - Status: ${signer.status || 'N/A'}`);
         });
       }
-      // Limpa a mensagem de fallback se conseguimos extrair infos
       delete newEventEntry.relevantInfo.message;
       delete newEventEntry.relevantInfo.rawPreview;
-
     } else if (parsedPayload.data && parsedPayload.data.envelopeId) {
-        // Fallback se envelopeSummary não existir, mas envelopeId sim
         newEventEntry.relevantInfo = {
             envelopeId: parsedPayload.data.envelopeId,
-            status: newEventEntry.eventType, // Usa o nome do evento como status
+            status: newEventEntry.eventType,
             message: "Estrutura 'envelopeSummary' não encontrada, informações limitadas."
         };
         delete newEventEntry.relevantInfo.rawPreview;
     } else if (parsedPayload) {
         newEventEntry.relevantInfo.message = "Payload JSON não contém a estrutura esperada ('data.envelopeSummary' ou 'data.envelopeId').";
     }
-    // Se o parse do JSON falhar, a mensagem inicial em relevantInfo é mantida.
-
   } catch (error) {
-    console.warn("[docusign-listener] Payload não é JSON ou erro ao processar o payload JSON. Erro:", error.message);
-    // newEventEntry.relevantInfo já tem uma mensagem de erro e rawPreview definidos no início.
+    console.warn("[docusign-listener] Payload não é JSON ou erro no processamento. Erro:", error.message);
     newEventEntry.relevantInfo.message = `Falha ao processar payload: ${error.message}`;
   }
 
-  // Salvar no Netlify Blobs
   try {
     const siteID = process.env.NETLIFY_SITE_ID;
     const token = process.env.NETLIFY_API_ACCESS_TOKEN;
-
-    if (!siteID || !token) {
-      console.error("[docusign-listener] ERRO CRÍTICO: Variáveis NETLIFY_SITE_ID ou NETLIFY_API_ACCESS_TOKEN não definidas para Blobs.");
-      throw new Error("Configuração de Blobs ausente: siteID ou token não definidos.");
-    }
+    if (!siteID || !token) throw new Error("Configuração de Blobs ausente: NETLIFY_SITE_ID ou NETLIFY_API_ACCESS_TOKEN não definidos.");
 
     const store = getStore({ name: BLOB_STORE_NAME, siteID: siteID, token: token, consistency: "strong" });
-    
-    let eventList = await store.get(BLOB_KEY_EVENT_LIST, { type: "json" });
-    if (!eventList || !Array.isArray(eventList)) eventList = [];
+    let eventList = await store.get(BLOB_KEY_EVENT_LIST, { type: "json" }) || [];
+    if (!Array.isArray(eventList)) eventList = [];
     
     eventList.unshift(newEventEntry); 
     if (eventList.length > MAX_EVENTS_TO_STORE) eventList = eventList.slice(0, MAX_EVENTS_TO_STORE);
     
     await store.setJSON(BLOB_KEY_EVENT_LIST, eventList);
-    console.log(`[docusign-listener] Lista de eventos atualizada no Netlify Blobs. Total: ${eventList.length}`);
+    console.log(`[docusign-listener] Lista de eventos atualizada. Total: ${eventList.length}`);
   } catch (blobError) {
-    console.error("[docusign-listener] Erro ao manipular lista de eventos no Netlify Blobs:", blobError.name, blobError.message);
-    // Retorna 500 para Docusign se houver erro com o Blob.
-    return { 
-        statusCode: 500, 
-        body: JSON.stringify({ 
-            message: "Erro interno ao tentar salvar dados do evento no Blob store.", 
-            errorName: blobError.name,
-            errorMessage: blobError.message 
-        })
-    };
+    console.error("[docusign-listener] Erro ao manipular Blobs:", blobError.name, blobError.message, blobError.stack);
+    return { statusCode: 500, body: JSON.stringify({ message: "Erro interno com Blob store.", errorName: blobError.name, errorMessage: blobError.message })};
   }
 
-  return {
-    statusCode: 200,
-    body: "Webhook HMAC verificado e evento processado.",
-  };
+  return { statusCode: 200, body: "Webhook HMAC verificado e evento processado." };
 };

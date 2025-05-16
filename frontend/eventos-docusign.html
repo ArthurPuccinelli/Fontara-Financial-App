@@ -3,14 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Eventos dos Envelopes - Fontara Financial</title> <meta
-      name="description"
-      content="Visualização e filtragem dos últimos 100 eventos de envelopes Docusign."
-    />
+    <title>Eventos dos Envelopes - Fontara Financial</title>
     <link rel="shortcut icon" href="./assets/logo/logo.png" type="image/x-icon" />
     <link rel="stylesheet" href="./css/tailwind-build.css" />
-    <link rel="stylesheet" href="./css/index.css" />
-    <link
+    <link rel="stylesheet" href="./css/index.css" /> <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"
       integrity="sha512-dPXYcDub/aeb08c63jRq/k6GaKccl256JQy/AnOq7CAnEZ9FzSL9wSbcZkMp4R26vBsMLFYH4kQ67/bbV8XaCQ=="
@@ -18,7 +14,95 @@
       referrerpolicy="no-referrer"
     />
     <style>
-      .content-wrapper { min-height: 70vh; }
+      /* Estilos Gerais da Página de Eventos */
+      .page-container {
+        width: 100%;
+        max-width: 1280px; /* Ou outro max-width que você preferir para o conteúdo principal */
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 1rem; /* px-4 */
+        padding-right: 1rem; /* px-4 */
+      }
+
+      /* Área de Filtros */
+      .filters-area {
+        background-color: #f9fafb; /* tw-bg-gray-50 */
+        padding: 1.5rem; /* tw-p-6 */
+        border-radius: 0.5rem; /* tw-rounded-lg */
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* tw-shadow-md */
+        margin-bottom: 2rem; /* tw-mb-8 */
+      }
+      .dark .filters-area {
+        background-color: #1f2937; /* tw-bg-gray-800 */
+      }
+      .filters-area-title {
+        font-size: 1.25rem; /* tw-text-xl */
+        font-weight: 700; /* tw-font-bold */
+        margin-bottom: 1.5rem; /* tw-mb-6 */
+        padding-bottom: 0.75rem; /* tw-pb-3 */
+        border-bottom: 1px solid #e5e7eb; /* tw-border-gray-200 */
+      }
+      .dark .filters-area-title {
+        border-color: #374151; /* tw-border-gray-700 */
+        color: #f3f4f6; /* tw-text-gray-100 */
+      }
+      .filter-text-input-container {
+        margin-bottom: 1.5rem; /* tw-mb-6 */
+      }
+      .filter-columns-container {
+        display: grid;
+        gap: 1.5rem; /* Corresponde a md:tw-gap-x-6 */
+      }
+      @media (min-width: 768px) { /* md breakpoint */
+        .filter-columns-container {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+      .filter-column-group {
+        /* Espaçamento dentro de cada coluna, se necessário */
+      }
+      .filter-group-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem; /* tw-mb-3 */
+      }
+      .filter-group-title {
+        font-size: 1.125rem; /* tw-text-lg */
+        font-weight: 600; /* tw-font-semibold */
+        color: #1f2937; /* tw-text-gray-800 */
+      }
+      .dark .filter-group-title {
+        color: #f3f4f6; /* tw-text-gray-100 */
+      }
+      .checkbox-grid {
+        display: grid;
+        gap: 0.5rem 1rem; /* tw-gap-y-2 tw-gap-x-4 */
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Responsivo */
+      }
+      @media (min-width: 640px) { /* sm breakpoint */
+        .checkbox-grid {
+            /* grid-template-columns: repeat(2, minmax(0, 1fr)); */ /* Pode ser muito largo */
+        }
+      }
+
+
+      /* Estilos dos inputs e labels (mantidos com @apply para consistência com o resto do portal, se desejar) */
+      .filter-input {
+        @apply tw-block tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-indigo-500 focus:tw-border-indigo-500 sm:tw-text-sm dark:tw-bg-gray-700 dark:tw-text-white;
+      }
+      .form-checkbox { 
+        @apply tw-h-4 tw-w-4 tw-text-indigo-600 tw-border-gray-300 dark:tw-border-gray-600 tw-rounded focus:tw-ring-indigo-500 dark:tw-bg-gray-700 dark:focus:tw-ring-offset-gray-800;
+      }
+      .form-checkbox-label { 
+        @apply tw-ml-2 tw-block tw-text-sm tw-font-normal tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer;
+      }
+      .form-label-sm { /* Para a descrição do filtro de texto */
+         @apply tw-text-xs tw-text-gray-600 dark:tw-text-gray-400 tw-mb-1;
+      }
+
+
+      /* Estilos para Event Card e outros mantidos como antes */
       .event-card {
         border: 1px solid #e2e8f0; padding: 1rem; margin-bottom: 1rem;
         border-radius: 0.5rem; transition: box-shadow 0.2s ease-in-out;
@@ -34,36 +118,8 @@
         border: 1px solid #e2e8f0; max-height: 200px; 
       }
       .dark pre { background-color: #1a202c; color: #cbd5e0; border-color: #2d3748; }
-      
-      .filter-input { /* Para o campo de filtro de texto */
-        @apply tw-block tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-indigo-500 focus:tw-border-indigo-500 sm:tw-text-sm dark:tw-bg-gray-700 dark:tw-text-white;
-      }
       .delete-btn {
         @apply tw-ml-auto tw-px-3 tw-py-1 tw-bg-red-500 hover:tw-bg-red-600 tw-text-white tw-text-xs tw-font-semibold tw-rounded tw-shadow focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-red-500 focus:tw-ring-opacity-50 tw-transition-colors;
-      }
-      .form-checkbox { 
-        @apply tw-h-4 tw-w-4 tw-text-indigo-600 tw-border-gray-300 dark:tw-border-gray-600 tw-rounded focus:tw-ring-indigo-500 dark:tw-bg-gray-700 dark:focus:tw-ring-offset-gray-800;
-      }
-      .form-checkbox-label { 
-        @apply tw-ml-2 tw-block tw-text-sm tw-font-normal tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer;
-      }
-      .checkbox-grid { /* Grade para os checkboxes dentro de cada grupo de filtro */
-        @apply tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-x-4 tw-gap-y-2 tw-mt-2;
-      }
-      .filter-section-title { /* Título geral da área de filtros */
-        @apply tw-text-xl tw-font-bold tw-mb-6 tw-pb-3 tw-border-b dark:tw-border-gray-700 tw-text-gray-900 dark:tw-text-gray-100;
-      }
-      .filter-group-title { /* Título para cada coluna de filtro (Texto, Campos Visíveis, Tipos de Evento) */
-        @apply tw-block tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100 tw-mb-1;
-      }
-      .filter-group-subtitle { /* Subtítulo/descrição para o filtro de texto */
-         @apply tw-text-xs tw-text-gray-600 dark:tw-text-gray-400 tw-mb-2;
-      }
-      .filter-fieldset-legend { /* Legenda para os fieldsets (Eventos do Envelope, Eventos de Destinatários) */
-        @apply tw-text-md tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2;
-      }
-      .select-all-container {
-        @apply tw-flex tw-items-center tw-mb-1;
       }
     </style>
   </head>
@@ -75,68 +131,69 @@
     </header>
 
     <main class="tw-mt-20 tw-pt-10 tw-pb-10 tw-px-4 md:tw-px-[5%] lg:tw-px-[10%] content-wrapper">
-      <div class="tw-container tw-mx-auto">
-        <div class="tw-flex tw-flex-col sm:tw-flex-row sm:tw-justify-between sm:tw-items-center tw-mb-8">
-            <h1 class="tw-text-3xl md:tw-text-4xl tw-font-semibold tw-mb-4 sm:tw-mb-0">Últimos Eventos dos Envelopes</h1>
+      <div class="page-container"> <div class="tw-flex tw-flex-col sm:tw-flex-row sm:tw-justify-between sm:tw-items-center tw-mb-8">
+            <h1 class="tw-text-3xl md:tw-text-4xl tw-font-semibold tw-text-gray-900 dark:tw-text-gray-100 tw-mb-4 sm:tw-mb-0">
+                Últimos Eventos dos Envelopes
+            </h1>
             <button id="refreshDataBtn" class="btn tw-self-start sm:tw-self-auto">
                 <i class="bi bi-arrow-clockwise tw-mr-2"></i>Atualizar Dados
             </button>
         </div>
 
-        <div class="tw-mb-8 tw-p-4 md:tw-p-6 tw-bg-gray-100 dark:tw-bg-gray-800 tw-rounded-lg tw-shadow-lg">
-            <h2 class="tw-text-xl tw-font-bold tw-mb-6 tw-pb-3 tw-border-b dark:tw-border-gray-700 tw-text-gray-900 dark:tw-text-gray-100">
+        <div id="filtersArea-new" class="filters-area">
+            <h2 class="filters-area-title">
                 <i class="bi bi-funnel-fill tw-mr-2"></i>Opções de Filtro e Visualização
             </h2>
             
-            <div class="tw-mb-6">
+            <div class="filter-text-input-container">
                 <label for="filterInput" class="filter-group-title">Filtrar por Texto:</label>
-                <p class="filter-group-subtitle">Busque em qualquer informação do evento.</p>
-                <input type="text" id="filterInput" class="filter-input md:tw-max-w-xl" placeholder="Digite para filtrar...">
+                <p class="form-label-sm">Busque em qualquer informação do evento.</p>
+                <input type="text" id="filterInput" class="filter-input" placeholder="Digite para filtrar...">
             </div>
 
-            <div class="tw-grid md:tw-grid-cols-3 md:tw-gap-x-6 lg:tw-gap-x-8">
-                <div class="tw-mb-6 md:tw-mb-0"> 
+            <div class="filter-columns-container">
+                <div class="filter-column">
                     <div class="filter-group-heading">
                         <h3 class="filter-group-title">Campos a Exibir:</h3>
-                        <div class="tw-flex tw-items-center">
+                        <div class="select-all-container">
                             <input type="checkbox" id="selectAllVisibleFields" class="form-checkbox select-all-checkbox" data-group="fieldVisibility">
-                            <label for="selectAllVisibleFields" class="form-checkbox-label tw-text-xs">Selecionar/Desselecionar Todos</label>
+                            <label for="selectAllVisibleFields" class="form-checkbox-label tw-text-xs">Todos</label>
                         </div>
                     </div>
-                    <div id="fieldVisibilityFiltersContainer" class="checkbox-grid tw-mt-2">
+                    <div id="fieldVisibilityFiltersContainer" class="checkbox-grid">
                         {/* Checkboxes de visibilidade de campo serão inseridos aqui */}
                     </div>
                 </div>
 
-                <div class="tw-mb-6 md:tw-mb-0">
+                <div class="filter-column">
                     <div class="filter-group-heading">
                         <h3 class="filter-group-title">Eventos do Envelope:</h3>
-                        <div class="tw-flex tw-items-center">
+                        <div class="select-all-container">
                             <input type="checkbox" id="selectAllEnvelopeEvents" class="form-checkbox select-all-checkbox" data-group="envelopeEvents">
-                            <label for="selectAllEnvelopeEvents" class="form-checkbox-label tw-text-xs">Selecionar/Desselecionar Todos</label>
+                            <label for="selectAllEnvelopeEvents" class="form-checkbox-label tw-text-xs">Todos</label>
                         </div>
                     </div>
-                    <div id="envelopeEventTypeFiltersContainer" class="checkbox-grid tw-mt-2">
+                    <div id="envelopeEventTypeFiltersContainer" class="checkbox-grid">
                         {/* Checkboxes populados por JS */}
                     </div>
                 </div>
                 
-                <div class="tw-mb-6 md:tw-mb-0">
+                <div class="filter-column">
                     <div class="filter-group-heading">
                         <h3 class="filter-group-title">Eventos de Destinatário:</h3>
-                        <div class="tw-flex tw-items-center">
+                        <div class="select-all-container">
                             <input type="checkbox" id="selectAllRecipientEvents" class="form-checkbox select-all-checkbox" data-group="recipientEvents">
-                            <label for="selectAllRecipientEvents" class="form-checkbox-label tw-text-xs">Selecionar/Desselecionar Todos</label>
+                            <label for="selectAllRecipientEvents" class="form-checkbox-label tw-text-xs">Todos</label>
                         </div>
                     </div>
-                    <div id="recipientEventTypeFiltersContainer" class="checkbox-grid tw-mt-2">
+                    <div id="recipientEventTypeFiltersContainer" class="checkbox-grid">
                         {/* Checkboxes populados por JS */}
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="eventListContainer">
+        <div id="eventListContainer" class="tw-mt-8">
           <p id="loadingMessage" class="tw-text-center tw-py-4">Carregando eventos...</p>
         </div>
       </div>
@@ -156,17 +213,18 @@
         const refreshDataBtn = document.getElementById('refreshDataBtn');
         const filterInput = document.getElementById('filterInput');
         
-        // Novos containers para os grupos de tipo de evento
+        const fieldVisibilityFiltersContainer = document.getElementById('fieldVisibilityFiltersContainer');
+        // Novos IDs para os containers dos tipos de evento
         const envelopeEventTypeFiltersContainer = document.getElementById('envelopeEventTypeFiltersContainer');
         const recipientEventTypeFiltersContainer = document.getElementById('recipientEventTypeFiltersContainer');
-        const fieldVisibilityFiltersContainer = document.getElementById('fieldVisibilityFiltersContainer');
+
 
         let allFetchedEvents = []; 
         
         const eventFilterConfig = {
             groups: [
                 {
-                    name: "Eventos do Envelope",
+                    name: "Eventos do Envelope", // Este 'name' é apenas para config, não será a legenda visível diretamente
                     containerId: 'envelopeEventTypeFiltersContainer',
                     selectAllId: 'selectAllEnvelopeEvents',
                     events: [
@@ -213,10 +271,7 @@
         }
         
         function populateCheckboxes(targetContainer, items, groupNameAttribute, isVisibility, selectAllCheckboxId) {
-            if (!targetContainer) {
-                // console.warn(`Container for ${groupNameAttribute} not found.`);
-                return;
-            }
+            if (!targetContainer) return;
             targetContainer.innerHTML = ''; 
 
             items.forEach(item => {
@@ -225,8 +280,8 @@
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 const idSuffix = isVisibility ? item.key.replace(/\./g, '-') : item.value.replace(/[\s-]/g, '');
-                checkbox.id = `filter-${groupNameAttribute}-${idSuffix}`;
-                checkbox.name = groupNameAttribute;
+                checkbox.id = `filter-${groupNameAttribute}-${idSuffix}`; // Usamos groupNameAttribute para o name do checkbox
+                checkbox.name = groupNameAttribute; // Todos os checkboxes de um grupo têm o mesmo name
                 checkbox.value = isVisibility ? item.key : item.value;
                 checkbox.className = isVisibility ? 'form-checkbox field-visibility-filter' : 'form-checkbox event-type-filter';
                 if (isVisibility) checkbox.checked = item.defaultChecked;
@@ -249,18 +304,16 @@
         function setupSelectAllCheckboxes() {
             document.querySelectorAll('.select-all-checkbox').forEach(selectAllCb => {
                 selectAllCb.addEventListener('change', function() {
-                    const groupName = this.dataset.group;
-                    let checkboxesInGroup;
+                    const group = this.dataset.group; // 'fieldVisibility', 'envelopeEvents', 'recipientEvents'
+                    let targetContainerId;
+                    if (group === 'fieldVisibility') targetContainerId = 'fieldVisibilityFiltersContainer';
+                    else if (group === 'envelopeEvents') targetContainerId = 'envelopeEventTypeFiltersContainer';
+                    else if (group === 'recipientEvents') targetContainerId = 'recipientEventTypeFiltersContainer';
+                    else return;
 
-                    if (groupName === 'fieldVisibility') {
-                        checkboxesInGroup = fieldVisibilityFiltersContainer.querySelectorAll('.field-visibility-filter');
-                    } else if (groupName === 'envelopeEvents') {
-                        checkboxesInGroup = envelopeEventTypeFiltersContainer.querySelectorAll('.event-type-filter');
-                    } else if (groupName === 'recipientEvents') {
-                        checkboxesInGroup = recipientEventTypeFiltersContainer.querySelectorAll('.event-type-filter');
-                    }
-                    
-                    if (checkboxesInGroup) {
+                    const container = document.getElementById(targetContainerId);
+                    if (container) {
+                        const checkboxesInGroup = container.querySelectorAll('.form-checkbox'); // Classe genérica dos checkboxes
                         checkboxesInGroup.forEach(cb => cb.checked = this.checked);
                     }
                     applyFilters();
@@ -272,19 +325,17 @@
             const selectAllCheckbox = document.getElementById(selectAllId);
             if (!selectAllCheckbox) return;
 
-            const groupName = selectAllCheckbox.dataset.group;
-            let checkboxesInGroup;
-
-            if (groupName === 'fieldVisibility') {
-                checkboxesInGroup = fieldVisibilityFiltersContainer.querySelectorAll('.field-visibility-filter');
-            } else if (groupName === 'envelopeEvents') {
-                checkboxesInGroup = envelopeEventTypeFiltersContainer.querySelectorAll('.event-type-filter');
-            } else if (groupName === 'recipientEvents') {
-                checkboxesInGroup = recipientEventTypeFiltersContainer.querySelectorAll('.event-type-filter');
-            } else {
-                return; // Grupo desconhecido
-            }
+            const group = selectAllCheckbox.dataset.group;
+            let containerId;
+            if (group === 'fieldVisibility') containerId = 'fieldVisibilityFiltersContainer';
+            else if (group === 'envelopeEvents') containerId = 'envelopeEventTypeFiltersContainer';
+            else if (group === 'recipientEvents') containerId = 'recipientEventTypeFiltersContainer';
+            else return;
             
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const checkboxesInGroup = container.querySelectorAll('.form-checkbox');
             if (!checkboxesInGroup || checkboxesInGroup.length === 0) {
                 selectAllCheckbox.checked = false;
                 selectAllCheckbox.indeterminate = false;
@@ -306,54 +357,25 @@
             }
         }
 
-        function populateAllFilters() {
+        function populateAllNamedFilters() { // Renomeado para clareza
             eventFilterConfig.groups.forEach(group => {
                 const container = document.getElementById(group.containerId);
                 if (container) {
-                    populateCheckboxes(container, group.events, 'eventType', false, group.selectAllId);
+                    populateCheckboxes(container, group.events, group.name.replace(/\s+/g, '-').toLowerCase() + '-types', false, group.selectAllId);
                     updateSelectAllCheckboxState(group.selectAllId);
-                } else {
-                    // console.warn(`Container com ID ${group.containerId} não encontrado para o grupo de filtros de tipo de evento.`);
                 }
             });
             if (fieldVisibilityFiltersContainer) {
-                 populateCheckboxes(fieldVisibilityFiltersContainer, eventFilterConfig.displayableFields, 'fieldVisibility', true, 'selectAllVisibleFields');
+                 populateCheckboxes(fieldVisibilityFiltersContainer, eventFilterConfig.displayableFields, 'visibility-fields', true, 'selectAllVisibleFields');
                  updateSelectAllCheckboxState('selectAllVisibleFields');
             }
             setupSelectAllCheckboxes();
         }
-
-        function renderEvents(eventsToDisplay) {
-            // ... (função renderEvents como na resposta anterior) ...
-        }
-
-        async function fetchDocusignEvents() {
-            // ... (função fetchDocusignEvents como na resposta anterior) ...
-        }
-
-        function applyFilters() {
-            // ... (função applyFilters como na resposta anterior) ...
-        }
-
-        async function handleDeleteEvent(event) {
-            // ... (função handleDeleteEvent como na resposta anterior) ...
-        }
         
-        // Copie e cole as definições completas de renderEvents, fetchDocusignEvents, applyFilters, handleDeleteEvent da MINHA RESPOSTA ANTERIOR aqui.
-        // Apenas as funções de popular e setup de "select all" foram detalhadas acima.
-
-        // Para economizar espaço, vou colar apenas as funções que mudaram ou são novas:
-        // populateCheckboxes, setupSelectAllCheckboxes, updateSelectAllCheckboxState, populateAllFilters.
-        // O resto (renderEvents, fetchDocusignEvents, applyFilters, handleDeleteEvent) é o mesmo da resposta anterior.
-        // Certifique-se de ter todas elas.
-
-        // COLE AS DEFINIÇÕES COMPLETAS DAS FUNÇÕES ABAIXO AQUI DA RESPOSTA ANTERIOR:
-        // renderEvents(eventsToDisplay) { ... }
-        // async function fetchDocusignEvents() { ... } (Apenas a chamada para populateAllFilters mudou ligeiramente)
-        // function applyFilters() { ... }
-        // async function handleDeleteEvent(event) { ... }
-        // A maneira como fetchDocusignEvents chama populateAllFilters já está correta no corpo do HTML acima.
-        // Vou colar as funções que não mudaram tanto para completude:
+        // ... (Restante das funções: renderEvents, fetchDocusignEvents, applyFilters, handleDeleteEvent)
+        // Cole as definições completas dessas funções da minha resposta anterior aqui.
+        // Assegure-se que a função fetchDocusignEvents chame populateAllNamedFilters()
+        // Vou colar as versões mais recentes delas abaixo para garantir:
 
         function renderEvents(eventsToDisplay) {
             eventListContainer.innerHTML = ''; 
@@ -442,7 +464,7 @@
                     throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
                 }
                 allFetchedEvents = await response.json(); 
-                populateAllFilters();
+                populateAllNamedFilters(); // CHAMA A FUNÇÃO RENOMEADA
                 if (loadingMessage) loadingMessage.remove();
                 applyFilters(); 
             } catch (error) { 
@@ -503,11 +525,12 @@
                 }
             }
         }
+        // --- FIM DAS FUNÇÕES COPIADAS ---
 
         if (refreshDataBtn) refreshDataBtn.addEventListener('click', fetchDocusignEvents);
         if (filterInput) filterInput.addEventListener('input', applyFilters);
         
-        fetchDocusignEvents();
+        fetchDocusignEvents(); // Busca inicial de dados
       });
     </script>
     <script src="./scripts/components.js"></script>

@@ -21,28 +21,44 @@
     <style>
       .content-wrapper { min-height: 70vh; }
       .event-card {
-        border: 1px solid #e2e8f0; padding: 1.25rem; margin-bottom: 1.5rem;
-        border-radius: 0.5rem; transition: box-shadow 0.2s ease-in-out;
-        font-size: 0.9rem; /* Ligeiramente menor para acomodar mais info */
+        border: 1px solid #e2e8f0; /* coolGray-200 */
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 0.5rem; /* rounded-lg */
+        transition: box-shadow 0.2s ease-in-out;
       }
-      .dark .event-card { border-color: #374151; background-color: #1f2937; } /* gray-700, gray-800 */
-      .event-card:hover { box-shadow: 0 4px 8px -1px rgba(0,0,0,0.1), 0 2px 6px -1px rgba(0,0,0,0.06); }
-      .dark .event-card:hover { box-shadow: 0 4px 8px -1px rgba(0,0,0,0.4), 0 2px 6px -1px rgba(0,0,0,0.3); }
-      .event-card strong { color: #1d4ed8; } /* blue-700 */
-      .dark .event-card strong { color: #60a5fa; } /* blue-400 */
+      .dark .event-card {
+        border-color: #4a5568; /* coolGray-700 */
+        background-color: #2d3748; /* coolGray-800 */
+      }
+      .event-card:hover {
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+      }
+      .dark .event-card:hover {
+         box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2);
+      }
+      .event-card strong { color: #2b6cb0; /* blue-600 */ }
+      .dark .event-card strong { color: #63b3ed; /* blue-300 */ }
       pre {
-        background-color: #f3f4f6; /* gray-100 */
-        padding: 0.5em 0.75em; border-radius: 0.25rem; /* rounded-sm */
-        overflow-x: auto; font-size: 0.75em; margin-top: 0.25rem;
-        border: 1px solid #d1d5db; /* gray-300 */ max-height: 150px; 
+        background-color: #f7fafc; /* coolGray-100 */
+        padding: 0.75em 1em;
+        border-radius: 0.375rem; /* rounded-md */
+        overflow-x: auto;
+        font-size: 0.8em;
+        margin-top: 0.5rem;
+        border: 1px solid #e2e8f0; /* coolGray-200 */
+        max-height: 200px; 
       }
-      .dark pre { background-color: #374151; color: #d1d5db; border-color: #4b5563; } /* gray-700, gray-300, gray-600 */
-      
+      .dark pre {
+        background-color: #1a202c; /* coolGray-900 */
+        color: #cbd5e0; /* coolGray-300 */
+        border-color: #2d3748; /* coolGray-700 */
+      }
       .filter-input {
         @apply tw-block tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-indigo-500 focus:tw-border-indigo-500 sm:tw-text-sm dark:tw-bg-gray-700 dark:tw-text-white;
       }
       .delete-btn {
-        @apply tw-ml-auto tw-px-2 tw-py-1 tw-bg-red-600 hover:tw-bg-red-700 tw-text-white tw-text-xs tw-font-medium tw-rounded tw-shadow focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-red-500 focus:tw-ring-opacity-50 tw-transition-colors;
+        @apply tw-ml-auto tw-px-3 tw-py-1 tw-bg-red-500 hover:tw-bg-red-600 tw-text-white tw-text-xs tw-font-semibold tw-rounded tw-shadow focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-red-500 focus:tw-ring-opacity-50 tw-transition-colors;
       }
       .form-checkbox { 
         @apply tw-h-4 tw-w-4 tw-text-indigo-600 tw-border-gray-300 dark:tw-border-gray-600 tw-rounded focus:tw-ring-indigo-500 dark:tw-bg-gray-700 dark:focus:tw-ring-offset-gray-800;
@@ -50,37 +66,62 @@
       .form-checkbox-label { 
         @apply tw-ml-2 tw-block tw-text-sm tw-font-normal tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer;
       }
-      .filter-area-container {
-        @apply tw-mb-8 tw-p-4 md:tw-p-6 tw-bg-gray-50 dark:tw-bg-gray-800 tw-rounded-lg tw-shadow-lg;
+      .filter-group-title { /* Para "Filtrar por Texto", "Campos a Exibir", "Eventos do Envelope", "Eventos de Destinatário" */
+        @apply tw-block tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100 tw-mb-1;
       }
-      .filter-area-title {
-        @apply tw-text-xl tw-font-bold tw-mb-6 tw-pb-3 tw-border-b dark:tw-border-gray-700 tw-text-gray-900 dark:tw-text-gray-100;
+      .filter-group-subtitle { /* Descrição abaixo do título do grupo de filtro de texto */
+         @apply tw-text-xs tw-text-gray-600 dark:tw-text-gray-400 tw-mb-2;
       }
-      .filter-columns-container {
-        @apply tw-grid md:tw-grid-cols-3 md:tw-gap-x-6 lg:tw-gap-x-8;
-      }
-      .filter-column-group { /* Para cada coluna de filtro */
-         @apply tw-mb-6 md:tw-mb-0;
-      }
-      .filter-group-heading {
-        @apply tw-flex tw-justify-between tw-items-center tw-mb-2;
-      }
-      .filter-group-title { /* Para "Filtrar por Texto", "Campos a Exibir", etc. */
-        @apply tw-block tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100;
-      }
-      .filter-group-subtitle { /* Descrição abaixo do título do grupo */
-         @apply tw-text-xs tw-text-gray-500 dark:tw-text-gray-400 tw-mb-2;
-      }
-      .fieldset-legend { /* Legenda para os fieldsets de tipo de evento */
-        @apply tw-text-base tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2;
-      }
-      .checkbox-grid { 
+      .checkbox-grid { /* Grade para os checkboxes dentro de cada grupo de filtro */
         @apply tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-x-4 tw-gap-y-1 tw-mt-2;
       }
-      .card-field { @apply tw-text-sm tw-mb-1; }
-      .dark .card-field { @apply tw-text-gray-300; }
-      .card-field strong { @apply tw-font-medium tw-text-gray-700 dark:tw-text-gray-100; }
 
+      /* Estilos para a área de filtros e colunas */
+      .filters-area {
+        background-color: #f9fafb; /* Cor de fundo similar a tw-gray-50 */
+        padding: 1.5rem; /* Corresponde a tw-p-6 */
+        border-radius: 0.5rem; /* Corresponde a tw-rounded-lg */
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); /* Sombra similar a tw-shadow-lg ou md */
+        margin-bottom: 2rem; /* tw-mb-8 */
+      }
+      .dark .filters-area {
+        background-color: #1f2937; /* Cor de fundo similar a tw-gray-800 */
+      }
+      .filters-area-title {
+        font-size: 1.25rem; /* tw-text-xl */
+        font-weight: 700; /* tw-font-bold */
+        margin-bottom: 1.5rem; /* tw-mb-6 */
+        padding-bottom: 0.75rem; /* tw-pb-3 */
+        border-bottom: 1px solid #e5e7eb; /* tw-border-gray-200 */
+        color: #111827; /* tw-text-gray-900 */
+      }
+      .dark .filters-area-title {
+        border-color: #374151; /* tw-border-gray-700 */
+        color: #f3f4f6; /* tw-text-gray-100 */
+      }
+      .filter-columns-container {
+        display: flex;
+        flex-direction: column; /* Empilhado por padrão (mobile) */
+        gap: 1.5rem; 
+      }
+      @media (min-width: 1024px) { /* Breakpoint lg (1024px) para 3 colunas */
+        .filter-columns-container {
+          flex-direction: row;
+          justify-content: space-between;
+        }
+        .filter-column {
+          flex: 1 1 0; /* Permite que as colunas cresçam e encolham igualmente */
+          min-width: 200px; /* Largura mínima para cada coluna */
+          /* Adicione um max-width se quiser limitar o quão largas elas podem ficar: */
+          /* max-width: calc(33.333% - 1rem);  1.5rem gap / 2 = 0.75rem. 1.5rem * 2 = 3rem total gap. (100% - 3rem)/3 */
+        }
+      }
+      .filter-group-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem; 
+      }
     </style>
   </head>
   <body class="tw-flex tw-min-h-[100vh] tw-flex-col tw-bg-[#fcfcfc] tw-text-black dark:tw-bg-black dark:tw-text-white">
@@ -112,8 +153,8 @@
                 <input type="text" id="filterInput" class="filter-input md:tw-max-w-xl" placeholder="Digite para filtrar...">
             </div>
 
-            <div class="filter-columns-container">
-                <div class="filter-column-group"> 
+            <div class="filter-columns-container-flex">
+                <div class="filter-column">
                     <div class="filter-group-heading">
                         <h3 class="filter-group-title">Campos a Exibir:</h3>
                         <div class="select-all-container">
@@ -126,7 +167,7 @@
                     </div>
                 </div>
 
-                <div class="filter-column-group">
+                <div class="filter-column">
                     <div class="filter-group-heading">
                         <h3 class="filter-group-title">Eventos do Envelope:</h3>
                         <div class="select-all-container">
@@ -139,7 +180,7 @@
                     </div>
                 </div>
                 
-                <div class="filter-column-group">
+                <div class="filter-column">
                     <div class="filter-group-heading">
                         <h3 class="filter-group-title">Eventos de Destinatário:</h3>
                         <div class="select-all-container">
@@ -161,7 +202,7 @@
     </main>
 
     <footer class="tw-mt-auto tw-flex tw-flex-col tw-w-full tw-gap-4 tw-text-sm tw-pt-[5%] tw-pb-10 tw-px-[5%] md:tw-px-[10%] tw-text-black dark:tw-text-white max-md:tw-flex-col">
-        <div class="tw-flex max-md:tw-flex-col max-md:tw-gap-6 tw-gap-3 tw-w-full tw-place-content-around"><div class="tw-flex tw-h-full tw-w-[250px] tw-flex-col tw-place-items-center tw-gap-6 max-md:tw-w-full"><a href="index.html" class="tw-w-full tw-place-items-center tw-flex tw-flex-col tw-gap-6"><img src="./assets/logo/logo.png" alt="Fontara Financial Logo" class="tw-max-w-[120px] dark:tw-invert"/></a><div class="tw-flex tw-gap-4 tw-text-lg"><a href="https://github.com/PaulleDemon/" aria-label="Github" target="_blank" rel="noopener"><i class="bi bi-github"></i></a><a href="https://twitter.com/pauls_freeman" aria-label="Twitter" target="_blank" rel="noopener"><i class="bi bi-twitter"></i></a><a href="https://www.linkedin.com/" aria-label="Linkedin" target="_blank" rel="noopener"><i class="bi bi-linkedin"></i></a></div></div><div class="tw-flex max-md:tw-flex-col tw-flex-wrap tw-gap-6 tw-h-full tw-w-full tw-justify-around"><div class="tw-flex tw-h-full tw-w-[200px] tw-flex-col tw-gap-4"><h2 class="tw-text-xl">Recursos</h2><div class="tw-flex tw-flex-col tw-gap-3"><a href="#" class="footer-link">Blog Financeiro</a><a href="#" class="footer-link">Simuladores</a><a href="#" class="footer-link">Glossário Financeiro</a><a href="#" class="footer-link">Status dos Serviços</a><a href="#" class="footer-link">Taxas e Tarifas</a></div></div><div class="tw-flex tw-h-full tw-w-[200px] tw-flex-col tw-gap-4"><h2 class="tw-text-xl">Fontara</h2><div class="tw-flex tw-flex-col tw-gap-3"><a href="#" class="footer-link">Sobre Nós</a><a href="#" class="footer-link">Carreiras</a><a href="#" class="footer-link">Imprensa</a><a href="#" class="footer-link">Fale Conosco</a><a href="#" class="footer-link">Compliance</a></div></div><div class="tw-flex tw-h-full tw-w-[200px] tw-flex-col tw-gap-4"><h2 class="tw-text-xl">Legal</h2><div class="tw-flex tw-flex-col tw-gap-3"><a href="#" class="footer-link">Termos de Uso</a><a href="#" class="footer-link">Política de Privacidade</a><a href="#" class="footer-link">Ouvidoria</a></div></div></div></div><hr class="tw-mt-8" /><div class="tw-mt-2 tw-flex tw-gap-2 tw-flex-col tw-text-gray-700 dark:tw-text-gray-300 tw-place-items-center tw-text-[12px] tw-w-full tw-text-center tw-place-content-around"><span>Copyright &#169; 2023-<span id="current-year"></span> Fontara Financial. Todos os direitos reservados.</span><span>Todas as marcas registradas e direitos autorais pertencem aos seus respectivos proprietários.</span></div>
+      <div class="tw-flex max-md:tw-flex-col max-md:tw-gap-6 tw-gap-3 tw-w-full tw-place-content-around"><div class="tw-flex tw-h-full tw-w-[250px] tw-flex-col tw-place-items-center tw-gap-6 max-md:tw-w-full"><a href="index.html" class="tw-w-full tw-place-items-center tw-flex tw-flex-col tw-gap-6"><img src="./assets/logo/logo.png" alt="Fontara Financial Logo" class="tw-max-w-[120px] dark:tw-invert"/></a><div class="tw-flex tw-gap-4 tw-text-lg"><a href="https://github.com/PaulleDemon/" aria-label="Github" target="_blank" rel="noopener"><i class="bi bi-github"></i></a><a href="https://twitter.com/pauls_freeman" aria-label="Twitter" target="_blank" rel="noopener"><i class="bi bi-twitter"></i></a><a href="https://www.linkedin.com/" aria-label="Linkedin" target="_blank" rel="noopener"><i class="bi bi-linkedin"></i></a></div></div><div class="tw-flex max-md:tw-flex-col tw-flex-wrap tw-gap-6 tw-h-full tw-w-full tw-justify-around"><div class="tw-flex tw-h-full tw-w-[200px] tw-flex-col tw-gap-4"><h2 class="tw-text-xl">Recursos</h2><div class="tw-flex tw-flex-col tw-gap-3"><a href="#" class="footer-link">Blog Financeiro</a><a href="#" class="footer-link">Simuladores</a><a href="#" class="footer-link">Glossário Financeiro</a><a href="#" class="footer-link">Status dos Serviços</a><a href="#" class="footer-link">Taxas e Tarifas</a></div></div><div class="tw-flex tw-h-full tw-w-[200px] tw-flex-col tw-gap-4"><h2 class="tw-text-xl">Fontara</h2><div class="tw-flex tw-flex-col tw-gap-3"><a href="#" class="footer-link">Sobre Nós</a><a href="#" class="footer-link">Carreiras</a><a href="#" class="footer-link">Imprensa</a><a href="#" class="footer-link">Fale Conosco</a><a href="#" class="footer-link">Compliance</a></div></div><div class="tw-flex tw-h-full tw-w-[200px] tw-flex-col tw-gap-4"><h2 class="tw-text-xl">Legal</h2><div class="tw-flex tw-flex-col tw-gap-3"><a href="#" class="footer-link">Termos de Uso</a><a href="#" class="footer-link">Política de Privacidade</a><a href="#" class="footer-link">Ouvidoria</a></div></div></div></div><hr class="tw-mt-8" /><div class="tw-mt-2 tw-flex tw-gap-2 tw-flex-col tw-text-gray-700 dark:tw-text-gray-300 tw-place-items-center tw-text-[12px] tw-w-full tw-text-center tw-place-content-around"><span>Copyright &#169; 2023-<span id="current-year"></span> Fontara Financial. Todos os direitos reservados.</span><span>Todas as marcas registradas e direitos autorais pertencem aos seus respectivos proprietários.</span></div>
     </footer>
 
     <script>
@@ -211,21 +252,25 @@
                 { keyForId: "id", label: "ID Função", defaultChecked: false, path: 'id' },
                 { keyForId: "receivedAt", label: "Recebido em", defaultChecked: true, path: 'receivedAt', type: 'datetime' },
                 { keyForId: "eventType", label: "Tipo Evento", defaultChecked: true, path: 'eventType', isEventType: true },
-                { keyForId: "docusignPayload.envelopeId", label: "ID Envelope", defaultChecked: true, path: 'docusignPayload.envelopeId' },
-                { keyForId: "docusignPayload.status", label: "Status Envelope", defaultChecked: true, path: 'docusignPayload.envelopeSummary.status' }, // Corrigido path
-                { keyForId: "docusignPayload.emailSubject", label: "Assunto", defaultChecked: true, path: 'docusignPayload.envelopeSummary.emailSubject' }, // Corrigido path
-                { keyForId: "docusignPayload.generatedDateTime", label: "Gerado (Docusign)", defaultChecked: false, path: 'docusignPayload.generatedDateTime', type: 'datetime' }, // Corrigido path (do evento principal)
-                { keyForId: "docusignPayload.statusChangedDateTime", label: "Status Alterado", defaultChecked: false, path: 'docusignPayload.envelopeSummary.statusChangedDateTime', type: 'datetime' }, // Corrigido path
-                { keyForId: "docusignPayload.senderName", label: "Remetente", defaultChecked: false, path: 'docusignPayload.envelopeSummary.sender.userName' }, // Corrigido path
-                { keyForId: "docusignPayload.recipients", label: "Destinatários", defaultChecked: false, path: 'docusignPayload.envelopeSummary.recipients', isComplexObject: true }, // Para exibir como JSON
-                { keyForId: "docusignPayload.documentNames", label: "Documentos", defaultChecked: false, path: 'docusignPayload.envelopeSummary.envelopeDocuments', isDocArray: true },
-                { keyForId: "processingError", label: "Erro Processamento", defaultChecked: true, path: 'processingError' },
-                { keyForId: "rawPayload", label: "Payload Bruto (Webhook)", defaultChecked: false, path: 'docusignPayload.rawWebhookPayload', isPre: true } // Assumindo que você salve isso
+                // Ajuste os paths para apontar para eventEntry.docusignPayload, que agora contém o objeto 'data' do Docusign
+                { keyForId: "envelopeId", label: "ID Envelope", defaultChecked: true, path: 'docusignPayload.envelopeId' },
+                { keyForId: "status", label: "Status Envelope", defaultChecked: true, path: 'docusignPayload.envelopeSummary.status' },
+                { keyForId: "subject", label: "Assunto", defaultChecked: true, path: 'docusignPayload.envelopeSummary.emailSubject' },
+                { keyForId: "timeGeneratedEvent", label: "Gerado (Evento Docusign)", defaultChecked: false, path: 'docusignPayload.generatedDateTime', type: 'datetime' }, // Path corrigido, é do evento geral
+                { keyForId: "statusChangedDateTime", label: "Status Alterado", defaultChecked: false, path: 'docusignPayload.envelopeSummary.statusChangedDateTime', type: 'datetime' },
+                { keyForId: "senderName", label: "Remetente", defaultChecked: false, path: 'docusignPayload.envelopeSummary.sender.userName' },
+                // Para 'recipients' e 'documentNames', precisaremos de uma formatação especial em renderEvents
+                { keyForId: "recipients", label: "Destinatários", defaultChecked: false, path: 'docusignPayload.envelopeSummary.recipients', isComplexObject: true }, 
+                { keyForId: "documentNames", label: "Documentos", defaultChecked: false, path: 'docusignPayload.envelopeSummary.envelopeDocuments', isDocArray: true },
+                { keyForId: "processingError", label: "Erro Processamento (Listener)", defaultChecked: true, path: 'processingError' },
+                { keyForId: "rawPayloadPreview", label: "Preview Payload Bruto (Listener)", defaultChecked: false, path: 'relevantInfo.rawPreview', isPre: true } // relevantInfo não existe mais nesse nível
             ]
         };
 
         function getNestedValue(obj, path) {
             if (!path || !obj) return undefined;
+            // Lida com o caso de 'docusignPayload' poder ser null (se o parse inicial falhou)
+            if (path.startsWith('docusignPayload.') && obj.docusignPayload === null) return undefined;
             return path.split('.').reduce((acc, part) => acc && typeof acc === 'object' && acc[part] !== undefined && acc[part] !== null ? acc[part] : undefined, obj);
         }
         
@@ -238,10 +283,8 @@
                 div.className = 'tw-flex tw-items-center';
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
-                // Usa item.path para visibilidade, item.value para tipo de evento
-                const valueForCheckbox = isVisibilityFilter ? item.path : item.value;
+                const valueForCheckbox = isVisibilityFilter ? item.path : item.value; // Usa item.path para visibilidade
                 const idSuffix = valueForCheckbox.replace(/[\s.\-]/g, '');
-
                 checkbox.id = `filter-${groupNameAttributeForCheckboxName}-${idSuffix}`;
                 checkbox.name = groupNameAttributeForCheckboxName;
                 checkbox.value = valueForCheckbox;
@@ -310,7 +353,7 @@
                 }
             });
             if (fieldVisibilityFiltersContainer) {
-                 populateCheckboxes(fieldVisibilityFiltersContainer, eventFilterConfig.displayableFields, 'fieldVisibility', true, 'selectAllVisibleFields');
+                 populateCheckboxes(fieldVisibilityFiltersContainer, eventFilterConfig.displayableFields, 'visibility-fields', true, 'selectAllVisibleFields');
                  updateSelectAllCheckboxState('selectAllVisibleFields');
             }
             setupSelectAllCheckboxes();
@@ -325,12 +368,12 @@
 
             const visibleFieldKeys = {};
             document.querySelectorAll('.field-visibility-filter:checked').forEach(cb => {
-                visibleFieldKeys[cb.value] = true; // cb.value é o fieldConf.path
+                visibleFieldKeys[cb.value] = true; 
             });
 
             eventsToDisplay.forEach(eventEntry => {
                 const card = document.createElement('div');
-                card.className = 'event-card';
+                card.className = 'event-card'; // Classes Tailwind aplicadas diretamente ou via @apply na <style>
                 
                 let eventTypeLabel = eventEntry.eventType || 'Desconhecido';
                 for (const group of eventFilterConfig.groups) {
@@ -338,53 +381,50 @@
                     if (foundEvent) { eventTypeLabel = foundEvent.label; break; }
                 }
 
-                let contentHtml = `<div class="tw-flex tw-justify-between tw-items-start"><div>`;
-                let bodyDetailsHtml = '';
+                let headerContent = `<div class="tw-flex tw-justify-between tw-items-start"><div>`;
+                let bodyContent = '';
 
                 eventFilterConfig.displayableFields.forEach(fieldConf => {
-                    if (visibleFieldKeys[fieldConf.path]) {
+                    if (visibleFieldKeys[fieldConf.path]) { 
                         let value = getNestedValue(eventEntry, fieldConf.path);
                         let displayValueHtml = '';
 
-                        if (value === undefined || value === null || (Array.isArray(value) && value.length === 0)) {
-                            if (fieldConf.path === 'processingError' && eventEntry.processingError) { // Exceção para mostrar erro de processamento
-                                displayValueHtml = `<span class="tw-text-red-500">${String(eventEntry.processingError).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>`;
-                            } else {
-                                displayValueHtml = '<span class="tw-italic tw-text-gray-500 dark:tw-text-gray-400">N/A</span>';
-                            }
+                        if (value === undefined || value === null ) {
+                            if(fieldConf.path === 'processingError' && !eventEntry.processingError) return; // Não mostra 'Erro Processamento: N/A' se não houver erro
+                            displayValueHtml = '<span class="tw-italic tw-text-gray-500 dark:tw-text-gray-400">N/A</span>';
                         } else if (fieldConf.type === 'datetime') {
                             displayValueHtml = new Date(value).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' });
                         } else if (fieldConf.isEventType) {
                             displayValueHtml = `<span class="tw-font-semibold">${eventTypeLabel}</span>`;
-                        } else if (fieldConf.isDocArray && Array.isArray(value)) {
-                            displayValueHtml = value.map(doc => doc.name || 'Nome Desconhecido').join(', ');
-                        } else if (fieldConf.isArray && Array.isArray(value)) {
+                        } else if (fieldConf.isDocArray && Array.isArray(value)) { // Para envelopeDocuments
+                             displayValueHtml = value.map(doc => doc.name || 'Nome Desconhecido').join(', ');
+                        } else if (fieldConf.isArray && Array.isArray(value)) { // Para recipientsPreview
                              displayValueHtml = `<ul class="tw-list-disc tw-list-inside tw-ml-4">${value.map(item => `<li>${String(item).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</li>`).join('')}</ul>`;
-                        } else if (fieldConf.isPre && value) {
+                        } else if (fieldConf.isPre && typeof value === 'string') { // Para rawPreview
                             displayValueHtml = `<pre class="tw-text-xs">${String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>`;
-                        } else if (fieldConf.isComplexObject && typeof value === 'object') {
+                        } else if (fieldConf.isComplexObject && typeof value === 'object') { // Para recipients
                             displayValueHtml = `<pre class="tw-text-xs">${JSON.stringify(value, null, 2).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>`;
-                        }
-                         else {
+                        } else {
                             displayValueHtml = String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;");
                         }
                         
                         const fieldHtml = `<p class="card-field ${fieldConf.path === 'id' ? 'tw-text-xs tw-text-gray-500 dark:tw-text-gray-400' : 'tw-mt-1'}"><strong>${fieldConf.label}:</strong> ${displayValueHtml}</p>`;
                         
                         if (fieldConf.path === 'id' || fieldConf.path === 'receivedAt' || fieldConf.path === 'eventType') {
-                            contentHtml += fieldHtml;
+                            headerContent += fieldHtml;
                         } else {
-                            bodyDetailsHtml += fieldHtml;
+                            bodyContent += fieldHtml;
                         }
                     }
                 });
-                contentHtml += `</div><button data-event-id="${eventEntry.id}" class="delete-btn tw-flex-shrink-0"><i class="bi bi-trash3"></i> Excluir</button></div>`;
+                headerContent += `</div><button data-event-id="${eventEntry.id}" class="delete-btn tw-flex-shrink-0"><i class="bi bi-trash3"></i> Excluir</button></div>`;
                 
-                if(bodyDetailsHtml.trim() !== ''){
-                    contentHtml += '<hr class="tw-my-3 dark:tw-border-gray-600">' + bodyDetailsHtml;
+                let finalContent = headerContent;
+                if(bodyContent.trim() !== ''){
+                    finalContent += '<hr class="tw-my-3 dark:tw-border-gray-600">' + bodyContent;
                 }
                 
-                card.innerHTML = contentHtml;
+                card.innerHTML = finalContent;
                 eventListContainer.appendChild(card);
             });
 
@@ -433,7 +473,7 @@
                     eventFilterConfig.displayableFields.forEach(fieldConf => {
                         const value = getNestedValue(eventEntry, fieldConf.path);
                         if (value) {
-                            if (typeof value === 'object') { // Stringify objetos para busca
+                            if (typeof value === 'object') { 
                                 searchableText += JSON.stringify(value).toLowerCase() + ' ';
                             } else {
                                 searchableText += String(value).toLowerCase() + ' ';

@@ -21,26 +21,28 @@
     <style>
       .content-wrapper { min-height: 70vh; }
       .event-card {
-        border: 1px solid #e2e8f0; padding: 1rem; margin-bottom: 1rem;
+        border: 1px solid #e2e8f0; padding: 1.25rem; margin-bottom: 1.5rem;
         border-radius: 0.5rem; transition: box-shadow 0.2s ease-in-out;
+        font-size: 0.9rem; /* Ligeiramente menor para acomodar mais info */
       }
-      .dark .event-card { border-color: #4a5568; background-color: #2d3748; }
-      .event-card:hover { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); }
-      .dark .event-card:hover { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -1px rgba(0,0,0,0.2); }
-      .event-card strong { color: #2b6cb0; }
-      .dark .event-card strong { color: #63b3ed; }
+      .dark .event-card { border-color: #374151; background-color: #1f2937; } /* gray-700, gray-800 */
+      .event-card:hover { box-shadow: 0 4px 8px -1px rgba(0,0,0,0.1), 0 2px 6px -1px rgba(0,0,0,0.06); }
+      .dark .event-card:hover { box-shadow: 0 4px 8px -1px rgba(0,0,0,0.4), 0 2px 6px -1px rgba(0,0,0,0.3); }
+      .event-card strong { color: #1d4ed8; } /* blue-700 */
+      .dark .event-card strong { color: #60a5fa; } /* blue-400 */
       pre {
-        background-color: #f7fafc; padding: 0.75em 1em; border-radius: 0.375rem;
-        overflow-x: auto; font-size: 0.8em; margin-top: 0.5rem;
-        border: 1px solid #e2e8f0; max-height: 200px; 
+        background-color: #f3f4f6; /* gray-100 */
+        padding: 0.5em 0.75em; border-radius: 0.25rem; /* rounded-sm */
+        overflow-x: auto; font-size: 0.75em; margin-top: 0.25rem;
+        border: 1px solid #d1d5db; /* gray-300 */ max-height: 150px; 
       }
-      .dark pre { background-color: #1a202c; color: #cbd5e0; border-color: #2d3748; }
+      .dark pre { background-color: #374151; color: #d1d5db; border-color: #4b5563; } /* gray-700, gray-300, gray-600 */
       
       .filter-input {
         @apply tw-block tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-indigo-500 focus:tw-border-indigo-500 sm:tw-text-sm dark:tw-bg-gray-700 dark:tw-text-white;
       }
       .delete-btn {
-        @apply tw-ml-auto tw-px-3 tw-py-1 tw-bg-red-500 hover:tw-bg-red-600 tw-text-white tw-text-xs tw-font-semibold tw-rounded tw-shadow focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-red-500 focus:tw-ring-opacity-50 tw-transition-colors;
+        @apply tw-ml-auto tw-px-2 tw-py-1 tw-bg-red-600 hover:tw-bg-red-700 tw-text-white tw-text-xs tw-font-medium tw-rounded tw-shadow focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-red-500 focus:tw-ring-opacity-50 tw-transition-colors;
       }
       .form-checkbox { 
         @apply tw-h-4 tw-w-4 tw-text-indigo-600 tw-border-gray-300 dark:tw-border-gray-600 tw-rounded focus:tw-ring-indigo-500 dark:tw-bg-gray-700 dark:focus:tw-ring-offset-gray-800;
@@ -48,54 +50,37 @@
       .form-checkbox-label { 
         @apply tw-ml-2 tw-block tw-text-sm tw-font-normal tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer;
       }
-      .filter-group-title { 
-        @apply tw-block tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100 tw-mb-1;
+      .filter-area-container {
+        @apply tw-mb-8 tw-p-4 md:tw-p-6 tw-bg-gray-50 dark:tw-bg-gray-800 tw-rounded-lg tw-shadow-lg;
       }
-      .filter-group-subtitle {
-         @apply tw-text-xs tw-text-gray-600 dark:tw-text-gray-400 tw-mb-2;
-      }
-      .filter-fieldset-legend { 
-        @apply tw-text-md tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2;
-      }
-      .checkbox-grid { 
-        @apply tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-x-4 tw-gap-y-2 tw-mt-2;
-      }
-      .filters-area {
-        background-color: #f9fafb; /* tw-bg-gray-50 */
-        padding: 1.5rem; /* tw-p-6 */
-        border-radius: 0.5rem; /* tw-rounded-lg */
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* tw-shadow-md */
-        margin-bottom: 2rem; /* tw-mb-8 */
-      }
-      .dark .filters-area {
-        background-color: #1f2937; /* tw-bg-gray-800 */
-      }
-      .filters-area-title {
-        font-size: 1.25rem; /* tw-text-xl */
-        font-weight: 700; /* tw-font-bold */
-        margin-bottom: 1.5rem; /* tw-mb-6 */
-        padding-bottom: 0.75rem; /* tw-pb-3 */
-        border-bottom: 1px solid #e5e7eb; /* tw-border-gray-200 */
-      }
-      .dark .filters-area-title {
-        border-color: #374151; /* tw-border-gray-700 */
-        color: #f3f4f6; /* tw-text-gray-100 */
+      .filter-area-title {
+        @apply tw-text-xl tw-font-bold tw-mb-6 tw-pb-3 tw-border-b dark:tw-border-gray-700 tw-text-gray-900 dark:tw-text-gray-100;
       }
       .filter-columns-container {
-        display: grid;
-        gap: 1.5rem; /* md:tw-gap-x-6 */
+        @apply tw-grid md:tw-grid-cols-3 md:tw-gap-x-6 lg:tw-gap-x-8;
       }
-      @media (min-width: 1024px) { /* Ajustado para 'lg' (1024px) para 3 colunas */
-        .filter-columns-container {
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
+      .filter-column-group { /* Para cada coluna de filtro */
+         @apply tw-mb-6 md:tw-mb-0;
       }
       .filter-group-heading {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.75rem; /* tw-mb-3 */
+        @apply tw-flex tw-justify-between tw-items-center tw-mb-2;
       }
+      .filter-group-title { /* Para "Filtrar por Texto", "Campos a Exibir", etc. */
+        @apply tw-block tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100;
+      }
+      .filter-group-subtitle { /* Descrição abaixo do título do grupo */
+         @apply tw-text-xs tw-text-gray-500 dark:tw-text-gray-400 tw-mb-2;
+      }
+      .fieldset-legend { /* Legenda para os fieldsets de tipo de evento */
+        @apply tw-text-base tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2;
+      }
+      .checkbox-grid { 
+        @apply tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-x-4 tw-gap-y-1 tw-mt-2;
+      }
+      .card-field { @apply tw-text-sm tw-mb-1; }
+      .dark .card-field { @apply tw-text-gray-300; }
+      .card-field strong { @apply tw-font-medium tw-text-gray-700 dark:tw-text-gray-100; }
+
     </style>
   </head>
   <body class="tw-flex tw-min-h-[100vh] tw-flex-col tw-bg-[#fcfcfc] tw-text-black dark:tw-bg-black dark:tw-text-white">
@@ -128,7 +113,7 @@
             </div>
 
             <div class="filter-columns-container">
-                <div class="filter-column">
+                <div class="filter-column-group"> 
                     <div class="filter-group-heading">
                         <h3 class="filter-group-title">Campos a Exibir:</h3>
                         <div class="select-all-container">
@@ -137,11 +122,11 @@
                         </div>
                     </div>
                     <div id="fieldVisibilityFiltersContainer" class="checkbox-grid">
-                        {/* Checkboxes de visibilidade de campo serão inseridos aqui */}
+                        {/* JS populates this */}
                     </div>
                 </div>
 
-                <div class="filter-column">
+                <div class="filter-column-group">
                     <div class="filter-group-heading">
                         <h3 class="filter-group-title">Eventos do Envelope:</h3>
                         <div class="select-all-container">
@@ -150,11 +135,11 @@
                         </div>
                     </div>
                     <div id="envelopeEventTypeFiltersContainer" class="checkbox-grid">
-                        {/* Checkboxes populados por JS */}
+                        {/* JS populates this */}
                     </div>
                 </div>
                 
-                <div class="filter-column">
+                <div class="filter-column-group">
                     <div class="filter-group-heading">
                         <h3 class="filter-group-title">Eventos de Destinatário:</h3>
                         <div class="select-all-container">
@@ -163,7 +148,7 @@
                         </div>
                     </div>
                     <div id="recipientEventTypeFiltersContainer" class="checkbox-grid">
-                        {/* Checkboxes populados por JS */}
+                        {/* JS populates this */}
                     </div>
                 </div>
             </div>
@@ -198,7 +183,7 @@
         const eventFilterConfig = {
             groups: [
                 {
-                    name: "Eventos do Envelope",
+                    name: "Eventos do Envelope", 
                     containerId: 'envelopeEventTypeFiltersContainer',
                     selectAllId: 'selectAllEnvelopeEvents',
                     events: [
@@ -223,19 +208,19 @@
                 }
             ],
             displayableFields: [
-                { key: "id", label: "ID Função", defaultChecked: false, path: 'id' },
-                { key: "receivedAt", label: "Recebido em", defaultChecked: true, path: 'receivedAt', type: 'datetime' },
-                { key: "eventType", label: "Tipo Evento", defaultChecked: true, path: 'eventType', isEventType: true },
-                { key: "envelopeId", label: "ID Envelope", defaultChecked: true, path: 'relevantInfo.envelopeId' },
-                { key: "status", label: "Status Envelope", defaultChecked: true, path: 'relevantInfo.status' },
-                { key: "subject", label: "Assunto", defaultChecked: true, path: 'relevantInfo.subject' },
-                { key: "timeGeneratedEvent", label: "Gerado (Docusign)", defaultChecked: false, path: 'relevantInfo.timeGeneratedEvent', type: 'datetime' },
-                { key: "statusChangedDateTime", label: "Status Alterado", defaultChecked: false, path: 'relevantInfo.statusChangedDateTime', type: 'datetime' },
-                { key: "senderName", label: "Remetente", defaultChecked: false, path: 'relevantInfo.senderName' },
-                { key: "recipients", label: "Destinatários", defaultChecked: false, path: 'relevantInfo.recipientsPreview', isArray: true },
-                { key: "documentNames", label: "Documentos", defaultChecked: false, path: 'relevantInfo.documentNames' },
-                { key: "extractionMessage", label: "Msg Extração", defaultChecked: true, path: 'relevantInfo.message' },
-                { key: "rawPreview", label: "Preview Payload", defaultChecked: false, path: 'relevantInfo.rawPreview', isPre: true }
+                { keyForId: "id", label: "ID Função", defaultChecked: false, path: 'id' },
+                { keyForId: "receivedAt", label: "Recebido em", defaultChecked: true, path: 'receivedAt', type: 'datetime' },
+                { keyForId: "eventType", label: "Tipo Evento", defaultChecked: true, path: 'eventType', isEventType: true },
+                { keyForId: "docusignPayload.envelopeId", label: "ID Envelope", defaultChecked: true, path: 'docusignPayload.envelopeId' },
+                { keyForId: "docusignPayload.status", label: "Status Envelope", defaultChecked: true, path: 'docusignPayload.envelopeSummary.status' }, // Corrigido path
+                { keyForId: "docusignPayload.emailSubject", label: "Assunto", defaultChecked: true, path: 'docusignPayload.envelopeSummary.emailSubject' }, // Corrigido path
+                { keyForId: "docusignPayload.generatedDateTime", label: "Gerado (Docusign)", defaultChecked: false, path: 'docusignPayload.generatedDateTime', type: 'datetime' }, // Corrigido path (do evento principal)
+                { keyForId: "docusignPayload.statusChangedDateTime", label: "Status Alterado", defaultChecked: false, path: 'docusignPayload.envelopeSummary.statusChangedDateTime', type: 'datetime' }, // Corrigido path
+                { keyForId: "docusignPayload.senderName", label: "Remetente", defaultChecked: false, path: 'docusignPayload.envelopeSummary.sender.userName' }, // Corrigido path
+                { keyForId: "docusignPayload.recipients", label: "Destinatários", defaultChecked: false, path: 'docusignPayload.envelopeSummary.recipients', isComplexObject: true }, // Para exibir como JSON
+                { keyForId: "docusignPayload.documentNames", label: "Documentos", defaultChecked: false, path: 'docusignPayload.envelopeSummary.envelopeDocuments', isDocArray: true },
+                { keyForId: "processingError", label: "Erro Processamento", defaultChecked: true, path: 'processingError' },
+                { keyForId: "rawPayload", label: "Payload Bruto (Webhook)", defaultChecked: false, path: 'docusignPayload.rawWebhookPayload', isPre: true } // Assumindo que você salve isso
             ]
         };
 
@@ -245,10 +230,7 @@
         }
         
         function populateCheckboxes(targetContainer, items, groupNameAttributeForCheckboxName, isVisibilityFilter, selectAllCheckboxId) {
-            if (!targetContainer) {
-                console.warn(`Container for ${groupNameAttributeForCheckboxName} (intended for ${selectAllCheckboxId}) not found.`);
-                return;
-            }
+            if (!targetContainer) return;
             targetContainer.innerHTML = ''; 
 
             items.forEach(item => {
@@ -256,10 +238,13 @@
                 div.className = 'tw-flex tw-items-center';
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
-                const idSuffix = (isVisibilityFilter ? item.key : item.value).replace(/[\s.\-]/g, '');
+                // Usa item.path para visibilidade, item.value para tipo de evento
+                const valueForCheckbox = isVisibilityFilter ? item.path : item.value;
+                const idSuffix = valueForCheckbox.replace(/[\s.\-]/g, '');
+
                 checkbox.id = `filter-${groupNameAttributeForCheckboxName}-${idSuffix}`;
                 checkbox.name = groupNameAttributeForCheckboxName;
-                checkbox.value = isVisibilityFilter ? item.path : item.value; // USA item.path para visibilidade
+                checkbox.value = valueForCheckbox;
                 checkbox.className = isVisibilityFilter ? 'form-checkbox field-visibility-filter' : 'form-checkbox event-type-filter';
                 if (isVisibilityFilter) checkbox.checked = item.defaultChecked;
                 
@@ -283,21 +268,12 @@
                 selectAllCb.addEventListener('change', function() {
                     const group = this.dataset.group;
                     let container, filterClass;
-
-                    if (group === 'fieldVisibility') {
-                        container = fieldVisibilityFiltersContainer;
-                        filterClass = '.field-visibility-filter';
-                    } else if (group === 'envelopeEvents') {
-                        container = envelopeEventTypeFiltersContainer;
-                        filterClass = '.event-type-filter';
-                    } else if (group === 'recipientEvents') {
-                        container = recipientEventTypeFiltersContainer;
-                        filterClass = '.event-type-filter';
-                    } else { return; }
-                    
+                    if (group === 'fieldVisibility') { container = fieldVisibilityFiltersContainer; filterClass = '.field-visibility-filter'; }
+                    else if (group === 'envelopeEvents') { container = envelopeEventTypeFiltersContainer; filterClass = '.event-type-filter'; }
+                    else if (group === 'recipientEvents') { container = recipientEventTypeFiltersContainer; filterClass = '.event-type-filter'; }
+                    else { return; }
                     if (container) {
-                        const checkboxesInGroup = container.querySelectorAll(filterClass);
-                        checkboxesInGroup.forEach(cb => cb.checked = this.checked);
+                        container.querySelectorAll(filterClass).forEach(cb => cb.checked = this.checked);
                     }
                     applyFilters();
                 });
@@ -307,43 +283,22 @@
         function updateSelectAllCheckboxState(selectAllId) {
             const selectAllCheckbox = document.getElementById(selectAllId);
             if (!selectAllCheckbox) return;
-
             const group = selectAllCheckbox.dataset.group;
             let container, filterClass;
-
-            if (group === 'fieldVisibility') {
-                container = fieldVisibilityFiltersContainer;
-                filterClass = '.field-visibility-filter';
-            } else if (group === 'envelopeEvents') {
-                container = envelopeEventTypeFiltersContainer;
-                filterClass = '.event-type-filter';
-            } else if (group === 'recipientEvents') {
-                container = recipientEventTypeFiltersContainer;
-                filterClass = '.event-type-filter';
-            } else { return; }
-            
+            if (group === 'fieldVisibility') { container = fieldVisibilityFiltersContainer; filterClass = '.field-visibility-filter'; }
+            else if (group === 'envelopeEvents') { container = envelopeEventTypeFiltersContainer; filterClass = '.event-type-filter'; }
+            else if (group === 'recipientEvents') { container = recipientEventTypeFiltersContainer; filterClass = '.event-type-filter'; }
+            else { return; }
             if (!container) return;
             const checkboxesInGroup = container.querySelectorAll(filterClass);
-
             if (!checkboxesInGroup || checkboxesInGroup.length === 0) {
-                selectAllCheckbox.checked = false;
-                selectAllCheckbox.indeterminate = false;
-                return;
+                selectAllCheckbox.checked = false; selectAllCheckbox.indeterminate = false; return;
             }
-
-            const totalCheckboxes = checkboxesInGroup.length;
+            const total = checkboxesInGroup.length;
             const checkedCount = Array.from(checkboxesInGroup).filter(cb => cb.checked).length;
-
-            if (checkedCount === 0) {
-                selectAllCheckbox.checked = false;
-                selectAllCheckbox.indeterminate = false;
-            } else if (checkedCount === totalCheckboxes) {
-                selectAllCheckbox.checked = true;
-                selectAllCheckbox.indeterminate = false;
-            } else {
-                selectAllCheckbox.checked = false; 
-                selectAllCheckbox.indeterminate = true;
-            }
+            if (checkedCount === 0) { selectAllCheckbox.checked = false; selectAllCheckbox.indeterminate = false; }
+            else if (checkedCount === total) { selectAllCheckbox.checked = true; selectAllCheckbox.indeterminate = false; }
+            else { selectAllCheckbox.checked = false; selectAllCheckbox.indeterminate = true; }
         }
 
         function populateAllPageFilters() {
@@ -355,7 +310,7 @@
                 }
             });
             if (fieldVisibilityFiltersContainer) {
-                 populateCheckboxes(fieldVisibilityFiltersContainer, eventFilterConfig.displayableFields, 'visibility-fields', true, 'selectAllVisibleFields');
+                 populateCheckboxes(fieldVisibilityFiltersContainer, eventFilterConfig.displayableFields, 'fieldVisibility', true, 'selectAllVisibleFields');
                  updateSelectAllCheckboxState('selectAllVisibleFields');
             }
             setupSelectAllCheckboxes();
@@ -370,12 +325,12 @@
 
             const visibleFieldKeys = {};
             document.querySelectorAll('.field-visibility-filter:checked').forEach(cb => {
-                visibleFieldKeys[cb.value] = true; 
+                visibleFieldKeys[cb.value] = true; // cb.value é o fieldConf.path
             });
 
             eventsToDisplay.forEach(eventEntry => {
                 const card = document.createElement('div');
-                card.className = 'event-card dark:bg-gray-700 tw-shadow-md tw-p-4 tw-rounded-lg tw-mb-4 tw-text-left';
+                card.className = 'event-card';
                 
                 let eventTypeLabel = eventEntry.eventType || 'Desconhecido';
                 for (const group of eventFilterConfig.groups) {
@@ -383,51 +338,53 @@
                     if (foundEvent) { eventTypeLabel = foundEvent.label; break; }
                 }
 
-                let headerContent = `<div class="tw-flex tw-justify-between tw-items-start"><div>`;
-                let bodyContent = '';
+                let contentHtml = `<div class="tw-flex tw-justify-between tw-items-start"><div>`;
+                let bodyDetailsHtml = '';
 
                 eventFilterConfig.displayableFields.forEach(fieldConf => {
-                    if (visibleFieldKeys[fieldConf.path]) { 
+                    if (visibleFieldKeys[fieldConf.path]) {
                         let value = getNestedValue(eventEntry, fieldConf.path);
-                        let shouldRenderField = (value !== undefined && value !== null);
-                        if (Array.isArray(value) && value.length === 0) shouldRenderField = false;
-                        if (fieldConf.path === 'relevantInfo.message' && eventEntry.relevantInfo && eventEntry.relevantInfo.message) {
-                           shouldRenderField = true;
-                        }
-                        if (!shouldRenderField && !(fieldConf.path === 'relevantInfo.message' && value)) return;
+                        let displayValueHtml = '';
 
-                        let displayValue = '';
-                        if (value === null || value === undefined) {
-                            displayValue = '<span class="tw-italic tw-text-gray-500 dark:tw-text-gray-400">N/A</span>';
+                        if (value === undefined || value === null || (Array.isArray(value) && value.length === 0)) {
+                            if (fieldConf.path === 'processingError' && eventEntry.processingError) { // Exceção para mostrar erro de processamento
+                                displayValueHtml = `<span class="tw-text-red-500">${String(eventEntry.processingError).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>`;
+                            } else {
+                                displayValueHtml = '<span class="tw-italic tw-text-gray-500 dark:tw-text-gray-400">N/A</span>';
+                            }
                         } else if (fieldConf.type === 'datetime') {
-                            displayValue = new Date(value).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' });
+                            displayValueHtml = new Date(value).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' });
                         } else if (fieldConf.isEventType) {
-                            displayValue = `<span class="tw-font-semibold">${eventTypeLabel}</span>`;
+                            displayValueHtml = `<span class="tw-font-semibold">${eventTypeLabel}</span>`;
+                        } else if (fieldConf.isDocArray && Array.isArray(value)) {
+                            displayValueHtml = value.map(doc => doc.name || 'Nome Desconhecido').join(', ');
                         } else if (fieldConf.isArray && Array.isArray(value)) {
-                             displayValue = `<ul class="tw-list-disc tw-list-inside tw-ml-4">${value.map(item => `<li>${String(item).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</li>`).join('')}</ul>`;
-                        } else if (fieldConf.isPre) {
-                            displayValue = `<pre class="tw-text-xs">${String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>`;
-                        } else {
-                            displayValue = String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                             displayValueHtml = `<ul class="tw-list-disc tw-list-inside tw-ml-4">${value.map(item => `<li>${String(item).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</li>`).join('')}</ul>`;
+                        } else if (fieldConf.isPre && value) {
+                            displayValueHtml = `<pre class="tw-text-xs">${String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>`;
+                        } else if (fieldConf.isComplexObject && typeof value === 'object') {
+                            displayValueHtml = `<pre class="tw-text-xs">${JSON.stringify(value, null, 2).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>`;
+                        }
+                         else {
+                            displayValueHtml = String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;");
                         }
                         
-                        const fieldHtml = `<p class="${fieldConf.path === 'id' ? 'tw-text-xs tw-text-gray-500 dark:tw-text-gray-400' : 'tw-mt-1'}"><strong>${fieldConf.label}:</strong> ${displayValue}</p>`;
+                        const fieldHtml = `<p class="card-field ${fieldConf.path === 'id' ? 'tw-text-xs tw-text-gray-500 dark:tw-text-gray-400' : 'tw-mt-1'}"><strong>${fieldConf.label}:</strong> ${displayValueHtml}</p>`;
                         
                         if (fieldConf.path === 'id' || fieldConf.path === 'receivedAt' || fieldConf.path === 'eventType') {
-                            headerContent += fieldHtml;
+                            contentHtml += fieldHtml;
                         } else {
-                            bodyContent += fieldHtml;
+                            bodyDetailsHtml += fieldHtml;
                         }
                     }
                 });
-                headerContent += `</div><button data-event-id="${eventEntry.id}" class="delete-btn tw-ml-4"><i class="bi bi-trash3"></i> Excluir</button></div>`;
+                contentHtml += `</div><button data-event-id="${eventEntry.id}" class="delete-btn tw-flex-shrink-0"><i class="bi bi-trash3"></i> Excluir</button></div>`;
                 
-                let finalContent = headerContent;
-                if(bodyContent.trim() !== ''){
-                    finalContent += '<hr class="tw-my-3 dark:tw-border-gray-600">' + bodyContent;
+                if(bodyDetailsHtml.trim() !== ''){
+                    contentHtml += '<hr class="tw-my-3 dark:tw-border-gray-600">' + bodyDetailsHtml;
                 }
                 
-                card.innerHTML = finalContent;
+                card.innerHTML = contentHtml;
                 eventListContainer.appendChild(card);
             });
 
@@ -448,7 +405,7 @@
                     throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
                 }
                 allFetchedEvents = await response.json(); 
-                populateAllPageFilters(); // Corrigido o nome da função aqui
+                populateAllPageFilters(); 
                 if (loadingMessage) loadingMessage.remove();
                 applyFilters(); 
             } catch (error) { 
@@ -476,8 +433,11 @@
                     eventFilterConfig.displayableFields.forEach(fieldConf => {
                         const value = getNestedValue(eventEntry, fieldConf.path);
                         if (value) {
-                            if (Array.isArray(value)) searchableText += value.join(' ').toLowerCase() + ' ';
-                            else searchableText += String(value).toLowerCase() + ' ';
+                            if (typeof value === 'object') { // Stringify objetos para busca
+                                searchableText += JSON.stringify(value).toLowerCase() + ' ';
+                            } else {
+                                searchableText += String(value).toLowerCase() + ' ';
+                            }
                         }
                     });
                     searchableText += (eventEntry.eventType ? eventEntry.eventType.toLowerCase() : '') + ' ';

@@ -4,9 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Eventos dos Envelopes - Fontara Financial</title>
+    <meta
+      name="description"
+      content="Visualização e filtragem dos últimos 100 eventos de envelopes Docusign."
+    />
     <link rel="shortcut icon" href="./assets/logo/logo.png" type="image/x-icon" />
     <link rel="stylesheet" href="./css/tailwind-build.css" />
-    <link rel="stylesheet" href="./css/index.css" /> <link
+    <link rel="stylesheet" href="./css/index.css" />
+    <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"
       integrity="sha512-dPXYcDub/aeb08c63jRq/k6GaKccl256JQy/AnOq7CAnEZ9FzSL9wSbcZkMp4R26vBsMLFYH4kQ67/bbV8XaCQ=="
@@ -14,95 +19,7 @@
       referrerpolicy="no-referrer"
     />
     <style>
-      /* Estilos Gerais da Página de Eventos */
-      .page-container {
-        width: 100%;
-        max-width: 1280px; /* Ou outro max-width que você preferir para o conteúdo principal */
-        margin-left: auto;
-        margin-right: auto;
-        padding-left: 1rem; /* px-4 */
-        padding-right: 1rem; /* px-4 */
-      }
-
-      /* Área de Filtros */
-      .filters-area {
-        background-color: #f9fafb; /* tw-bg-gray-50 */
-        padding: 1.5rem; /* tw-p-6 */
-        border-radius: 0.5rem; /* tw-rounded-lg */
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* tw-shadow-md */
-        margin-bottom: 2rem; /* tw-mb-8 */
-      }
-      .dark .filters-area {
-        background-color: #1f2937; /* tw-bg-gray-800 */
-      }
-      .filters-area-title {
-        font-size: 1.25rem; /* tw-text-xl */
-        font-weight: 700; /* tw-font-bold */
-        margin-bottom: 1.5rem; /* tw-mb-6 */
-        padding-bottom: 0.75rem; /* tw-pb-3 */
-        border-bottom: 1px solid #e5e7eb; /* tw-border-gray-200 */
-      }
-      .dark .filters-area-title {
-        border-color: #374151; /* tw-border-gray-700 */
-        color: #f3f4f6; /* tw-text-gray-100 */
-      }
-      .filter-text-input-container {
-        margin-bottom: 1.5rem; /* tw-mb-6 */
-      }
-      .filter-columns-container {
-        display: grid;
-        gap: 1.5rem; /* Corresponde a md:tw-gap-x-6 */
-      }
-      @media (min-width: 768px) { /* md breakpoint */
-        .filter-columns-container {
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-      }
-      .filter-column-group {
-        /* Espaçamento dentro de cada coluna, se necessário */
-      }
-      .filter-group-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.75rem; /* tw-mb-3 */
-      }
-      .filter-group-title {
-        font-size: 1.125rem; /* tw-text-lg */
-        font-weight: 600; /* tw-font-semibold */
-        color: #1f2937; /* tw-text-gray-800 */
-      }
-      .dark .filter-group-title {
-        color: #f3f4f6; /* tw-text-gray-100 */
-      }
-      .checkbox-grid {
-        display: grid;
-        gap: 0.5rem 1rem; /* tw-gap-y-2 tw-gap-x-4 */
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Responsivo */
-      }
-      @media (min-width: 640px) { /* sm breakpoint */
-        .checkbox-grid {
-            /* grid-template-columns: repeat(2, minmax(0, 1fr)); */ /* Pode ser muito largo */
-        }
-      }
-
-
-      /* Estilos dos inputs e labels (mantidos com @apply para consistência com o resto do portal, se desejar) */
-      .filter-input {
-        @apply tw-block tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-indigo-500 focus:tw-border-indigo-500 sm:tw-text-sm dark:tw-bg-gray-700 dark:tw-text-white;
-      }
-      .form-checkbox { 
-        @apply tw-h-4 tw-w-4 tw-text-indigo-600 tw-border-gray-300 dark:tw-border-gray-600 tw-rounded focus:tw-ring-indigo-500 dark:tw-bg-gray-700 dark:focus:tw-ring-offset-gray-800;
-      }
-      .form-checkbox-label { 
-        @apply tw-ml-2 tw-block tw-text-sm tw-font-normal tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer;
-      }
-      .form-label-sm { /* Para a descrição do filtro de texto */
-         @apply tw-text-xs tw-text-gray-600 dark:tw-text-gray-400 tw-mb-1;
-      }
-
-
-      /* Estilos para Event Card e outros mantidos como antes */
+      .content-wrapper { min-height: 70vh; }
       .event-card {
         border: 1px solid #e2e8f0; padding: 1rem; margin-bottom: 1rem;
         border-radius: 0.5rem; transition: box-shadow 0.2s ease-in-out;
@@ -118,8 +35,29 @@
         border: 1px solid #e2e8f0; max-height: 200px; 
       }
       .dark pre { background-color: #1a202c; color: #cbd5e0; border-color: #2d3748; }
+      .filter-input {
+        @apply tw-block tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-indigo-500 focus:tw-border-indigo-500 sm:tw-text-sm dark:tw-bg-gray-700 dark:tw-text-white;
+      }
       .delete-btn {
         @apply tw-ml-auto tw-px-3 tw-py-1 tw-bg-red-500 hover:tw-bg-red-600 tw-text-white tw-text-xs tw-font-semibold tw-rounded tw-shadow focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-red-500 focus:tw-ring-opacity-50 tw-transition-colors;
+      }
+      .form-checkbox { 
+        @apply tw-h-4 tw-w-4 tw-text-indigo-600 tw-border-gray-300 dark:tw-border-gray-600 tw-rounded focus:tw-ring-indigo-500 dark:tw-bg-gray-700 dark:focus:tw-ring-offset-gray-800;
+      }
+      .form-checkbox-label { 
+        @apply tw-ml-2 tw-block tw-text-sm tw-font-normal tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer;
+      }
+      .filter-group-title {
+        @apply tw-block tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100 tw-mb-1;
+      }
+      .filter-group-subtitle {
+         @apply tw-text-xs tw-text-gray-600 dark:tw-text-gray-400 tw-mb-2;
+      }
+      .filter-fieldset-legend {
+        @apply tw-text-md tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2;
+      }
+      .checkbox-grid {
+        @apply tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-x-4 tw-gap-y-2 tw-mt-2;
       }
     </style>
   </head>
@@ -131,7 +69,8 @@
     </header>
 
     <main class="tw-mt-20 tw-pt-10 tw-pb-10 tw-px-4 md:tw-px-[5%] lg:tw-px-[10%] content-wrapper">
-      <div class="page-container"> <div class="tw-flex tw-flex-col sm:tw-flex-row sm:tw-justify-between sm:tw-items-center tw-mb-8">
+      <div class="page-container">
+        <div class="tw-flex tw-flex-col sm:tw-flex-row sm:tw-justify-between sm:tw-items-center tw-mb-8">
             <h1 class="tw-text-3xl md:tw-text-4xl tw-font-semibold tw-text-gray-900 dark:tw-text-gray-100 tw-mb-4 sm:tw-mb-0">
                 Últimos Eventos dos Envelopes
             </h1>
@@ -148,7 +87,7 @@
             <div class="filter-text-input-container">
                 <label for="filterInput" class="filter-group-title">Filtrar por Texto:</label>
                 <p class="form-label-sm">Busque em qualquer informação do evento.</p>
-                <input type="text" id="filterInput" class="filter-input" placeholder="Digite para filtrar...">
+                <input type="text" id="filterInput" class="filter-input md:tw-max-w-xl" placeholder="Digite para filtrar...">
             </div>
 
             <div class="filter-columns-container">
@@ -161,7 +100,7 @@
                         </div>
                     </div>
                     <div id="fieldVisibilityFiltersContainer" class="checkbox-grid">
-                        {/* Checkboxes de visibilidade de campo serão inseridos aqui */}
+                        {/* JS populates this */}
                     </div>
                 </div>
 
@@ -174,7 +113,7 @@
                         </div>
                     </div>
                     <div id="envelopeEventTypeFiltersContainer" class="checkbox-grid">
-                        {/* Checkboxes populados por JS */}
+                        {/* JS populates this */}
                     </div>
                 </div>
                 
@@ -187,7 +126,7 @@
                         </div>
                     </div>
                     <div id="recipientEventTypeFiltersContainer" class="checkbox-grid">
-                        {/* Checkboxes populados por JS */}
+                        {/* JS populates this */}
                     </div>
                 </div>
             </div>
@@ -214,17 +153,15 @@
         const filterInput = document.getElementById('filterInput');
         
         const fieldVisibilityFiltersContainer = document.getElementById('fieldVisibilityFiltersContainer');
-        // Novos IDs para os containers dos tipos de evento
         const envelopeEventTypeFiltersContainer = document.getElementById('envelopeEventTypeFiltersContainer');
         const recipientEventTypeFiltersContainer = document.getElementById('recipientEventTypeFiltersContainer');
-
 
         let allFetchedEvents = []; 
         
         const eventFilterConfig = {
             groups: [
                 {
-                    name: "Eventos do Envelope", // Este 'name' é apenas para config, não será a legenda visível diretamente
+                    name: "Eventos do Envelope", 
                     containerId: 'envelopeEventTypeFiltersContainer',
                     selectAllId: 'selectAllEnvelopeEvents',
                     events: [
@@ -270,7 +207,7 @@
             return path.split('.').reduce((acc, part) => acc && typeof acc === 'object' && acc[part] !== undefined && acc[part] !== null ? acc[part] : undefined, obj);
         }
         
-        function populateCheckboxes(targetContainer, items, groupNameAttribute, isVisibility, selectAllCheckboxId) {
+        function populateCheckboxes(targetContainer, items, groupNameAttributeForCheckboxName, isVisibilityFilter, selectAllCheckboxId) {
             if (!targetContainer) return;
             targetContainer.innerHTML = ''; 
 
@@ -279,12 +216,12 @@
                 div.className = 'tw-flex tw-items-center';
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
-                const idSuffix = isVisibility ? item.key.replace(/\./g, '-') : item.value.replace(/[\s-]/g, '');
-                checkbox.id = `filter-${groupNameAttribute}-${idSuffix}`; // Usamos groupNameAttribute para o name do checkbox
-                checkbox.name = groupNameAttribute; // Todos os checkboxes de um grupo têm o mesmo name
-                checkbox.value = isVisibility ? item.key : item.value;
-                checkbox.className = isVisibility ? 'form-checkbox field-visibility-filter' : 'form-checkbox event-type-filter';
-                if (isVisibility) checkbox.checked = item.defaultChecked;
+                const idSuffix = (isVisibilityFilter ? item.key : item.value).replace(/[\s.\-]/g, '');
+                checkbox.id = `filter-${groupNameAttributeForCheckboxName}-${idSuffix}`; // Usar groupNameAttribute para ID único
+                checkbox.name = groupNameAttributeForCheckboxName;
+                checkbox.value = isVisibilityFilter ? item.path : item.value; // **CORREÇÃO CRÍTICA AQUI: usar item.path para visibilidade**
+                checkbox.className = isVisibilityFilter ? 'form-checkbox field-visibility-filter' : 'form-checkbox event-type-filter';
+                if (isVisibilityFilter) checkbox.checked = item.defaultChecked;
                 
                 checkbox.addEventListener('change', function() {
                     applyFilters();
@@ -304,16 +241,22 @@
         function setupSelectAllCheckboxes() {
             document.querySelectorAll('.select-all-checkbox').forEach(selectAllCb => {
                 selectAllCb.addEventListener('change', function() {
-                    const group = this.dataset.group; // 'fieldVisibility', 'envelopeEvents', 'recipientEvents'
-                    let targetContainerId;
-                    if (group === 'fieldVisibility') targetContainerId = 'fieldVisibilityFiltersContainer';
-                    else if (group === 'envelopeEvents') targetContainerId = 'envelopeEventTypeFiltersContainer';
-                    else if (group === 'recipientEvents') targetContainerId = 'recipientEventTypeFiltersContainer';
-                    else return;
+                    const group = this.dataset.group;
+                    let container, filterClass;
 
-                    const container = document.getElementById(targetContainerId);
+                    if (group === 'fieldVisibility') {
+                        container = fieldVisibilityFiltersContainer;
+                        filterClass = '.field-visibility-filter';
+                    } else if (group === 'envelopeEvents') {
+                        container = envelopeEventTypeFiltersContainer;
+                        filterClass = '.event-type-filter';
+                    } else if (group === 'recipientEvents') {
+                        container = recipientEventTypeFiltersContainer;
+                        filterClass = '.event-type-filter';
+                    } else { return; }
+                    
                     if (container) {
-                        const checkboxesInGroup = container.querySelectorAll('.form-checkbox'); // Classe genérica dos checkboxes
+                        const checkboxesInGroup = container.querySelectorAll(filterClass);
                         checkboxesInGroup.forEach(cb => cb.checked = this.checked);
                     }
                     applyFilters();
@@ -326,16 +269,22 @@
             if (!selectAllCheckbox) return;
 
             const group = selectAllCheckbox.dataset.group;
-            let containerId;
-            if (group === 'fieldVisibility') containerId = 'fieldVisibilityFiltersContainer';
-            else if (group === 'envelopeEvents') containerId = 'envelopeEventTypeFiltersContainer';
-            else if (group === 'recipientEvents') containerId = 'recipientEventTypeFiltersContainer';
-            else return;
-            
-            const container = document.getElementById(containerId);
-            if (!container) return;
+            let container, filterClass;
 
-            const checkboxesInGroup = container.querySelectorAll('.form-checkbox');
+            if (group === 'fieldVisibility') {
+                container = fieldVisibilityFiltersContainer;
+                filterClass = '.field-visibility-filter';
+            } else if (group === 'envelopeEvents') {
+                container = envelopeEventTypeFiltersContainer;
+                filterClass = '.event-type-filter';
+            } else if (group === 'recipientEvents') {
+                container = recipientEventTypeFiltersContainer;
+                filterClass = '.event-type-filter';
+            } else { return; }
+            
+            if (!container) return;
+            const checkboxesInGroup = container.querySelectorAll(filterClass);
+
             if (!checkboxesInGroup || checkboxesInGroup.length === 0) {
                 selectAllCheckbox.checked = false;
                 selectAllCheckbox.indeterminate = false;
@@ -357,26 +306,22 @@
             }
         }
 
-        function populateAllNamedFilters() { // Renomeado para clareza
+        function populateAllPageFilters() { // Renomeada para evitar conflito com applyFilters
             eventFilterConfig.groups.forEach(group => {
                 const container = document.getElementById(group.containerId);
                 if (container) {
-                    populateCheckboxes(container, group.events, group.name.replace(/\s+/g, '-').toLowerCase() + '-types', false, group.selectAllId);
+                    // Passa o 'name' do grupo para usar como parte do ID/name dos checkboxes
+                    populateCheckboxes(container, group.events, group.name.replace(/\s+/g, '-').toLowerCase(), false, group.selectAllId);
                     updateSelectAllCheckboxState(group.selectAllId);
                 }
             });
             if (fieldVisibilityFiltersContainer) {
-                 populateCheckboxes(fieldVisibilityFiltersContainer, eventFilterConfig.displayableFields, 'visibility-fields', true, 'selectAllVisibleFields');
+                 populateCheckboxes(fieldVisibilityFiltersContainer, eventFilterConfig.displayableFields, 'fieldVisibility', true, 'selectAllVisibleFields');
                  updateSelectAllCheckboxState('selectAllVisibleFields');
             }
             setupSelectAllCheckboxes();
         }
         
-        // ... (Restante das funções: renderEvents, fetchDocusignEvents, applyFilters, handleDeleteEvent)
-        // Cole as definições completas dessas funções da minha resposta anterior aqui.
-        // Assegure-se que a função fetchDocusignEvents chame populateAllNamedFilters()
-        // Vou colar as versões mais recentes delas abaixo para garantir:
-
         function renderEvents(eventsToDisplay) {
             eventListContainer.innerHTML = ''; 
             if (!eventsToDisplay || eventsToDisplay.length === 0) {
@@ -386,7 +331,7 @@
 
             const visibleFieldKeys = {};
             document.querySelectorAll('.field-visibility-filter:checked').forEach(cb => {
-                visibleFieldKeys[cb.value] = true;
+                visibleFieldKeys[cb.value] = true; // cb.value aqui é o fieldConf.path
             });
 
             eventsToDisplay.forEach(eventEntry => {
@@ -403,7 +348,8 @@
                 let bodyContent = '';
 
                 eventFilterConfig.displayableFields.forEach(fieldConf => {
-                    if (visibleFieldKeys[fieldConf.path]) {
+                    // A verificação de visibilidade agora usa fieldConf.path
+                    if (visibleFieldKeys[fieldConf.path]) { 
                         let value = getNestedValue(eventEntry, fieldConf.path);
                         let shouldRenderField = (value !== undefined && value !== null);
                         if (Array.isArray(value) && value.length === 0) shouldRenderField = false;
@@ -427,6 +373,7 @@
                             displayValue = String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;");
                         }
                         
+                        // Usa fieldConf.path para decidir se vai no header ou body do card
                         const fieldHtml = `<p class="${fieldConf.path === 'id' ? 'tw-text-xs tw-text-gray-500 dark:tw-text-gray-400' : 'tw-mt-1'}"><strong>${fieldConf.label}:</strong> ${displayValue}</p>`;
                         
                         if (fieldConf.path === 'id' || fieldConf.path === 'receivedAt' || fieldConf.path === 'eventType') {
@@ -464,7 +411,7 @@
                     throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
                 }
                 allFetchedEvents = await response.json(); 
-                populateAllNamedFilters(); // CHAMA A FUNÇÃO RENOMEADA
+                populateAllNamedFilters(); 
                 if (loadingMessage) loadingMessage.remove();
                 applyFilters(); 
             } catch (error) { 
@@ -525,12 +472,11 @@
                 }
             }
         }
-        // --- FIM DAS FUNÇÕES COPIADAS ---
 
         if (refreshDataBtn) refreshDataBtn.addEventListener('click', fetchDocusignEvents);
         if (filterInput) filterInput.addEventListener('input', applyFilters);
         
-        fetchDocusignEvents(); // Busca inicial de dados
+        fetchDocusignEvents();
       });
     </script>
     <script src="./scripts/components.js"></script>

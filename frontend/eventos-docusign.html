@@ -35,6 +35,7 @@
         border: 1px solid #e2e8f0; max-height: 200px; 
       }
       .dark pre { background-color: #1a202c; color: #cbd5e0; border-color: #2d3748; }
+      
       .filter-input {
         @apply tw-block tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-indigo-500 focus:tw-border-indigo-500 sm:tw-text-sm dark:tw-bg-gray-700 dark:tw-text-white;
       }
@@ -47,17 +48,53 @@
       .form-checkbox-label { 
         @apply tw-ml-2 tw-block tw-text-sm tw-font-normal tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer;
       }
-      .filter-group-title {
+      .filter-group-title { 
         @apply tw-block tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100 tw-mb-1;
       }
       .filter-group-subtitle {
          @apply tw-text-xs tw-text-gray-600 dark:tw-text-gray-400 tw-mb-2;
       }
-      .filter-fieldset-legend {
+      .filter-fieldset-legend { 
         @apply tw-text-md tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2;
       }
-      .checkbox-grid {
+      .checkbox-grid { 
         @apply tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-x-4 tw-gap-y-2 tw-mt-2;
+      }
+      .filters-area {
+        background-color: #f9fafb; /* tw-bg-gray-50 */
+        padding: 1.5rem; /* tw-p-6 */
+        border-radius: 0.5rem; /* tw-rounded-lg */
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* tw-shadow-md */
+        margin-bottom: 2rem; /* tw-mb-8 */
+      }
+      .dark .filters-area {
+        background-color: #1f2937; /* tw-bg-gray-800 */
+      }
+      .filters-area-title {
+        font-size: 1.25rem; /* tw-text-xl */
+        font-weight: 700; /* tw-font-bold */
+        margin-bottom: 1.5rem; /* tw-mb-6 */
+        padding-bottom: 0.75rem; /* tw-pb-3 */
+        border-bottom: 1px solid #e5e7eb; /* tw-border-gray-200 */
+      }
+      .dark .filters-area-title {
+        border-color: #374151; /* tw-border-gray-700 */
+        color: #f3f4f6; /* tw-text-gray-100 */
+      }
+      .filter-columns-container {
+        display: grid;
+        gap: 1.5rem; /* md:tw-gap-x-6 */
+      }
+      @media (min-width: 1024px) { /* Ajustado para 'lg' (1024px) para 3 colunas */
+        .filter-columns-container {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+      .filter-group-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem; /* tw-mb-3 */
       }
     </style>
   </head>
@@ -100,7 +137,7 @@
                         </div>
                     </div>
                     <div id="fieldVisibilityFiltersContainer" class="checkbox-grid">
-                        {/* JS populates this */}
+                        {/* Checkboxes de visibilidade de campo serão inseridos aqui */}
                     </div>
                 </div>
 
@@ -113,7 +150,7 @@
                         </div>
                     </div>
                     <div id="envelopeEventTypeFiltersContainer" class="checkbox-grid">
-                        {/* JS populates this */}
+                        {/* Checkboxes populados por JS */}
                     </div>
                 </div>
                 
@@ -126,7 +163,7 @@
                         </div>
                     </div>
                     <div id="recipientEventTypeFiltersContainer" class="checkbox-grid">
-                        {/* JS populates this */}
+                        {/* Checkboxes populados por JS */}
                     </div>
                 </div>
             </div>
@@ -161,7 +198,7 @@
         const eventFilterConfig = {
             groups: [
                 {
-                    name: "Eventos do Envelope", 
+                    name: "Eventos do Envelope",
                     containerId: 'envelopeEventTypeFiltersContainer',
                     selectAllId: 'selectAllEnvelopeEvents',
                     events: [
@@ -208,7 +245,10 @@
         }
         
         function populateCheckboxes(targetContainer, items, groupNameAttributeForCheckboxName, isVisibilityFilter, selectAllCheckboxId) {
-            if (!targetContainer) return;
+            if (!targetContainer) {
+                console.warn(`Container for ${groupNameAttributeForCheckboxName} (intended for ${selectAllCheckboxId}) not found.`);
+                return;
+            }
             targetContainer.innerHTML = ''; 
 
             items.forEach(item => {
@@ -217,9 +257,9 @@
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 const idSuffix = (isVisibilityFilter ? item.key : item.value).replace(/[\s.\-]/g, '');
-                checkbox.id = `filter-${groupNameAttributeForCheckboxName}-${idSuffix}`; // Usar groupNameAttribute para ID único
+                checkbox.id = `filter-${groupNameAttributeForCheckboxName}-${idSuffix}`;
                 checkbox.name = groupNameAttributeForCheckboxName;
-                checkbox.value = isVisibilityFilter ? item.path : item.value; // **CORREÇÃO CRÍTICA AQUI: usar item.path para visibilidade**
+                checkbox.value = isVisibilityFilter ? item.path : item.value; // USA item.path para visibilidade
                 checkbox.className = isVisibilityFilter ? 'form-checkbox field-visibility-filter' : 'form-checkbox event-type-filter';
                 if (isVisibilityFilter) checkbox.checked = item.defaultChecked;
                 
@@ -306,17 +346,16 @@
             }
         }
 
-        function populateAllPageFilters() { // Renomeada para evitar conflito com applyFilters
+        function populateAllPageFilters() {
             eventFilterConfig.groups.forEach(group => {
                 const container = document.getElementById(group.containerId);
                 if (container) {
-                    // Passa o 'name' do grupo para usar como parte do ID/name dos checkboxes
-                    populateCheckboxes(container, group.events, group.name.replace(/\s+/g, '-').toLowerCase(), false, group.selectAllId);
+                    populateCheckboxes(container, group.events, group.name.replace(/\s+/g, '-').toLowerCase() + '-types', false, group.selectAllId);
                     updateSelectAllCheckboxState(group.selectAllId);
                 }
             });
             if (fieldVisibilityFiltersContainer) {
-                 populateCheckboxes(fieldVisibilityFiltersContainer, eventFilterConfig.displayableFields, 'fieldVisibility', true, 'selectAllVisibleFields');
+                 populateCheckboxes(fieldVisibilityFiltersContainer, eventFilterConfig.displayableFields, 'visibility-fields', true, 'selectAllVisibleFields');
                  updateSelectAllCheckboxState('selectAllVisibleFields');
             }
             setupSelectAllCheckboxes();
@@ -331,7 +370,7 @@
 
             const visibleFieldKeys = {};
             document.querySelectorAll('.field-visibility-filter:checked').forEach(cb => {
-                visibleFieldKeys[cb.value] = true; // cb.value aqui é o fieldConf.path
+                visibleFieldKeys[cb.value] = true; 
             });
 
             eventsToDisplay.forEach(eventEntry => {
@@ -348,7 +387,6 @@
                 let bodyContent = '';
 
                 eventFilterConfig.displayableFields.forEach(fieldConf => {
-                    // A verificação de visibilidade agora usa fieldConf.path
                     if (visibleFieldKeys[fieldConf.path]) { 
                         let value = getNestedValue(eventEntry, fieldConf.path);
                         let shouldRenderField = (value !== undefined && value !== null);
@@ -373,7 +411,6 @@
                             displayValue = String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;");
                         }
                         
-                        // Usa fieldConf.path para decidir se vai no header ou body do card
                         const fieldHtml = `<p class="${fieldConf.path === 'id' ? 'tw-text-xs tw-text-gray-500 dark:tw-text-gray-400' : 'tw-mt-1'}"><strong>${fieldConf.label}:</strong> ${displayValue}</p>`;
                         
                         if (fieldConf.path === 'id' || fieldConf.path === 'receivedAt' || fieldConf.path === 'eventType') {
@@ -411,7 +448,7 @@
                     throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
                 }
                 allFetchedEvents = await response.json(); 
-                populateAllNamedFilters(); 
+                populateAllPageFilters(); // Corrigido o nome da função aqui
                 if (loadingMessage) loadingMessage.remove();
                 applyFilters(); 
             } catch (error) { 

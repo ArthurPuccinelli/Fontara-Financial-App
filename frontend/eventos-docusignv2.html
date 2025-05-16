@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eventos dos Envelopes Docusign - v2</title>
+    <meta name="description" content="Visualização e filtragem avançada dos últimos 100 eventos Docusign." />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
+    <style>
+        :root {
+            --page-bg: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --text-muted: #777777;
+            --border-color: #e0e0e0;
+            --accent-color: #007bff;
+            --danger-color: #e74c3c;
+            --shadow-color: rgba(0,0,0,0.1);
+
+            --dark-page-bg: #121212;
+            --dark-card-bg: #1e1e1e;
+            --dark-text-color: #e0e0e0;
+            --dark-text-muted: #888888;
+            --dark-border-color: #444444;
+        }
+
+        body.dark-theme {
+            --page-bg: var(--dark-page-bg);
+            --card-bg: var(--dark-card-bg);
+            --text-color: var(--dark-text-color);
+            --text-muted: var(--dark-text-muted);
+            --border-color: var(--dark-border-color);
+        }
+        body.dark-theme .filters-panel { background-color: #2a2a2a; }
+        body.dark-theme .event-card-item { background-color: var(--dark-card-bg); border-color: var(--dark-border-color); }
+        body.dark-theme pre { background-color: #2c2c2c; color: var(--dark-text-muted); border-color: var(--dark-border-color);}
+        body.dark-theme strong { color: var(--accent-color); }
+
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--page-bg);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .page-wrapper-v2 {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .page-header-v2 {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .page-header-v2 h1 {
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+            flex-grow: 1;
+        }
+        @media (min-width: 640px) {
+            .page-header-v2 h1 { margin-bottom: 0; }
+        }
+        .btn {
+            padding: 10px 18px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+        }
+        .btn-primary { background-color: var(--accent-color); color: white; }
+        .btn-primary:hover { background-color: #0056b3; }
+        .btn .bi { margin-right: 8px; }
+
+        .filters-panel {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            margin-bottom: 25px;
+        }
+        .filters-panel-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+        }
+        .filters-panel-title .bi { margin-right: 10px; font-size: 1.2em; }
+        
+        .text-filter-area { margin-bottom: 20px; }
+        .text-filter-area label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 1.1rem; }
+        .text-filter-area p { font-size: 0.85em; color: var(--text-muted); margin-top:0; margin-bottom: 8px;}
+        .text-filter-input { width: 100%; max-width: 500px; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 1rem;}
+
+        .filter-columns-grid {
+            display: grid;
+            gap: 20px;
+        }
+        @media (min-width: 1024px) { /* 3 colunas em LG */
+            .filter-columns-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+         @media (min-width: 768px) and (max-width: 1023.98px) { /* 2 colunas em MD */
+            .filter-columns-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        /* 1 coluna em SM e abaixo por padrão */
+
+        .filter-column {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--page-bg); /* Um pouco diferente do fundo geral para destaque */
+        }
+        body.dark-theme .filter-column { background-color: #252525; }
+
+        .filter-group-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .filter-group-title { font-size: 1.1rem; font-weight: 600; }
+        .select-all-label { font-size: 0.8rem; margin-left: 5px; color: var(--text-muted); }
+
+        .checkbox-list { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+        .checkbox-item { display: flex; align-items: center; }
+        .checkbox-input { margin-right: 8px; width: 16px; height: 16px; accent-color: var(--accent-color); }
+        .checkbox-label { font-size: 0.9rem; cursor: pointer; user-select: none; }
+
+        .event-list { margin-top: 25px; }
+        .event-card-item {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px var(--shadow-color);
+            font-size: 0.875rem;
+        }
+        .event-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .event-card-header > div { flex-grow: 1; }
+        .event-card-body { border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 10px; }
+        .event-card-item p { margin: 5px 0; line-height: 1.5; }
+        .event-card-item strong { font-weight: 600; color: #333; }
+        body.dark-theme .event-card-item strong { color: #c1c1c1; }
+        .event-card-item .id-text { font-size: 0.75rem; color: var(--text-muted); }
+        .event-card-item pre {
+            background-color: #e9ecef; color: #212529;
+            padding: 8px; border-radius: 4px; overflow-x: auto;
+            font-size: 0.75em; margin-top: 5px; max-height: 150px;
+        }
+        body.dark-theme .event-card-item pre { background-color: #343a40; color: #f8f9fa; }
+        .delete-button {
+            padding: 6px 10px; font-size: 0.8em; background-color: var(--danger-color); color: white;
+            border: none; border-radius: 4px; cursor: pointer; flex-shrink: 0;
+        }
+        .delete-button:hover { background-color: #c0392b; }
+        .delete-button .bi { margin-right: 4px;}
+        .loading-text { text-align: center; padding: 30px; font-style: italic; font-size: 1.1rem; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <main class="main-content-area">
+        <div class="page-wrapper-v2">
+            <div class="page-header-v2">
+                <h1>Últimos Eventos dos Envelopes</h1>
+                <button id="refreshDataBtn" class="btn btn-primary">
+                    <i class="bi bi-arrow-clockwise"></i> Atualizar Dados
+                </button>
+            </div>
+
+            <div id="filtersArea-new" class="filters-panel">
+                <h2 class="filters-panel-title">
+                    <i class="bi bi-funnel-fill"></i> Opções de Filtro e Visualização
+                </h2>
+                
+                <div class="text-filter-area">
+                    <label for="filterInput" class="filter-group-title">Filtrar por Texto:</label>
+                    <p class="form-label-sm">Busque em qualquer informação do evento.</p>
+                    <input type="text" id="filterInput" class="text-filter-input" placeholder="Digite para filtrar...">
+                </div>
+
+                <div class="filter-columns-layout">
+                    <div class="filter-column">
+                        <div class="filter-group-header">
+                            <h3 class="filter-group-title">Campos a Exibir:</h3>
+                            <div class="select-all-container">
+                                <input type="checkbox" id="selectAllVisibleFields" class="checkbox-input select-all-checkbox" data-group="fieldVisibility">
+                                <label for="selectAllVisibleFields" class="checkbox-label select-all-label">Todos</label>
+                            </div>
+                        </div>
+                        <div id="fieldVisibilityFiltersContainer" class="checkbox-list">
+                            {/* Checkboxes de visibilidade de campo serão inseridos aqui */}
+                        </div>
+                    </div>
+
+                    <div class="filter-column">
+                        <div class="filter-group-header">
+                            <h3 class="filter-group-title">Eventos do Envelope:</h3>
+                            <div class="select-all-container">
+                                <input type="checkbox" id="selectAllEnvelopeEvents" class="checkbox-input select-all-checkbox" data-group="envelopeEvents">
+                                <label for="selectAllEnvelopeEvents" class="checkbox-label select-all-label">Todos</label>
+                            </div>
+                        </div>
+                        <div id="envelopeEventTypeFiltersContainer" class="checkbox-list">
+                            {/* Checkboxes populados por JS */}
+                        </div>
+                    </div>
+                    
+                    <div class="filter-column">
+                        <div class="filter-group-heading">
+                            <h3 class="filter-group-title">Eventos de Destinatário:</h3>
+                            <div class="select-all-container">
+                                <input type="checkbox" id="selectAllRecipientEvents" class="checkbox-input select-all-checkbox" data-group="recipientEvents">
+                                <label for="selectAllRecipientEvents" class="checkbox-label select-all-label">Todos</label>
+                            </div>
+                        </div>
+                        <div id="recipientEventTypeFiltersContainer" class="checkbox-list">
+                            {/* Checkboxes populados por JS */}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="eventListContainer" class="event-list">
+              <p id="loadingMessage" class="loading-text">Carregando eventos...</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // const yearSpan = document.getElementById('current-year'); // Se você adicionar o footer
+        // if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+
+        const eventListContainer = document.getElementById('eventListContainer');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const refreshDataBtn = document.getElementById('refreshDataBtn');
+        const filterInput = document.getElementById('filterInput');
+        
+        const fieldVisibilityFiltersContainer = document.getElementById('fieldVisibilityFiltersContainer');
+        const envelopeEventTypeFiltersContainer = document.getElementById('envelopeEventTypeFiltersContainer');
+        const recipientEventTypeFiltersContainer = document.getElementById('recipientEventTypeFiltersContainer');
+
+        let allFetchedEvents = []; 
+        
+        const eventFilterConfig = {
+            groups: [
+                {
+                    name: "Eventos do Envelope", 
+                    containerId: 'envelopeEventTypeFiltersContainer',
+                    selectAllId: 'selectAllEnvelopeEvents',
+                    events: [ /* Preencha com os eventos do Docusign Connect que você quer filtrar */
+                        { label: "Enviado", value: "envelope-sent" }, { label: "Entregue", value: "envelope-delivered" },
+                        { label: "Concluído", value: "envelope-completed" }, { label: "Recusado", value: "envelope-declined" },
+                        { label: "Anulado", value: "envelope-voided" }, { label: "Reenviado", value: "envelope-resent" },
+                        { label: "Corrigido", value: "envelope-corrected" }, { label: "Criado", value: "envelope-created" },
+                        { label: "Excluído", value: "envelope-deleted" }, { label: "Descartado", value: "envelope-discard" }
+                    ]
+                },
+                {
+                    name: "Eventos de Destinatários",
+                    containerId: 'recipientEventTypeFiltersContainer',
+                    selectAllId: 'selectAllRecipientEvents',
+                    events: [
+                        { label: "Enviado (Dest.)", value: "recipient-sent" }, { label: "Entregue (Dest.)", value: "recipient-delivered" },
+                        { label: "Concluído (Dest.)", value: "recipient-completed" }, { label: "Recusado (Dest.)", value: "recipient-declined" },
+                        { label: "Falha Autenticação", value: "recipient-authenticationfailed" },
+                        { label: "Reatribuído", value: "recipient-reassign"}, { label: "Concluir Depois", value: "recipient-finish-later"},
+                        { label: "Resp. Automática", value: "recipient-autoresponded" }, { label: "Reenviado (Dest.)", value: "recipient-resent"}
+                    ]
+                }
+            ],
+            // Os 'path' DEVEM corresponder à estrutura do objeto eventEntry (que contém docusignPayload com os dados do Docusign)
+            displayableFields: [
+                { label: "ID Interno (Log)", path: 'id', defaultChecked: true },
+                { label: "Recebido em (Portal)", path: 'receivedAt', defaultChecked: true, type: 'datetime' },
+                { label: "Tipo de Evento Docusign", path: 'eventType', defaultChecked: true, isEventType: true },
+                { label: "Erro de Processamento da Função", path: 'processingError', defaultChecked: true },
+                
+                { label: "ID do Envelope", path: 'docusignPayload.envelopeId', defaultChecked: true },
+                { label: "ID da Conta (Webhook)", path: 'docusignPayload.accountId', defaultChecked: false },
+                { label: "API Version (Webhook)", path: 'docusignPayload.apiVersion', defaultChecked: false },
+                { label: "Gerado em (Webhook)", path: 'docusignPayload.generatedDateTime', defaultChecked: false, type: 'datetime' },
+                
+                // Campos de envelopeSummary (dentro de docusignPayload)
+                { label: "Status do Envelope", path: 'docusignPayload.envelopeSummary.status', defaultChecked: true },
+                { label: "Assunto do Email", path: 'docusignPayload.envelopeSummary.emailSubject', defaultChecked: true },
+                { label: "Corpo do Email (Blurb)", path: 'docusignPayload.envelopeSummary.emailBlurb', defaultChecked: false },
+                { label: "Data Criação (Envelope)", path: 'docusignPayload.envelopeSummary.createdDateTime', defaultChecked: false, type: 'datetime' },
+                { label: "Última Modificação (Envelope)", path: 'docusignPayload.envelopeSummary.lastModifiedDateTime', defaultChecked: false, type: 'datetime' },
+                { label: "Status Alterado em (Envelope)", path: 'docusignPayload.envelopeSummary.statusChangedDateTime', defaultChecked: true, type: 'datetime' },
+                { label: "Remetente Nome", path: 'docusignPayload.envelopeSummary.sender.userName', defaultChecked: true },
+                { label: "Remetente Email", path: 'docusignPayload.envelopeSummary.sender.email', defaultChecked: false },
+                { label: "Destinatários (Objeto JSON)", path: 'docusignPayload.envelopeSummary.recipients', defaultChecked: false, isComplexObject: true }, 
+                { label: "Documentos (Nomes)", path: 'docusignPayload.envelopeSummary.envelopeDocuments', defaultChecked: false, isDocArray: true },
+                
+                // Campos de evento de destinatário (diretamente em docusignPayload, que é o 'data' do Docusign)
+                { label: "ID do Destinatário (Evento)", path: 'docusignPayload.recipientId', defaultChecked: false}
+            ]
+        };
+
+        function getNestedValue(obj, pathString) {
+            if (!pathString || !obj) return undefined;
+            const path = pathString.split('.');
+            let current = obj;
+            for (let i = 0; i < path.length; i++) {
+                if (current === null || typeof current !== 'object' || !current.hasOwnProperty(path[i])) {
+                    return undefined;
+                }
+                current = current[path[i]];
+            }
+            return current;
+        }
+        
+        function populateCheckboxes(targetContainer, items, groupNameForIdAndName, isVisibilityFilter, selectAllCheckboxId) {
+            if (!targetContainer) return;
+            targetContainer.innerHTML = ''; 
+
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'checkbox-item';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                const valueForCheckbox = isVisibilityFilter ? item.path : item.value;
+                const idSuffix = valueForCheckbox.replace(/[\s.\-]/g, ''); // Cria ID mais limpo
+                checkbox.id = `filter-${groupNameForIdAndName}-${idSuffix}`;
+                checkbox.name = groupNameForIdAndName;
+                checkbox.value = valueForCheckbox;
+                checkbox.className = isVisibilityFilter ? 'checkbox-input field-visibility-filter' : 'checkbox-input event-type-filter';
+                if (isVisibilityFilter) checkbox.checked = item.defaultChecked;
+                
+                checkbox.addEventListener('change', function() {
+                    applyFilters();
+                    updateSelectAllCheckboxState(selectAllCheckboxId);
+                });
+
+                const label = document.createElement('label');
+                label.htmlFor = checkbox.id;
+                label.className = 'checkbox-label';
+                label.textContent = item.label;
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                targetContainer.appendChild(div);
+            });
+        }
+
+        function setupSelectAllCheckboxes() {
+            document.querySelectorAll('.select-all-checkbox').forEach(selectAllCb => {
+                selectAllCb.addEventListener('change', function() {
+                    const group = this.dataset.group;
+                    let container, filterClass;
+                    if (group === 'fieldVisibility') { container = fieldVisibilityFiltersContainer; filterClass = '.field-visibility-filter'; }
+                    else if (group === 'envelopeEvents') { container = envelopeEventTypeFiltersContainer; filterClass = '.event-type-filter'; }
+                    else if (group === 'recipientEvents') { container = recipientEventTypeFiltersContainer; filterClass = '.event-type-filter'; }
+                    else { return; }
+                    if (container) {
+                        container.querySelectorAll(filterClass).forEach(cb => cb.checked = this.checked);
+                    }
+                    applyFilters();
+                });
+            });
+        }
+        
+        function updateSelectAllCheckboxState(selectAllId) {
+            const selectAllCheckbox = document.getElementById(selectAllId);
+            if (!selectAllCheckbox) return;
+            const group = selectAllCheckbox.dataset.group;
+            let container, filterClass;
+            if (group === 'fieldVisibility') { container = fieldVisibilityFiltersContainer; filterClass = '.field-visibility-filter'; }
+            else if (group === 'envelopeEvents') { container = envelopeEventTypeFiltersContainer; filterClass = '.event-type-filter'; }
+            else if (group === 'recipientEvents') { container = recipientEventTypeFiltersContainer; filterClass = '.event-type-filter'; }
+            else { return; }
+            if (!container) return;
+            const checkboxesInGroup = container.querySelectorAll(filterClass);
+            if (!checkboxesInGroup || checkboxesInGroup.length === 0) {
+                selectAllCheckbox.checked = false; selectAllCheckbox.indeterminate = false; return;
+            }
+            const total = checkboxesInGroup.length;
+            const checkedCount = Array.from(checkboxesInGroup).filter(cb => cb.checked).length;
+            if (checkedCount === 0) { selectAllCheckbox.checked = false; selectAllCheckbox.indeterminate = false; }
+            else if (checkedCount === total) { selectAllCheckbox.checked = true; selectAllCheckbox.indeterminate = false; }
+            else { selectAllCheckbox.checked = false; selectAllCheckbox.indeterminate = true; }
+        }
+
+        function populateAllPageFilters() {
+            eventFilterConfig.groups.forEach(group => {
+                const container = document.getElementById(group.containerId);
+                if (container) {
+                    populateCheckboxes(container, group.events, group.containerId + '-type', false, group.selectAllId);
+                    updateSelectAllCheckboxState(group.selectAllId);
+                }
+            });
+            if (fieldVisibilityFiltersContainer) {
+                 populateCheckboxes(fieldVisibilityFiltersContainer, eventFilterConfig.displayableFields, 'visibility', true, 'selectAllVisibleFields');
+                 updateSelectAllCheckboxState('selectAllVisibleFields');
+            }
+            setupSelectAllCheckboxes();
+        }
+        
+        function renderEvents(eventsToDisplay) {
+            eventListContainer.innerHTML = ''; 
+            if (!eventsToDisplay || eventsToDisplay.length === 0) {
+                eventListContainer.innerHTML = '<p class="loading-text">Nenhum evento encontrado com os critérios atuais.</p>';
+                return;
+            }
+
+            const visibleFieldKeys = {};
+            document.querySelectorAll('.field-visibility-filter:checked').forEach(cb => {
+                visibleFieldKeys[cb.value] = true; 
+            });
+
+            eventsToDisplay.forEach(eventEntry => {
+                const card = document.createElement('div');
+                card.className = 'event-card-item';
+                
+                let eventTypeLabel = eventEntry.eventType || 'Desconhecido';
+                for (const group of eventFilterConfig.groups) {
+                    const foundEventDef = group.events.find(e => e.value === (eventEntry.eventType || '').toLowerCase());
+                    if (foundEventDef) { eventTypeLabel = foundEventDef.label; break; }
+                }
+
+                let headerContent = `<div class="event-card-header"><div>`;
+                let bodyDetailsHtml = '';
+
+                eventFilterConfig.displayableFields.forEach(fieldConf => {
+                    if (visibleFieldKeys[fieldConf.path]) { 
+                        let value = getNestedValue(eventEntry, fieldConf.path);
+                        let displayValueHtml = '';
+                        let fieldIsEmpty = (value === undefined || value === null || (Array.isArray(value) && value.length === 0));
+
+                        if (fieldConf.path === 'processingError' && eventEntry.processingError) {
+                             displayValueHtml = `<span style="color: #e74c3c;">${String(eventEntry.processingError).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>`;
+                        } else if (fieldIsEmpty && fieldConf.path !== 'processingError') {
+                             return; // Não renderiza o campo se estiver vazio (exceto erro de processamento)
+                        } else if (fieldConf.type === 'datetime') {
+                            displayValueHtml = new Date(value).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' });
+                        } else if (fieldConf.isEventType) {
+                            displayValueHtml = `<span style="font-weight: 600;">${eventTypeLabel}</span>`;
+                        } else if (fieldConf.isDocArray && Array.isArray(value)) {
+                             displayValueHtml = value.map(doc => doc.name || 'Nome Desconhecido').join(', ');
+                        } else if (fieldConf.isArray && Array.isArray(value)) {
+                             displayValueHtml = `<ul style="list-style-position: inside; margin-left: 10px;">${value.map(item => `<li>${String(item).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</li>`).join('')}</ul>`;
+                        } else if (fieldConf.isPre && typeof value === 'string') {
+                            displayValueHtml = `<pre>${String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>`;
+                        } else if (fieldConf.isComplexObject && typeof value === 'object') {
+                            displayValueHtml = `<pre>${JSON.stringify(value, null, 2).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>`;
+                        } else {
+                            displayValueHtml = String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        }
+                        
+                        const fieldHtml = `<p class="card-field ${fieldConf.path === 'id' ? 'id-text' : ''}"><strong>${fieldConf.label}:</strong> ${displayValueHtml}</p>`;
+                        
+                        if (fieldConf.path === 'id' || fieldConf.path === 'receivedAt' || fieldConf.path === 'eventType') {
+                            headerContent += fieldHtml;
+                        } else {
+                            bodyDetailsHtml += fieldHtml;
+                        }
+                    }
+                });
+                headerContent += `</div><button data-event-id="${eventEntry.id}" class="delete-button"><i class="bi bi-trash3"></i> Excluir</button></div>`;
+                
+                let finalContent = headerContent;
+                if(bodyDetailsHtml.trim() !== ''){
+                    finalContent += '<div class="event-card-body">' + bodyDetailsHtml + '</div>';
+                }
+                
+                card.innerHTML = finalContent;
+                eventListContainer.appendChild(card);
+            });
+
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', handleDeleteEvent);
+            });
+        }
+        
+        async function fetchDocusignEvents() {
+            // ... (mesma função fetchDocusignEvents da resposta anterior, chamando populateAllPageFilters)
+            if (loadingMessage && !eventListContainer.contains(loadingMessage) && eventListContainer.innerHTML === '') {
+                eventListContainer.appendChild(loadingMessage);
+            }
+            if(loadingMessage) loadingMessage.textContent = 'Carregando eventos...';
+            try {
+                const response = await fetch('/.netlify/functions/get-docusign-events');
+                if (!response.ok) { 
+                    const errorData = await response.json().catch(() => ({ message: `Erro HTTP: ${response.status}` }));
+                    throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
+                }
+                allFetchedEvents = await response.json(); 
+                populateAllPageFilters(); 
+                if (loadingMessage) loadingMessage.remove();
+                applyFilters(); 
+            } catch (error) { 
+                console.error('Erro ao buscar eventos Docusign:', error);
+                if (loadingMessage) loadingMessage.remove();
+                eventListContainer.innerHTML = `<p class="loading-text" style="color: red;">Falha ao carregar eventos: ${error.message}</p>`;
+            }
+        }
+
+        function applyFilters() {
+            // ... (mesma função applyFilters da resposta anterior) ...
+            const filterText = filterInput.value.toLowerCase().trim();
+            const selectedEventTypes = Array.from(document.querySelectorAll('.event-type-filter:checked')).map(cb => cb.value.toLowerCase());
+            let eventsToDisplay = allFetchedEvents;
+
+            if (selectedEventTypes.length > 0) {
+                eventsToDisplay = eventsToDisplay.filter(eventEntry => 
+                    eventEntry.eventType && 
+                    selectedEventTypes.includes(eventEntry.eventType.toLowerCase())
+                );
+            }
+
+            if (filterText) {
+                eventsToDisplay = eventsToDisplay.filter(eventEntry => {
+                    let searchableText = '';
+                    eventFilterConfig.displayableFields.forEach(fieldConf => {
+                        const value = getNestedValue(eventEntry, fieldConf.path);
+                        if (value) {
+                            if (typeof value === 'object') { 
+                                searchableText += JSON.stringify(value).toLowerCase() + ' ';
+                            } else {
+                                searchableText += String(value).toLowerCase() + ' ';
+                            }
+                        }
+                    });
+                    searchableText += (eventEntry.eventType ? eventEntry.eventType.toLowerCase() : '') + ' ';
+                    searchableText += (eventEntry.id ? eventEntry.id.toLowerCase() : '');
+                    return searchableText.includes(filterText);
+                });
+            }
+            renderEvents(eventsToDisplay);
+        }
+
+        async function handleDeleteEvent(event) {
+            // ... (mesma função handleDeleteEvent da resposta anterior) ...
+            const eventId = event.target.closest('.delete-btn').dataset.eventId;
+            if (!eventId) return;
+            if (confirm(`Tem certeza que deseja excluir o evento com ID: ${eventId}?`)) {
+                try {
+                    const response = await fetch('/.netlify/functions/delete-docusign-event', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ eventId: eventId })
+                    });
+                    if (!response.ok) { 
+                        const errorData = await response.json().catch(() => ({ message: `Erro HTTP: ${response.status}` }));
+                        throw new Error(errorData.message || `Erro ao excluir evento: ${response.statusText}`);
+                    }
+                    fetchDocusignEvents(); 
+                } catch (error) { 
+                    console.error("Erro ao excluir evento:", error);
+                    alert(`Falha ao excluir evento: ${error.message}`);
+                }
+            }
+        }
+        
+        if (refreshDataBtn) refreshDataBtn.addEventListener('click', fetchDocusignEvents);
+        if (filterInput) filterInput.addEventListener('input', applyFilters);
+        
+        fetchDocusignEvents();
+      });
+    </script>
+    </body>
+</html>

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Eventos dos Envelopes - Fontara Financial</title> <meta
       name="description"
-      content="Visualização dos últimos 100 eventos de envelopes Docusign com opções de filtro e exclusão."
+      content="Visualização e filtragem dos últimos 100 eventos de envelopes Docusign."
     />
     <link rel="shortcut icon" href="./assets/logo/logo.png" type="image/x-icon" />
     <link rel="stylesheet" href="./css/tailwind-build.css" />
@@ -34,7 +34,8 @@
         border: 1px solid #e2e8f0; max-height: 200px; 
       }
       .dark pre { background-color: #1a202c; color: #cbd5e0; border-color: #2d3748; }
-      .filter-input {
+      
+      .filter-input { /* Para o campo de filtro de texto */
         @apply tw-block tw-w-full tw-px-3 tw-py-2 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-indigo-500 focus:tw-border-indigo-500 sm:tw-text-sm dark:tw-bg-gray-700 dark:tw-text-white;
       }
       .delete-btn {
@@ -46,14 +47,23 @@
       .form-checkbox-label { 
         @apply tw-ml-2 tw-block tw-text-sm tw-font-normal tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer;
       }
-      .filter-group-heading { /* Para todos os títulos de seções de filtro */
-        @apply tw-flex tw-justify-between tw-items-center tw-mb-2;
+      .checkbox-grid { /* Grade para os checkboxes dentro de cada grupo de filtro */
+        @apply tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-x-4 tw-gap-y-2 tw-mt-2;
       }
-      .filter-group-title {
-        @apply tw-text-base tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100;
+      .filter-section-title { /* Título geral da área de filtros */
+        @apply tw-text-xl tw-font-bold tw-mb-6 tw-pb-3 tw-border-b dark:tw-border-gray-700 tw-text-gray-900 dark:tw-text-gray-100;
       }
-      .checkbox-grid { /* Grade para os checkboxes dentro de cada filtro */
-        @apply tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-x-4 tw-gap-y-2;
+      .filter-group-title { /* Título para cada coluna de filtro (Texto, Campos Visíveis, Tipos de Evento) */
+        @apply tw-block tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-gray-100 tw-mb-1;
+      }
+      .filter-group-subtitle { /* Subtítulo/descrição para o filtro de texto */
+         @apply tw-text-xs tw-text-gray-600 dark:tw-text-gray-400 tw-mb-2;
+      }
+      .filter-fieldset-legend { /* Legenda para os fieldsets (Eventos do Envelope, Eventos de Destinatários) */
+        @apply tw-text-md tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2;
+      }
+      .select-all-container {
+        @apply tw-flex tw-items-center tw-mb-1;
       }
     </style>
   </head>
@@ -73,24 +83,24 @@
             </button>
         </div>
 
-        <div class="tw-mb-8 tw-p-4 md:tw-p-6 tw-bg-gray-100 dark:tw-bg-gray-800 tw-rounded-lg tw-shadow">
+        <div class="tw-mb-8 tw-p-4 md:tw-p-6 tw-bg-gray-100 dark:tw-bg-gray-800 tw-rounded-lg tw-shadow-lg">
             <h2 class="tw-text-xl tw-font-bold tw-mb-6 tw-pb-3 tw-border-b dark:tw-border-gray-700 tw-text-gray-900 dark:tw-text-gray-100">
                 <i class="bi bi-funnel-fill tw-mr-2"></i>Opções de Filtro e Visualização
             </h2>
             
             <div class="tw-mb-6">
-                <label for="filterInput" class="filter-group-title">Filtrar por texto:</label>
-                <p class="tw-text-xs tw-text-gray-600 dark:tw-text-gray-400 tw-mb-1">Busque em IDs, status, assunto, etc.</p>
-                <input type="text" id="filterInput" class="filter-input md:tw-max-w-lg" placeholder="Digite para filtrar...">
+                <label for="filterInput" class="filter-group-title">Filtrar por Texto:</label>
+                <p class="filter-group-subtitle">Busque em qualquer informação do evento.</p>
+                <input type="text" id="filterInput" class="filter-input md:tw-max-w-xl" placeholder="Digite para filtrar...">
             </div>
 
             <div class="tw-grid md:tw-grid-cols-3 md:tw-gap-x-6 lg:tw-gap-x-8">
                 <div class="tw-mb-6 md:tw-mb-0"> 
                     <div class="filter-group-heading">
-                        <span class="filter-group-title">Campos Visíveis:</span>
+                        <h3 class="filter-group-title">Campos a Exibir:</h3>
                         <div class="tw-flex tw-items-center">
                             <input type="checkbox" id="selectAllVisibleFields" class="form-checkbox select-all-checkbox" data-group="fieldVisibility">
-                            <label for="selectAllVisibleFields" class="form-checkbox-label tw-text-xs">Todos</label>
+                            <label for="selectAllVisibleFields" class="form-checkbox-label tw-text-xs">Selecionar/Desselecionar Todos</label>
                         </div>
                     </div>
                     <div id="fieldVisibilityFiltersContainer" class="checkbox-grid tw-mt-2">
@@ -100,10 +110,10 @@
 
                 <div class="tw-mb-6 md:tw-mb-0">
                     <div class="filter-group-heading">
-                        <span class="filter-group-title">Eventos do Envelope:</span>
+                        <h3 class="filter-group-title">Eventos do Envelope:</h3>
                         <div class="tw-flex tw-items-center">
                             <input type="checkbox" id="selectAllEnvelopeEvents" class="form-checkbox select-all-checkbox" data-group="envelopeEvents">
-                            <label for="selectAllEnvelopeEvents" class="form-checkbox-label tw-text-xs">Todos</label>
+                            <label for="selectAllEnvelopeEvents" class="form-checkbox-label tw-text-xs">Selecionar/Desselecionar Todos</label>
                         </div>
                     </div>
                     <div id="envelopeEventTypeFiltersContainer" class="checkbox-grid tw-mt-2">
@@ -113,10 +123,10 @@
                 
                 <div class="tw-mb-6 md:tw-mb-0">
                     <div class="filter-group-heading">
-                        <span class="filter-group-title">Eventos de Destinatários:</span>
+                        <h3 class="filter-group-title">Eventos de Destinatário:</h3>
                         <div class="tw-flex tw-items-center">
                             <input type="checkbox" id="selectAllRecipientEvents" class="form-checkbox select-all-checkbox" data-group="recipientEvents">
-                            <label for="selectAllRecipientEvents" class="form-checkbox-label tw-text-xs">Todos</label>
+                            <label for="selectAllRecipientEvents" class="form-checkbox-label tw-text-xs">Selecionar/Desselecionar Todos</label>
                         </div>
                     </div>
                     <div id="recipientEventTypeFiltersContainer" class="checkbox-grid tw-mt-2">
@@ -146,7 +156,7 @@
         const refreshDataBtn = document.getElementById('refreshDataBtn');
         const filterInput = document.getElementById('filterInput');
         
-        // Containers para os grupos de checkboxes de tipo de evento
+        // Novos containers para os grupos de tipo de evento
         const envelopeEventTypeFiltersContainer = document.getElementById('envelopeEventTypeFiltersContainer');
         const recipientEventTypeFiltersContainer = document.getElementById('recipientEventTypeFiltersContainer');
         const fieldVisibilityFiltersContainer = document.getElementById('fieldVisibilityFiltersContainer');
@@ -156,8 +166,8 @@
         const eventFilterConfig = {
             groups: [
                 {
-                    name: "Eventos do Envelope", // Usado como legenda do fieldset
-                    containerId: 'envelopeEventTypeFiltersContainer', // ID do div para estes checkboxes
+                    name: "Eventos do Envelope",
+                    containerId: 'envelopeEventTypeFiltersContainer',
                     selectAllId: 'selectAllEnvelopeEvents',
                     events: [
                         { label: "Enviado", value: "envelope-sent" }, { label: "Entregue", value: "envelope-delivered" },
@@ -203,8 +213,11 @@
         }
         
         function populateCheckboxes(targetContainer, items, groupNameAttribute, isVisibility, selectAllCheckboxId) {
-            if (!targetContainer) return;
-            targetContainer.innerHTML = ''; // Limpa antes de popular
+            if (!targetContainer) {
+                // console.warn(`Container for ${groupNameAttribute} not found.`);
+                return;
+            }
+            targetContainer.innerHTML = ''; 
 
             items.forEach(item => {
                 const div = document.createElement('div');
@@ -216,7 +229,6 @@
                 checkbox.name = groupNameAttribute;
                 checkbox.value = isVisibility ? item.key : item.value;
                 checkbox.className = isVisibility ? 'form-checkbox field-visibility-filter' : 'form-checkbox event-type-filter';
-                checkbox.dataset.group = selectAllCheckboxId; // Para vincular ao "select all"
                 if (isVisibility) checkbox.checked = item.defaultChecked;
                 
                 checkbox.addEventListener('change', function() {
@@ -237,8 +249,9 @@
         function setupSelectAllCheckboxes() {
             document.querySelectorAll('.select-all-checkbox').forEach(selectAllCb => {
                 selectAllCb.addEventListener('change', function() {
-                    const groupName = this.dataset.group; // ex: 'fieldVisibility', 'envelopeEvents', 'recipientEvents'
+                    const groupName = this.dataset.group;
                     let checkboxesInGroup;
+
                     if (groupName === 'fieldVisibility') {
                         checkboxesInGroup = fieldVisibilityFiltersContainer.querySelectorAll('.field-visibility-filter');
                     } else if (groupName === 'envelopeEvents') {
@@ -260,19 +273,18 @@
             if (!selectAllCheckbox) return;
 
             const groupName = selectAllCheckbox.dataset.group;
-            let checkboxesInGroup, container;
+            let checkboxesInGroup;
 
             if (groupName === 'fieldVisibility') {
-                container = fieldVisibilityFiltersContainer;
-                checkboxesInGroup = container.querySelectorAll('.field-visibility-filter');
+                checkboxesInGroup = fieldVisibilityFiltersContainer.querySelectorAll('.field-visibility-filter');
             } else if (groupName === 'envelopeEvents') {
-                container = envelopeEventTypeFiltersContainer;
-                checkboxesInGroup = container.querySelectorAll('.event-type-filter');
+                checkboxesInGroup = envelopeEventTypeFiltersContainer.querySelectorAll('.event-type-filter');
             } else if (groupName === 'recipientEvents') {
-                container = recipientEventTypeFiltersContainer;
-                checkboxesInGroup = container.querySelectorAll('.event-type-filter');
+                checkboxesInGroup = recipientEventTypeFiltersContainer.querySelectorAll('.event-type-filter');
+            } else {
+                return; // Grupo desconhecido
             }
-
+            
             if (!checkboxesInGroup || checkboxesInGroup.length === 0) {
                 selectAllCheckbox.checked = false;
                 selectAllCheckbox.indeterminate = false;
@@ -289,33 +301,62 @@
                 selectAllCheckbox.checked = true;
                 selectAllCheckbox.indeterminate = false;
             } else {
-                selectAllCheckbox.checked = false; // Ou true, dependendo da preferência para estado misto
+                selectAllCheckbox.checked = false; 
                 selectAllCheckbox.indeterminate = true;
             }
         }
 
-
         function populateAllFilters() {
-            // Popular filtros de tipo de evento
             eventFilterConfig.groups.forEach(group => {
                 const container = document.getElementById(group.containerId);
                 if (container) {
                     populateCheckboxes(container, group.events, 'eventType', false, group.selectAllId);
-                    updateSelectAllCheckboxState(group.selectAllId); // Define estado inicial do "select all"
+                    updateSelectAllCheckboxState(group.selectAllId);
+                } else {
+                    // console.warn(`Container com ID ${group.containerId} não encontrado para o grupo de filtros de tipo de evento.`);
                 }
             });
-            // Popular filtros de visibilidade de campo
             if (fieldVisibilityFiltersContainer) {
-                populateCheckboxes(fieldVisibilityFiltersContainer, eventFilterConfig.displayableFields, 'fieldVisibility', true, 'selectAllVisibleFields');
-                 updateSelectAllCheckboxState('selectAllVisibleFields'); // Define estado inicial
+                 populateCheckboxes(fieldVisibilityFiltersContainer, eventFilterConfig.displayableFields, 'fieldVisibility', true, 'selectAllVisibleFields');
+                 updateSelectAllCheckboxState('selectAllVisibleFields');
             }
-            setupSelectAllCheckboxes(); // Configura os listeners dos "select all"
+            setupSelectAllCheckboxes();
         }
 
+        function renderEvents(eventsToDisplay) {
+            // ... (função renderEvents como na resposta anterior) ...
+        }
+
+        async function fetchDocusignEvents() {
+            // ... (função fetchDocusignEvents como na resposta anterior) ...
+        }
+
+        function applyFilters() {
+            // ... (função applyFilters como na resposta anterior) ...
+        }
+
+        async function handleDeleteEvent(event) {
+            // ... (função handleDeleteEvent como na resposta anterior) ...
+        }
+        
+        // Copie e cole as definições completas de renderEvents, fetchDocusignEvents, applyFilters, handleDeleteEvent da MINHA RESPOSTA ANTERIOR aqui.
+        // Apenas as funções de popular e setup de "select all" foram detalhadas acima.
+
+        // Para economizar espaço, vou colar apenas as funções que mudaram ou são novas:
+        // populateCheckboxes, setupSelectAllCheckboxes, updateSelectAllCheckboxState, populateAllFilters.
+        // O resto (renderEvents, fetchDocusignEvents, applyFilters, handleDeleteEvent) é o mesmo da resposta anterior.
+        // Certifique-se de ter todas elas.
+
+        // COLE AS DEFINIÇÕES COMPLETAS DAS FUNÇÕES ABAIXO AQUI DA RESPOSTA ANTERIOR:
+        // renderEvents(eventsToDisplay) { ... }
+        // async function fetchDocusignEvents() { ... } (Apenas a chamada para populateAllFilters mudou ligeiramente)
+        // function applyFilters() { ... }
+        // async function handleDeleteEvent(event) { ... }
+        // A maneira como fetchDocusignEvents chama populateAllFilters já está correta no corpo do HTML acima.
+        // Vou colar as funções que não mudaram tanto para completude:
 
         function renderEvents(eventsToDisplay) {
-            // ... (função renderEvents como na resposta anterior, com verificações de nulidade e getNestedValue) ...
-             eventListContainer.innerHTML = ''; 
+            eventListContainer.innerHTML = ''; 
             if (!eventsToDisplay || eventsToDisplay.length === 0) {
                 eventListContainer.innerHTML = '<p class="tw-text-center tw-py-10">Nenhum evento encontrado com os critérios atuais.</p>';
                 return;
@@ -388,8 +429,7 @@
                 button.addEventListener('click', handleDeleteEvent);
             });
         }
-
-
+        
         async function fetchDocusignEvents() {
             if (loadingMessage && !eventListContainer.contains(loadingMessage) && eventListContainer.innerHTML === '') {
                 eventListContainer.appendChild(loadingMessage);
@@ -402,7 +442,7 @@
                     throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
                 }
                 allFetchedEvents = await response.json(); 
-                populateAllFilters(); // Popula todos os filtros (tipos e visibilidade)
+                populateAllFilters();
                 if (loadingMessage) loadingMessage.remove();
                 applyFilters(); 
             } catch (error) { 
@@ -413,8 +453,6 @@
         }
 
         function applyFilters() {
-            // ... (função applyFilters como na resposta anterior, ela já usa a estrutura de filtro de texto e tipo) ...
-            // A renderEvents() agora lida com a visibilidade dos campos.
             const filterText = filterInput.value.toLowerCase().trim();
             const selectedEventTypes = Array.from(document.querySelectorAll('.event-type-filter:checked')).map(cb => cb.value.toLowerCase());
             let eventsToDisplay = allFetchedEvents;
@@ -436,7 +474,6 @@
                             else searchableText += String(value).toLowerCase() + ' ';
                         }
                     });
-                    // Adiciona também o eventType e ID do evento na busca por texto
                     searchableText += (eventEntry.eventType ? eventEntry.eventType.toLowerCase() : '') + ' ';
                     searchableText += (eventEntry.id ? eventEntry.id.toLowerCase() : '');
                     return searchableText.includes(filterText);

@@ -4,39 +4,80 @@
       <img src="./assets/logo/logo.png" alt="Fontara Financial Logo" class="tw-object-contain tw-h-full tw-w-full dark:tw-invert"/>
     </div>
   </a>
+  
   <button id="menu-toggle-button" aria-label="Abrir menu" aria-expanded="false" aria-controls="collapsed-header-items" class="lg:tw-hidden tw-text-2xl tw-ml-auto tw-p-2">
     <i class="bi bi-list"></i>
   </button>
+
   <div class="collapsible-header max-lg:tw-hidden max-lg:tw-absolute max-lg:tw-top-[60px] max-lg:tw-left-0 max-lg:tw-w-full max-lg:tw-bg-white max-lg:dark:tw-bg-[#17181b] max-lg:tw-shadow-md" id="collapsed-header-items">
-    <nav class="tw-relative tw-flex tw-h-full max-lg:tw-h-max max-lg:tw-flex-col tw-w-max max-lg:tw-w-full tw-gap-5 tw-text-base tw-place-items-center max-lg:tw-p-4">
-      <a class="header-links" href="index.html"> Início </a>
-      <div class="tw-relative tw-group">
-        <button type="button" class="header-links tw-flex tw-gap-1 tw-place-items-center" aria-expanded="false" aria-controls="servicos-submenu">
-          Serviços <i class="bi bi-chevron-down tw-text-sm"></i>
+    <nav class="tw-relative tw-flex tw-h-full max-lg:tw-h-max max-lg:tw-flex-col tw-w-max max-lg:tw-w-full tw-gap-5 tw-text-base tw-place-items-center max-lg:tw-p-4 lg:tw-mx-auto">
+      <a class="header-links" href="index.html#hero-section"> Início </a> <a class="header-links" href="index.html#casos-de-sucesso"> Sucesso </a> <a class="header-links" href="index.html#nossos-servicos"> Serviços </a> <div class="tw-relative">
+        <button type="button" id="solucoes-dropdown-toggle" class="header-links tw-flex tw-gap-1 tw-place-items-center" aria-expanded="false" aria-controls="solucoes-dropdown-list">
+          Soluções <i class="bi bi-chevron-down tw-text-sm"></i>
         </button>
-        <nav id="servicos-submenu" class="tw-absolute tw-hidden group-hover:tw-flex hover:tw-flex tw-top-full min-lg:tw-left-1/2 min-lg:tw--translate-x-1/2 tw-mt-2 tw-w-max tw-min-w-[300px] tw-max-w-[350px] tw-flex-col tw-gap-2 tw-rounded-lg tw-bg-gray-100 dark:tw-bg-gray-800 tw-p-3 tw-shadow-lg tw-text-gray-600 dark:tw-text-gray-300 tw-z-30">
-          <p class="tw-text-sm tw-text-gray-500 dark:tw-text-gray-400 tw-px-1">Explore nossos serviços financeiros</p>
-          <hr class="dark:tw-border-gray-600">
-          <a class="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4 hover:tw-bg-gray-200 dark:hover:tw-bg-gray-700 tw-rounded-md" href="assinatura-embarcada.html">
-            <div class="tw-font-semibold tw-text-3xl"><i class="bi bi-vector-pen"></i></div>
-            <div class="tw-flex tw-flex-col tw-gap-1">
-              <div class="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium">Assinatura Embarcada</div>
-              <p class="tw-text-sm">Assine seus documentos de forma digital e integrada.</p>
-            </div>
-          </a>
-          <a class="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4 hover:tw-bg-gray-200 dark:hover:tw-bg-gray-700 tw-rounded-md" href="atualizacao-perfil-investidor.html">
-            <div class="tw-font-semibold tw-text-3xl"><i class="bi bi-person-lines-fill"></i></div>
-            <div class="tw-flex tw-flex-col tw-gap-1">
-              <div class="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium">Atualização do Perfil de Investidor</div>
-              <p class="tw-text-sm">Mantenha seu perfil atualizado.</p>
-            </div>
-          </a>
+        <nav id="solucoes-dropdown-list" class="tw-absolute tw-hidden tw-top-full lg:tw-left-1/2 lg:tw--translate-x-1/2 tw-mt-2 tw-w-[300px] md:tw-w-[600px] lg:tw-max-w-[700px] tw-bg-white dark:tw-bg-gray-800 tw-rounded-lg tw-shadow-xl tw-p-4 tw-z-30">
+          <div class="tw-grid md:tw-grid-cols-2 tw-gap-4">
+            <a class="header-links solusi-dropdown-item group" href="credito-imobiliario.html">
+              <div class="tw-font-semibold tw-text-3xl text-indigo-500 group-hover:text-indigo-600"><i class="bi bi-house-door"></i></div>
+              <div class="tw-flex tw-flex-col">
+                <span class="tw-text-lg tw-font-medium text-gray-900 dark:text-white group-hover:text-indigo-600">Crédito Imobiliário</span>
+                <p class="tw-text-sm text-gray-600 dark:text-gray-400">Simulação e aprovação rápida.</p>
+              </div>
+            </a>
+            <a class="header-links solusi-dropdown-item group" href="previdencia-privada.html">
+              <div class="tw-font-semibold tw-text-3xl text-indigo-500 group-hover:text-indigo-600"><i class="bi bi-shield-shaded"></i></div>
+              <div class="tw-flex tw-flex-col">
+                <span class="tw-text-lg tw-font-medium text-gray-900 dark:text-white group-hover:text-indigo-600">Previdência Privada</span>
+                <p class="tw-text-sm text-gray-600 dark:text-gray-400">Garanta seu futuro com tranquilidade.</p>
+              </div>
+            </a>
+            <a class="header-links solusi-dropdown-item group" href="seguros.html"> <div class="tw-font-semibold tw-text-3xl text-indigo-500 group-hover:text-indigo-600"><i class="bi bi-umbrella"></i></div>
+              <div class="tw-flex tw-flex-col">
+                <span class="tw-text-lg tw-font-medium text-gray-900 dark:text-white group-hover:text-indigo-600">Seguros</span>
+                <p class="tw-text-sm text-gray-600 dark:text-gray-400">Proteja seu patrimônio e família.</p>
+              </div>
+            </a>
+            <a class="header-links solusi-dropdown-item group" href="emprestimo-pessoal.html"> <div class="tw-font-semibold tw-text-3xl text-indigo-500 group-hover:text-indigo-600"><i class="bi bi-cash-coin"></i></div>
+              <div class="tw-flex tw-flex-col">
+                <span class="tw-text-lg tw-font-medium text-gray-900 dark:text-white group-hover:text-indigo-600">Empréstimo Pessoal</span>
+                <p class="tw-text-sm text-gray-600 dark:text-gray-400">Crédito para seus momentos.</p>
+              </div>
+            </a>
+            <a class="header-links solusi-dropdown-item group" href="financiamento.html"> <div class="tw-font-semibold tw-text-3xl text-indigo-500 group-hover:text-indigo-600"><i class="bi bi-receipt-cutoff"></i></div>
+              <div class="tw-flex tw-flex-col">
+                <span class="tw-text-lg tw-font-medium text-gray-900 dark:text-white group-hover:text-indigo-600">Financiamento</span>
+                <p class="tw-text-sm text-gray-600 dark:text-gray-400">Conquiste seus sonhos.</p>
+              </div>
+            </a>
+            <a class="header-links solusi-dropdown-item group" href="investimentos.html"> <div class="tw-font-semibold tw-text-3xl text-indigo-500 group-hover:text-indigo-600"><i class="bi bi-graph-up-arrow"></i></div>
+              <div class="tw-flex tw-flex-col">
+                <span class="tw-text-lg tw-font-medium text-gray-900 dark:text-white group-hover:text-indigo-600">Investimentos</span>
+                <p class="tw-text-sm text-gray-600 dark:text-gray-400">Renda fixa, variável e tesouro.</p>
+              </div>
+            </a>
+            <hr class="md:tw-col-span-2 dark:tw-border-gray-700 my-2">
+            <a class="header-links solusi-dropdown-item group" href="assinatura-embarcada.html">
+              <div class="tw-font-semibold tw-text-3xl text-indigo-500 group-hover:text-indigo-600"><i class="bi bi-vector-pen"></i></div>
+              <div class="tw-flex tw-flex-col">
+                <span class="tw-text-lg tw-font-medium text-gray-900 dark:text-white group-hover:text-indigo-600">Assinatura Digital</span>
+                <p class="tw-text-sm text-gray-600 dark:text-gray-400">Assine documentos digitalmente.</p>
+              </div>
+            </a>
+            <a class="header-links solusi-dropdown-item group" href="atualizacao-perfil-investidor.html">
+              <div class="tw-font-semibold tw-text-3xl text-indigo-500 group-hover:text-indigo-600"><i class="bi bi-person-lines-fill"></i></div>
+              <div class="tw-flex tw-flex-col">
+                <span class="tw-text-lg tw-font-medium text-gray-900 dark:text-white group-hover:text-indigo-600">Perfil de Investidor</span>
+                <p class="tw-text-sm text-gray-600 dark:text-gray-400">Mantenha seu perfil atualizado.</p>
+              </div>
+            </a>
+          </div>
         </nav>
       </div>
       <a class="header-links" href="index.html#faq"> FAQ </a>
     </nav>
   </div>
-  <div class="max-lg:tw-hidden lg:tw-mx-4 tw-flex tw-place-items-center tw-gap-[20px] tw-text-base">
+
+  <div class="max-lg:tw-hidden lg:tw-ml-auto tw-flex tw-place-items-center tw-gap-[20px] tw-text-base">
     <button type="button" title="Alternar tema" id="theme-toggle-button" class="header-links tw-text-gray-600 dark:tw-text-gray-300">
       <i class="bi bi-sun" id="theme-toggle-icon"></i>
     </button>

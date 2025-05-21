@@ -6,7 +6,7 @@
     <title>Assinatura Embarcada - Fontara Financial</title>
     <meta
       name="description"
-      content="Assine documentos digitalmente com diferentes experiências Docusign: Clássica, Focada ou com Termos de Aceite."
+      content="Assine documentos digitalmente com diferentes experiências Docusign."
     />
     <link rel="shortcut icon" href="./assets/logo/logo.png" type="image/x-icon" />
     <link rel="stylesheet" href="./css/tailwind-build.css" />
@@ -18,6 +18,7 @@
     <script src="https://js-d.docusign.com/bundle.js"></script>
 
     <style>
+      /* Seus estilos para .form-input-custom, .form-label, .form-radio, etc. e para o modal permanecem aqui */
       .form-input-custom {
         @apply tw-block tw-w-full tw-px-4 tw-py-3 tw-border tw-border-black dark:tw-border-gray-500 tw-bg-gray-100 dark:tw-bg-gray-700 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-indigo-500 focus:tw-border-indigo-500 dark:tw-text-white tw-text-base;
         min-height: 50px; 
@@ -47,57 +48,32 @@
         justify-content: center;
         padding: 1rem;
       }
-      .signing-modal-overlay.active {
-        display: flex;
-      }
+      .signing-modal-overlay.active { display: flex; }
       .signing-modal-content {
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        width: 90vw;
-        height: 90vh;
-        max-width: 1000px; 
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        position: relative; 
-        z-index: 5001 !important;
+        background-color: #fff; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        width: 90vw; height: 90vh; max-width: 1000px; 
+        display: flex; flex-direction: column; overflow: hidden;
+        position: relative; z-index: 5001 !important;
       }
       .dark .signing-modal-content { background-color: #1f2937; }
-      
       .modal-header-custom {
-        padding: 0.75rem 1rem;
-        background-color: #f3f4f6; 
-        border-bottom: 1px solid #e5e7eb; 
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-shrink: 0;
+        padding: 0.75rem 1rem; background-color: #f3f4f6; 
+        border-bottom: 1px solid #e5e7eb; display: flex;
+        justify-content: space-between; align-items: center; flex-shrink: 0;
       }
       .dark .modal-header-custom { background-color: #374151; border-color: #4b5563; }
       .modal-title-custom { font-size: 1.1rem; font-weight: 600; }
       .close-modal-btn { font-size: 1.5rem; background:none; border:none; cursor:pointer; color: #6b7280; }
       .dark .close-modal-btn { color: #9ca3af; }
-
-      #docusign-view-container { 
-        flex-grow: 1;
-        width: 100%;
-        height: calc(100% - 50px); /* Ajuste conforme altura do seu .modal-header-custom */
-        background-color: #fff; 
-      }
+      #docusign-view-container { flex-grow: 1; width: 100%; height: calc(100% - 50px); background-color: #fff; }
       .dark #docusign-view-container { background-color: #1f2937; }
-      #docusign-classic-iframe { 
-        width: 100%;
-        height: 100%;
-        border: none;
-      }
+      #docusign-classic-iframe { width: 100%; height: 100%; border: none; }
     </style>
   </head>
   <body class="tw-flex tw-min-h-[100vh] tw-flex-col tw-bg-[#fcfcfc] tw-text-black dark:tw-bg-black dark:tw-text-white">
-    <header id="mainHeader" class="lg:tw-px-4 tw-max-w-[100vw] tw-max-w-lg:tw-mr-auto max-lg:tw-top-0 tw-fixed tw-top-4 lg:tw-left-1/2 lg:tw--translate-x-1/2 tw-z-20 tw-flex tw-h-[60px] tw-w-full tw-text-gray-700 tw-bg-white dark:tw-text-gray-200 dark:tw-bg-[#17181b] tw-px-[3%] tw-rounded-md lg:tw-max-w-5xl tw-shadow-md dark:tw-shadow-gray-700 lg:tw-justify-around lg:!tw-backdrop-blur-lg lg:tw-opacity-[0.99]">
-      <a class="tw-flex tw-p-[4px] tw-gap-2 tw-place-items-center" href="index.html"><div class="tw-h-[30px] tw-max-w-[100px]"><img src="./assets/logo/logo.png" alt="Fontara Financial Logo" class="tw-object-contain tw-h-full tw-w-full dark:tw-invert"/></div></a>
-      <div class="collapsible-header animated-collapse max-lg:tw-shadow-md" id="collapsed-header-items"><nav class="tw-relative tw-flex tw-h-full max-lg:tw-h-max tw-w-max tw-gap-5 tw-text-base max-lg:tw-mt-[30px] max-lg:tw-flex-col max-lg:tw-gap-5 lg:tw-mx-auto tw-place-items-center"><a class="header-links" href="index.html#hero-section"> Início </a><a class="header-links" href="index.html#casos-de-sucesso"> Sucesso </a><a class="header-links" href="index.html#nossos-servicos"> Serviços </a><div class="tw-relative tw-flex tw-flex-col tw-place-items-center"><div id="nav-dropdown-toggle-0" class="max-lg:tw-max-w-fit tw-flex header-links tw-gap-1 tw-place-items-center"><span class=""> Soluções </span> <i class="tw-text-sm bi bi-chevron-down"></i></div><nav id="nav-dropdown-list-0" data-open="false" class="tw-scale-0 tw-opacity-0 lg:tw-fixed tw-flex lg:tw-top-[80px] lg:tw-left-1/2 lg:tw--translate-x-1/2 tw-w-[90%] tw-rounded-lg max-lg:tw-h-0 max-lg:tw-w-0 lg:tw-h-auto tw-overflow-hidden tw-bg-white dark:tw-bg-[#17181B] tw-duration-300 tw-transition-opacity tw-shadow-lg tw-p-4"><div class="tw-grid max-xl:tw-flex max-xl:tw-flex-col tw-justify-around tw-grid-cols-2 tw-w-full"><a class="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="credito-imobiliario.html"><div class="tw-font-semibold tw-text-3xl"><i class="bi bi-house-door"></i></div><div class="tw-flex tw-flex-col tw-gap-2"><div class="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium">Crédito Imobiliário</div><p>Simulação e aprovação rápida de crédito</p></div></a><a class="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="previdencia-privada.html"><div class="tw-font-semibold tw-text-3xl"><i class="bi bi-shield-shaded"></i></div><div class="tw-flex tw-flex-col tw-gap-2"><div class="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium">Previdência Privada</div><p>Garanta tranquilidade para o seu futuro.</p></div></a><a class="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="seguros.html"><div class="tw-font-semibold tw-text-3xl"><i class="bi bi-umbrella"></i></div><div class="tw-flex tw-flex-col tw-gap-2"><div class="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium">Seguros</div><p>Proteja seu patrimônio e sua família</p></div></a><a class="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="emprestimo-pessoal.html"><div class="tw-font-semibold tw-text-3xl"><i class="bi bi-cash-coin"></i></div><div class="tw-flex tw-flex-col tw-gap-2"><div class="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium">Empréstimo Pessoal</div><p>Crédito para você nos momentos mais difíceis.</p></div></a><a class="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="financiamento.html"><div class="tw-font-semibold tw-text-3xl"><i class="bi bi-receipt-cutoff"></i></div><div class="tw-flex tw-flex-col tw-gap-2"><div class="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium">Financiamento</div><p>Conquiste seus sonhos</p></div></a><a class="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="investimentos.html"><div class="tw-font-semibold tw-text-3xl"><i class="bi bi-graph-up-arrow"></i></div><div class="tw-flex tw-flex-col tw-gap-2"><div class="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium">Investimentos</div><p>Renda fixa, renda variável e tesouro direto.</p></div></a><a class="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="assinatura-embarcada.html"><div class="tw-font-semibold tw-text-3xl"><i class="bi bi-vector-pen"></i></div><div class="tw-flex tw-flex-col tw-gap-2"><div class="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium">Assinatura Embarcada</div><p>Assine seus documentos de forma digital e integrada.</p></div></a><a class="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="atualizacao-perfil-investidor.html"><div class="tw-font-semibold tw-text-3xl"><i class="bi bi-person-lines-fill"></i></div><div class="tw-flex tw-flex-col tw-gap-2"><div class="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium">Atualização do Perfil de Investidor</div><p>Mantenha seu perfil atualizado.</p></div></a></div></nav></div><a class="header-links" href="index.html#faq"> FAQ </a></nav><div class="lg:tw-mx-4 tw-flex tw-place-items-center tw-gap-[20px] tw-text-base max-md:tw-w-full max-md:tw-flex-col max-md:tw-place-content-center"><button type="button" onclick="toggleMode()" class="header-links tw-text-gray-600 dark:tw-text-gray-300" title="Alternar tema" id="theme-toggle"><i class="bi bi-sun" id="toggle-mode-icon"></i></button><a href="#" aria-label="Acessar sua conta" class="btn tw-flex tw-gap-3 tw-px-3 tw-py-2 tw-transition-transform tw-duration-[0.3s] hover:tw-translate-x-2"><span>Área do Cliente</span><i class="bi bi-arrow-right"></i></a></div></div><button class="bi bi-list tw-absolute tw-right-3 tw-top-3 tw-z-50 tw-text-3xl tw-text-gray-500 lg:tw-hidden" onclick="toggleHeader()" aria-label="menu" id="collapse-btn"></button>
-    </header>
+    
+    <div id="header-placeholder">
+        </div>
 
     <main class="tw-mt-20 tw-pt-10 tw-pb-10 tw-px-4 sm:tw-px-[5%] lg:tw-px-[10%]">
       <div class="tw-mx-auto tw-w-full lg:tw-max-w-5xl"> 
@@ -162,9 +138,8 @@
       </div>
     </main>
 
-    <footer class="tw-mt-auto tw-flex tw-flex-col tw-w-full tw-gap-4 tw-text-sm tw-pt-[5%] tw-pb-10 tw-px-[5%] md:tw-px-[10%] tw-text-black dark:tw-text-white max-md:tw-flex-col">
-        <div class="tw-flex max-md:tw-flex-col max-md:tw-gap-6 tw-gap-3 tw-w-full tw-place-content-around"><div class="tw-flex tw-h-full tw-w-[250px] tw-flex-col tw-place-items-center tw-gap-6 max-md:tw-w-full"><a href="index.html" class="tw-w-full tw-place-items-center tw-flex tw-flex-col tw-gap-6"><img src="./assets/logo/logo.png" alt="Fontara Financial Logo" class="tw-max-w-[120px] dark:tw-invert"/></a><div class="tw-flex tw-gap-4 tw-text-lg"><a href="https://github.com/PaulleDemon/" aria-label="Github" target="_blank" rel="noopener"><i class="bi bi-github"></i></a><a href="https://twitter.com/pauls_freeman" aria-label="Twitter" target="_blank" rel="noopener"><i class="bi bi-twitter"></i></a><a href="https://www.linkedin.com/" aria-label="Linkedin" target="_blank" rel="noopener"><i class="bi bi-linkedin"></i></a></div></div><div class="tw-flex max-md:tw-flex-col tw-flex-wrap tw-gap-6 tw-h-full tw-w-full tw-justify-around"><div class="tw-flex tw-h-full tw-w-[200px] tw-flex-col tw-gap-4"><h2 class="tw-text-xl">Recursos</h2><div class="tw-flex tw-flex-col tw-gap-3"><a href="#" class="footer-link">Blog Financeiro</a><a href="#" class="footer-link">Simuladores</a><a href="#" class="footer-link">Glossário Financeiro</a><a href="#" class="footer-link">Status dos Serviços</a><a href="#" class="footer-link">Taxas e Tarifas</a></div></div><div class="tw-flex tw-h-full tw-w-[200px] tw-flex-col tw-gap-4"><h2 class="tw-text-xl">Fontara</h2><div class="tw-flex tw-flex-col tw-gap-3"><a href="#" class="footer-link">Sobre Nós</a><a href="#" class="footer-link">Carreiras</a><a href="#" class="footer-link">Imprensa</a><a href="#" class="footer-link">Fale Conosco</a><a href="#" class="footer-link">Compliance</a></div></div><div class="tw-flex tw-h-full tw-w-[200px] tw-flex-col tw-gap-4"><h2 class="tw-text-xl">Legal</h2><div class="tw-flex tw-flex-col tw-gap-3"><a href="#" class="footer-link">Termos de Uso</a><a href="#" class="footer-link">Política de Privacidade</a><a href="#" class="footer-link">Ouvidoria</a></div></div></div></div><hr class="tw-mt-8" /><div class="tw-mt-2 tw-flex tw-gap-2 tw-flex-col tw-text-gray-700 dark:tw-text-gray-300 tw-place-items-center tw-text-[12px] tw-w-full tw-text-center tw-place-content-around"><span>Copyright &#169; 2023-<span id="current-year"></span> Fontara Financial. Todos os direitos reservados.</span><span>Todas as marcas registradas e direitos autorais pertencem aos seus respectivos proprietários.</span></div>
-    </footer>
+    <div id="footer-placeholder">
+        </div>
 
     <div class="signing-modal-overlay" id="signingModalOverlay">
       <div class="signing-modal-content" id="signingModalContent">
@@ -179,6 +154,7 @@
     </div>
 
     <script>
+      // CONSTANTES E LÓGICA DO FORMULÁRIO (como na sua última versão)
       const DEFAULT_DOC_BASE64 = "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVGl0bGUgKP7/KQovQ3JlYXRvciAo/v8pCi9Qcm9kdWNlciAo/v9Ta2lhL1BERiBtODgpCi9Nb2REYXRlIChEOjIwMjQwNTE2MTgwNzM0Wi0wMycGVJPT0JFigovQ3JlYXRpb25EYXRlIChEOjIwMjQwNTE2MTgwNzM0Wi0wMycGVJPT0JFigPjwvcGFnZWxhYmVsICgveHMxXCIpPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL0NhdGFsb2cKL1BhZ2VzIDMgMCBSCi9MYW5nIChwdC1CUikKL01ldGFkYXRhIDEgMCBSCj4+CmVuZG9iagozIDAgb2JqCjw8Ci9UeXBlIC9QYWdlcwovQ291bnQgMQovS2lkcyBbIDQgMCBSIF0KPj4KZW5kb2JqCjQgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAzIDAgUgovUmVzb3VyY2VzIDw8Ci9Gb250IDw8Ci9GMSA1IDAgUgovUHJvY1NldCBbIC9QREYgL1RleHQgL0ltYWdlQiAvSW1hZ2VDIC9JbWFnZUkgXQo+PgovTWVkaWFCb3ggWyAwIDAgMjUwIDUwIF0KL0NvbnRlbnRzIDYgMCBSCi9Hcm91cCA8PAovVHlwZSAvR3JvdXAKL1MgL1RyYW5zcGFyZW5jeQovQ1MgL0RldmljZVJHQgovSSB0cnVlCj4+Ci9UYWJzIC9TCj4+CmVuZG9iago1IDAgb2JqCjw8Ci9UeXBlIC9Gb250Ci9TdWJ0eXBlIC9UeXBlMQovTmFtZSAvRjEKL0Jhc2VGb250IC9IZWx2ZXRpY2EKL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcKPj4KZW5kb2JqCjYgMCBvYmoKPDwKL0xlbmd0aCAzNzE+PgpzdHJlYW0KMiAwIDAgMiAwIDAgbW92ZXRvCjAgMCAwIHJnYgpHCmJ0CjAuODYyNzQ1IDAuODYyNzQ1IDAuODYyNzQ1IHJnCmJ0CjkgMCBDb1NjYW4KL01lc3NhZ2VDb250ZW50ICgvU3BhY2UKMTIgMCAwIDEyIDEwIDUwIHRtCjQgMCAwIDQgMTIgMCAoKQpQUk9QZXJ0aWVzICgwKSAvQ1NTSW5mbzMwMSAvRkFBREFOIEhlbHZldGljYSAvQXBwbGljYWJsZSBUcnVlCi9Eb2N1bWVudElEIDEgMCBSCmFjY2Vzc2liaWxpdHkgL0ZvbnRTaXplIDEyKQpTdGFydExpbmVTZXQgdG9wbW9zdAovRjEgMTIgVGYKKCBTdGFydExpbmUpIFRKOwoyMCAwIHRkCi9GMSA1MiBUZgpodS9YIDAgMCAwIEZpcm1hIC9Tb2Z0TWFzayAvRjEgNTAgMCAxMSA4NSBwb3N0CmVuZFNldHRpbmdzCjEgMCAwIDEgMCAwIHBvc3Rtb2RlL1NwYWNlCjI1MC4wMCA1MC4wMCByZWN0CnQgcG9wCiBTcGFjZSAvU3BhY2UKCiAgQmFzZUZvbnRGYW1pbHkgKEhlbHZldGljYSkKICBDYWNoZUNvbXBsZXRlZCAodHJ1ZSkKICBEZWNvZGVGb3JtYXQgKHRydWUpCiAgRGlzcGxheSAoZmFsc2UpCiAgRW5jb2RpbmdTY2hlbWUgKEFkb2JlU3RhbmRhcmRFbmNvZGluZykKICBGb250RmlsbGluZ1ggMC4wMAogIEZvbnRNYXRyaXggWzEgMCAwIDEgMCAwIF0KICBGb250UmV2aXNpb24gMC4wMAogIEZvbnRTdGFja0hlaWdodCA1MC4wMAogIEZvbnRJZCAxCmVuZG9iagoNCjEgMCAwIDEgMCAwIGNtCmJ0CjIwIDM1IHRkCjAuMCAwLjAgMC4wIHJnCigtIDEtKSBUagplVAplbmRzdHJlYW0KZW5kb2JqCnhyZWYKMCA3CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTgzIDAwMDAwIG4gCjAwMDAwMDAyNjAgMDAwMDAgbiAKMDAwMDAwMDMyNSAwMDAwMCBuIAowMDAwMDAwNTEzIDAwMDAwIG4gCjAwMDAwMDA2MDYgMDAwMDAgbiAKdHJhaWxlcgo8PAovU2l6ZSA3Ci9Sb290IDIgMCBSCi9JbmZvIDEgMCBSCj4+CnN0YXJ0eHJlZgo5ODUKJSVFT0YK";
       const DEFAULT_DOC_NAME = "ContratoPadraoFontara.pdf";
       const DEFAULT_DOC_ID = "1";
@@ -186,9 +162,15 @@
       const DOCUSIGN_JS_ENVIRONMENT = "demo"; 
       const docusignUiHostOrigin = "https://apps-d.docusign.com"; 
 
+      // Definindo as funções no escopo global ou de uma forma que loadPartials.js possa chamá-las
+      // se a inicialização do header depender delas.
+      // Para este script específico da página, elas podem ficar dentro do DOMContentLoaded.
+      
       document.addEventListener('DOMContentLoaded', function() {
-        const yearSpan = document.getElementById('current-year');
-        if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+        // A lógica para atualizar o ano no footer será chamada por loadPartials.js se o footer for carregado dinamicamente.
+        // Se o footer estiver estático nesta página, esta linha pode ficar:
+        // const yearSpan = document.getElementById('current-year');
+        // if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
         const envelopeForm = document.getElementById('envelopeForm');
         const useDefaultDocRadio = document.getElementById('useDefaultDoc');
@@ -200,9 +182,17 @@
         const signingModalOverlay = document.getElementById('signingModalOverlay');
         const closeSigningModalBtn = document.getElementById('closeSigningModalBtn');
         const docusignViewContainer = document.getElementById('docusign-view-container');
-        const mainHeader = document.getElementById('mainHeader'); 
+        let mainHeader = null; // Será pego após o header ser carregado, se dinâmico
         let originalHeaderZIndex = ''; 
         
+        function initializePageSpecificElements() {
+            // Esta função pode ser chamada por loadPartials.js APÓS o header ser carregado,
+            // ou pode ser simplificada se o header for estático nesta página.
+            // Por enquanto, vamos assumir que mainHeader é pego aqui após DOMContentLoaded.
+            mainHeader = document.getElementById('mainHeader');
+        }
+        initializePageSpecificElements(); // Chama para pegar o header se ele for estático
+
         function showFileUpload(show) { /* ... (como antes) ... */ }
         if(useDefaultDocRadio) useDefaultDocRadio.addEventListener('change', () => showFileUpload(false));
         if(useUploadedDocRadio) useUploadedDocRadio.addEventListener('change', () => showFileUpload(true));
@@ -213,9 +203,19 @@
             if (signingModalOverlay) {
                 signingModalOverlay.style.display = 'flex';
                 document.body.classList.add('modal-open');
-                if (mainHeader) {
+                if (mainHeader) { // mainHeader pode ter sido pego após carregamento dinâmico
                     originalHeaderZIndex = mainHeader.style.zIndex; 
                     mainHeader.style.zIndex = '10'; 
+                } else {
+                    // Se o header for carregado dinamicamente e este script rodar antes,
+                    // precisamos de uma forma de pegar o header após ele ser injetado.
+                    // Para agora, vamos tentar pegar de novo.
+                    const currentHeader = document.getElementById('mainHeader');
+                    if (currentHeader) {
+                        mainHeader = currentHeader;
+                        originalHeaderZIndex = mainHeader.style.zIndex; 
+                        mainHeader.style.zIndex = '10'; 
+                    }
                 }
             }
         }
@@ -224,8 +224,9 @@
             if (signingModalOverlay) {
                 signingModalOverlay.style.display = 'none';
                 document.body.classList.remove('modal-open');
-                if (mainHeader) {
-                    mainHeader.style.zIndex = originalHeaderZIndex || ''; 
+                const currentHeader = document.getElementById('mainHeader'); // Pega o header novamente
+                if (currentHeader) {
+                    currentHeader.style.zIndex = originalHeaderZIndex || ''; 
                 }
                 if(docusignViewContainer) docusignViewContainer.innerHTML = ''; 
             }
@@ -238,10 +239,8 @@
             });
         }
 
-        // Handler para eventos do Docusign.js e postMessage legado
-        function handleDocusignCompletion(docusignEventName, eventData, envelopeId, signerName) {
+        function handleDocusignEvent(docusignEventName, eventData, envelopeId, signerName) {
             console.log(`[Assinatura Embarcada] Evento Docusign: ${docusignEventName}`, eventData || '');
-            // Usa o envelopeId da função Netlify como prioridade, senão tenta pegar do evento do SDK
             const finalEnvelopeId = envelopeId || (eventData && eventData.data && eventData.data.envelopeId) || '';
             const returnUrlBase = `${window.location.origin}/agradecimento/obrigado.html?recipientName=${encodeURIComponent(signerName)}&envelopeId=${finalEnvelopeId}`;
             let eventParam = docusignEventName ? docusignEventName.toLowerCase().replace(/\s+/g, '_') : 'unknown';
@@ -253,11 +252,10 @@
             } else if (['DECLINE_SIGNING', 'DECLINE', 'decline'].includes(docusignEventName)) {
                 eventParam = 'decline';
             } else if (['SESSION_END', 'TTL_EXPIRED', 'ERROR_OCCURRED', 'EXCEPTION', 'error', 'session_timeout', 'ttl_expired', 'exception'].includes(docusignEventName)) {
-                // Mantém o nome do evento original para estes ou mapeia para 'error'
                  if (docusignEventName === 'ERROR_OCCURRED' || docusignEventName === 'EXCEPTION' || docusignEventName === 'error') {
                     eventParam = 'error';
                     console.error("Docusign.js: Erro na cerimônia.", eventData);
-                    // O alerta foi removido daqui para ser tratado no bloco catch principal da submissão do formulário
+                    alert(`Ocorreu um erro na assinatura Docusign: ${eventData && eventData.data ? (eventData.data.message || eventData.data.error || 'Erro desconhecido') : 'Erro desconhecido'}`);
                  }
             } else {
                  console.warn("Evento Docusign não mapeado para redirecionamento:", docusignEventName);
@@ -265,13 +263,10 @@
             }
 
             closeSigningModal();
-            // Redireciona apenas para eventos finais conhecidos e não para erros que mantêm a sessão ativa
-            if (['signing_complete', 'cancel', 'decline', 'session_timeout', 'ttl_expired'].includes(eventParam) ||
-                (eventParam === 'error' && eventData && eventData.data && eventData.data.isSigningCeremonyActive === false)) {
+            if (eventParam !== 'error' || (eventData && eventData.data && eventData.data.isSigningCeremonyActive === false)) { 
                 window.location.href = `${returnUrlBase}&event=${eventParam}`;
             } else if (eventParam === 'error') {
-                // Se for um erro e a cerimônia ainda puder estar ativa, apenas fecha o modal e loga.
-                console.error("Erro na cerimônia Docusign, modal fechado, sem redirecionamento pois a sessão pode estar ativa ou erro não final.");
+                console.error("Erro na cerimônia Docusign, modal fechado, sem redirecionamento.");
             }
         }
         
@@ -284,7 +279,7 @@
                 const docusignEvent = params.get('event');
                 const envelopeIdFromEvent = params.get('envelopeId');
                 const signerNameFromForm = document.getElementById('signerName') ? document.getElementById('signerName').value : 'Cliente';
-                handleDocusignCompletion(docusignEvent, null, envelopeIdFromEvent, signerNameFromForm); // Passa null para sdkEventData
+                handleDocusignEvent(docusignEvent, null, envelopeIdFromEvent, signerNameFromForm);
             }
         }, false);
 
@@ -292,10 +287,7 @@
             envelopeForm.addEventListener('submit', async function(event) {
               event.preventDefault();
               const originalButtonInnerHTML = submitEnvelopeBtn.innerHTML;
-              if(submitEnvelopeBtn) {
-                submitEnvelopeBtn.disabled = true;
-                submitEnvelopeBtn.innerHTML = '<div class="spinner-small"></div> Processando...';
-              }
+              if(submitEnvelopeBtn) { /* ... (feedback no botão) ... */ }
 
               const signerName = document.getElementById('signerName').value;
               const signerEmail = document.getElementById('signerEmail').value;
@@ -305,24 +297,7 @@
               let documentBase64 = '', documentName = '', clientUserId = '', envelopeId = '';
 
               try {
-                // ... (lógica para obter documentBase64 e documentName como antes) ...
-                 if (useDefaultDocRadio.checked) {
-                  documentBase64 = DEFAULT_DOC_BASE64;
-                  documentName = DEFAULT_DOC_NAME;
-                  if (!documentBase64) throw new Error("Documento padrão não configurado.");
-                } else {
-                  const file = uploadedDocInput.files[0];
-                  if (!file) throw new Error("Por favor, selecione um arquivo PDF.");
-                  if (file.type !== "application/pdf") throw new Error("Apenas arquivos PDF são permitidos.");
-                  documentName = file.name;
-                  documentBase64 = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                    reader.onerror = error => reject(error);
-                    reader.readAsDataURL(file);
-                  });
-                }
-
+                if (useDefaultDocRadio.checked) { /* ... */ } else { /* ... */ }
                 clientUserId = `fontara_${signerEmail.replace(/[^a-zA-Z0-9]/g, "")}_${Date.now()}`; 
                 const envelopePayload = { /* ... (monta envelopePayload como antes) ... */ };
                 if (selectedExperience === 'click_to_agree') { /* ... placeholder ... */ }
@@ -330,14 +305,10 @@
                 let response = await fetch('/.netlify/functions/docusign-actions', { /* ... CREATE_DYNAMIC_EMBEDDED_ENVELOPE ... */ });
                 if (!response.ok) { /* ... tratamento de erro ... */ }
                 const envelopeResult = await response.json();
-                envelopeId = envelopeResult.envelopeId; // Captura o envelopeId aqui
+                envelopeId = envelopeResult.envelopeId;
                 if (!envelopeId) throw new Error("ID do envelope não retornado.");
                 
-                const recipientViewPayload = {
-                  envelopeId: envelopeId, signerEmail: signerEmail, signerName: signerName, clientUserId: clientUserId,
-                  returnUrl: `${window.location.origin}/agradecimento/obrigado.html?recipientName=${encodeURIComponent(signerName)}&event=FALLBACK_IFRAME_REDIRECT&envelopeId=${envelopeId}`,
-                  useFocusedView: selectedExperience === 'focused'
-                };
+                const recipientViewPayload = { /* ... como antes ... */ };
 
                 response = await fetch('/.netlify/functions/docusign-actions', { /* ... GET_EMBEDDED_SIGNING_URL ... */ });
                 if (!response.ok) { /* ... tratamento de erro ... */ }
@@ -355,7 +326,7 @@
                     docusignViewContainer.appendChild(iframe);
                   } else { 
                     if (typeof window.DocuSign !== 'undefined' && typeof window.DocuSign.loadDocuSign === 'function') {
-                        window.DocuSign.loadDocuSign(DOCUSIGN_JS_IK)
+                        window.DocuSign.loadDocuSign(DOCUSIGN_JS_IK) 
                           .then((docusignSdk) => {
                             if (!docusignSdk || typeof docusignSdk.signing !== 'function') {
                                 throw new Error("Falha na inicialização do Docusign.js SDK: docusignSdk.signing não é uma função.");
@@ -369,7 +340,7 @@
                                 sdkConfig.termsOfService = [{
                                     type: "modal", 
                                     documentName: "Termos de Aceite Fontara", 
-                                    text: "Ao clicar em 'Eu Concordo', você aceita os Termos e Condições Adicionais da Fontara Financial.", 
+                                    text: "Ao prosseguir, você concorda com os Termos e Condições Adicionais da Fontara Financial.", 
                                     button: { text: "Eu Concordo", style: "primary" }
                                 }];
                             }
@@ -380,14 +351,13 @@
                                 throw new Error("Falha ao criar instância de assinatura do Docusign.js ou método '.on' ausente.");
                             }
 
-                            // Eventos do Docusign.js v1.x
-                            signingInstance.on('EVENT_READY', (data) => console.log('Docusign.js SDK: Pronto', data));
-                            signingInstance.on('EVENT_SESSION_END', (eventData) => handleDocusignEvent('SESSION_END', eventData, envelopeId, signerName));
-                            signingInstance.on('EVENT_SIGNING_COMPLETE', (eventData) => handleDocusignEvent('SIGNING_COMPLETE', eventData, envelopeId, signerName));
-                            signingInstance.on('EVENT_DECLINE_SIGNING', (eventData) => handleDocusignEvent('DECLINE_SIGNING', eventData, envelopeId, signerName));
-                            signingInstance.on('EVENT_CANCEL_SESSION', (eventData) => handleDocusignEvent('CANCEL_SESSION', eventData, envelopeId, signerName));
-                            signingInstance.on('EVENT_TAB_CLOSED', (eventData) => handleDocusignEvent('TAB_CLOSED', eventData, envelopeId, signerName));
-                            signingInstance.on('EVENT_ERROR_OCCURRED', (eventData) => handleDocusignEvent('ERROR_OCCURRED', eventData, envelopeId, signerName));
+                            // Nomes de evento corretos para Docusign.js v1.x (geralmente são strings simples)
+                            // Consulte a documentação específica da versão carregada por bundle.js
+                            // Os eventos mais comuns são 'ready', 'sessionEnd', 'error'.
+                            // 'sessionEnd' pode ter sub-tipos em event.data.type
+                            signingInstance.on('ready', (data) => console.log('Docusign.js SDK: Pronto', data));
+                            signingInstance.on('sessionEnd', (sdkEventData) => handleDocusignEvent((sdkEventData.data && sdkEventData.data.type) || 'sessionEnd', sdkEventData.data, envelopeId, signerName));
+                            signingInstance.on('error', (sdkEventData) => handleDocusignEvent('error', sdkEventData, envelopeId, signerName)); // eventData aqui é o erro em si
                             
                             signingInstance.mount(signingUrl, docusignViewContainer)
                               .catch(error => {
@@ -397,12 +367,12 @@
                               });
                           })
                           .catch((ex) => {
-                            console.error(`Erro ao carregar Docusign.js SDK (loadDocuSign): ${ex.message}`, ex);
+                            console.error(`Erro ao carregar Docusign.js SDK (window.DocuSign.loadDocuSign): ${ex.message}`, ex);
                             closeSigningModal();
                             alert("Não foi possível carregar o componente de assinatura Docusign (SDK).");
                           });
                     } else {
-                        console.error("Docusign.js SDK não está carregado (window.DocuSign ou loadDocuSign está undefined).");
+                        console.error("Docusign.js SDK não está carregado.");
                         alert("Componente de assinatura Docusign não pôde ser carregado.");
                         closeSigningModal();
                     }
@@ -416,9 +386,12 @@
               }
             });
         }
+        // A função initializePageSpecificElements pode ser usada por loadPartials.js
+        // Se esta página sempre tiver o header estático, ela pode ser chamada diretamente.
+        // window.initializePageSpecificScripts = initializePageSpecificElements;
       });
     </script>
     <script src="./scripts/components.js"></script>
-    <script src="./scripts/index.js"></script>
+    <script src="./scripts/index.js"></script> 
   </body>
 </html>

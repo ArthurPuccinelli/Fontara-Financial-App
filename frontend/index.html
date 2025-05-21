@@ -1,1017 +1,268 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-  <head>
+<html lang="pt-BR"> <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fontara Financial - Soluções Financeiras Completas</title>
+    <title>Assinatura Embarcada - Fontara Financial</title>
     <meta
       name="description"
-      content="Sua plataforma de serviços financeiros, com soluções práticas e acessíveis para o seu dia a dia e para o futuro dos seus negócios."
+      content="Assine documentos digitalmente com diferentes experiências Docusign."
     />
-    <link
-      rel="shortcut icon"
-      href="./assets/logo/logo.png"
-      type="image/x-icon"
-    />
-
-    <meta
-      property="og:title"
-      content="Fontara Financial - Soluções Financeiras Completas"
-    />
-    <meta
-      property="og:description"
-      content="Todos os serviços financeiros que você precisa em um só lugar."
-    />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://seusiteaqui.website/" />
-    <meta property="og:image" content="https://stackoverflow.com/questions/10346703/facebook-does-not-load-image-from-ogimage" />
-
-    <link rel="stylesheet" href="css/tailwind-build.css" />
-    <link rel="stylesheet" href="css/index.css" />
-
+    <link rel="shortcut icon" href="./assets/logo/logo.png" type="image/x-icon" />
+    <link rel="stylesheet" href="./css/tailwind-build.css" />
+    <link rel="stylesheet" href="./css/index.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"
-      integrity="sha512-dPXYcDub/aeb08c63jRq/k6GaKccl256JQy/AnOq7CAnEZ9FzSL9wSbcZkMp4R26vBsMLFYH4kQ67/bbV8XaCQ=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
     />
+    <script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.js"></script>
+    <script src="https://js-d.docusign.com/bundle.js"></script>
 
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        background-color: #f9fafb; /* Cor de fundo light padrão do Tailwind gray-50 */
       }
-      gtag("js", new Date());
-      gtag("config", "G-");
-    </script>
+      html.tw-dark body {
+         background-color: #1f2937; /* Cor de fundo dark padrão do Tailwind gray-800 */
+      }
+      main {
+        flex-grow: 1;
+      }
+      .form-input-custom {
+        @apply tw-block tw-w-full tw-px-4 tw-py-3 tw-border tw-border-black dark:tw-border-gray-500 tw-bg-gray-100 dark:tw-bg-gray-700 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-indigo-500 focus:tw-border-indigo-500 dark:tw-text-white tw-text-base;
+        min-height: 50px;
+      }
+      .form-label {
+        @apply tw-block tw-mb-2 tw-text-sm tw-font-medium tw-text-gray-900 dark:tw-text-gray-300;
+      }
+      .form-radio {
+        @apply tw-w-4 tw-h-4 tw-text-indigo-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-indigo-500 dark:focus:tw-ring-indigo-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600;
+      }
+      /* Outros estilos que você tinha... */
+    </style>
   </head>
+  <body> <div id="header-placeholder"></div>
 
-  <body
-    class="tw-flex tw-min-h-[100vh] tw-flex-col tw-bg-[#fcfcfc] tw-text-black dark:tw-bg-black dark:tw-text-white"
-  >
-    <header
-      class="lg:tw-px-4 tw-max-w-[100vw] tw-max-w-lg:tw-mr-auto max-lg:tw-top-0 tw-fixed tw-top-4 lg:tw-left-1/2 lg:tw--translate-x-1/2 tw-z-20 tw-flex tw-h-[60px] tw-w-full tw-text-gray-700 tw-bg-white dark:tw-text-gray-200 dark:tw-bg-[#17181b] tw-px-[3%] tw-rounded-md lg:tw-max-w-5xl tw-shadow-md dark:tw-shadow-gray-700 lg:tw-justify-around lg:!tw-backdrop-blur-lg lg:tw-opacity-[0.99]"
-    >
-      <a class="tw-flex tw-p-[4px] tw-gap-2 tw-place-items-center" href="index.html">
-        <div class="tw-h-[30px] tw-max-w-[100px]">
-          <img
-            src="./assets/logo/logo.png"
-            alt="Fontara Financial Logo"
-            class="tw-object-contain tw-h-full tw-w-full dark:tw-invert"
-          />
-        </div>
-      </a>
-      <div
-        class="collapsible-header animated-collapse max-lg:tw-shadow-md"
-        id="collapsed-header-items"
-      >
-        <nav
-          class="tw-relative tw-flex tw-h-full max-lg:tw-h-max tw-w-max tw-gap-5 tw-text-base max-lg:tw-mt-[30px] max-lg:tw-flex-col max-lg:tw-gap-5 lg:tw-mx-auto tw-place-items-center"
-        >
-          <a class="header-links" href="#hero-section"> Início </a>
-          <a class="header-links" href="#casos-de-sucesso"> Sucesso </a>
-          <a class="header-links" href="#nossos-servicos"> Serviços </a>
-
-          <div class="tw-relative tw-flex tw-flex-col tw-place-items-center">
-            <div
-              id="nav-dropdown-toggle-0"
-              class="max-lg:tw-max-w-fit tw-flex header-links tw-gap-1 tw-place-items-center"
-            >
-              <span class=""> Soluções </span>
-              <i class="tw-text-sm bi bi-chevron-down"></i>
+    <main class="tw-container tw-mx-auto tw-p-4 tw-pt-24">
+      <h1 class="tw-text-3xl tw-font-bold tw-mb-6 tw-text-center dark:tw-text-white">
+        Assinatura Embarcada via Docusign.js SDK
+      </h1>
+      <div class="tw-max-w-2xl tw-mx-auto tw-bg-white dark:tw-bg-gray-900 tw-p-8 tw-rounded-lg tw-shadow-lg">
+        <form id="signingForm" class="tw-space-y-6">
+            <div>
+                <label for="signerEmail" class="form-label">Email do Signatário:</label>
+                <input type="email" id="signerEmail" name="signerEmail" class="form-input-custom" required value="teste@gmail.com">
             </div>
-            <nav
-              id="nav-dropdown-list-0"
-              data-open="false"
-              class="tw-scale-0 tw-opacity-0 lg:tw-fixed tw-flex lg:tw-top-[80px] lg:tw-left-1/2 lg:tw--translate-x-1/2 tw-w-[90%] tw-rounded-lg max-lg:tw-h-0 max-lg:tw-w-0 lg:tw-h-auto tw-overflow-hidden tw-bg-white dark:tw-bg-[#17181B] tw-duration-300 tw-transition-opacity tw-shadow-lg tw-p-4"
-            >
-              <div
-                class="tw-grid max-xl:tw-flex max-xl:tw-flex-col tw-justify-around tw-grid-cols-2 tw-w-full"
-              >
-                <a
-                  class="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4"
-                  href="credito-imobiliario.html"
-                >
-                  <div class="tw-font-semibold tw-text-3xl">
-                    <i class="bi bi-house-door"></i>
-                  </div>
-                  <div class="tw-flex tw-flex-col tw-gap-2">
-                    <div
-                      class="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium"
-                    >
-                      Crédito Imobiliário
-                    </div>
-                    <p>Simulação e aprovação rápida de crédito</p>
-                  </div>
-                </a>
-                <a
-                  class="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4"
-                  href="previdencia-privada.html"
-                >
-                  <div class="tw-font-semibold tw-text-3xl">
-                    <i class="bi bi-shield-shaded"></i>
-                  </div>
-                  <div class="tw-flex tw-flex-col tw-gap-2">
-                    <div
-                      class="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium"
-                    >
-                      Previdência Privada
-                    </div>
-                    <p class="">Garanta tranquilidade para o seu futuro.</p>
-                  </div>
-                </a>
-                <a
-                  class="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4"
-                  href="seguros.html"
-                >
-                  <div class="tw-font-semibold tw-text-3xl">
-                    <i class="bi bi-umbrella"></i>
-                  </div>
-                  <div class="tw-flex tw-flex-col tw-gap-2">
-                    <div
-                      class="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium"
-                    >
-                      Seguros
-                    </div>
-                    <p class="">Proteja seu patrimônio e sua família</p>
-                  </div>
-                </a>
-                <a
-                  class="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4"
-                  href="emprestimo-pessoal.html"
-                >
-                  <div class="tw-font-semibold tw-text-3xl">
-                    <i class="bi bi-cash-coin"></i>
-                  </div>
-                  <div class="tw-flex tw-flex-col tw-gap-2">
-                    <div
-                      class="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium"
-                    >
-                      Empréstimo Pessoal
-                    </div>
-                    <p class="">Crédito para você nos momentos mais difíceis.</p>
-                  </div>
-                </a>
-                <a
-                  class="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4"
-                  href="financiamento.html"
-                >
-                  <div class="tw-font-semibold tw-text-3xl">
-                    <i class="bi bi-receipt-cutoff"></i>
-                  </div>
-                  <div class="tw-flex tw-flex-col tw-gap-2">
-                    <div
-                      class="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium"
-                    >
-                      Financiamento
-                    </div>
-                    <p class="">Conquiste seus sonhos</p>
-                  </div>
-                </a>
-                <a
-                  class="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4"
-                  href="investimentos.html"
-                >
-                  <div class="tw-font-semibold tw-text-3xl">
-                    <i class="bi bi-graph-up-arrow"></i>
-                  </div>
-                  <div class="tw-flex tw-flex-col tw-gap-2">
-                    <div
-                      class="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium"
-                    >
-                      Investimentos
-                    </div>
-                    <p class="">Renda fixa, renda variável e tesouro direto.</p>
-                  </div>
-                </a>
-              </div>
-            </nav>
-          </div>
-          <a class="header-links" href="#faq"> FAQ </a>
-        </nav>
-        <div
-          class="lg:tw-mx-4 tw-flex tw-place-items-center tw-gap-[20px] tw-text-base max-md:tw-w-full max-md:tw-flex-col max-md:tw-place-content-center"
-        >
-          <button
-            type="button"
-            onclick="toggleMode()"
-            class="header-links tw-text-gray-600 dark:tw-text-gray-300"
-            title="Alternar tema"
-            id="theme-toggle"
-          >
-            <i class="bi bi-sun" id="toggle-mode-icon"></i>
+            <div>
+                <label for="signerName" class="form-label">Nome do Signatário:</label>
+                <input type="text" id="signerName" name="signerName" class="form-input-custom" required value="Nome Teste">
+            </div>
+            <div>
+                <label for="signerCountryCode" class="form-label">Código do País (Telefone):</label>
+                <input type="text" id="signerCountryCode" name="signerCountryCode" class="form-input-custom" value="+55">
+            </div>
+            <div>
+                <label for="signerPhoneNumber" class="form-label">Número do Telefone:</label>
+                <input type="text" id="signerPhoneNumber" name="signerPhoneNumber" class="form-input-custom" value="11999999999">
+            </div>
+             <div>
+                <label for="signerDocType" class="form-label">Tipo de Documento:</label>
+                <input type="text" id="signerDocType" name="signerDocType" class="form-input-custom" value="CPF">
+            </div>
+            <div>
+                <label for="signerDocNumber" class="form-label">Número do Documento:</label>
+                <input type="text" id="signerDocNumber" name="signerDocNumber" class="form-input-custom" value="12345678900">
+            </div>
+            <div>
+                <label for="signerAddress" class="form-label">Endereço Completo:</label>
+                <input type="text" id="signerAddress" name="signerAddress" class="form-input-custom" value="Rua Exemplo, 123, Bairro, Cidade - UF, 00000-000">
+            </div>
+            <fieldset class="tw-space-y-2">
+                <legend class="form-label">Escolha a experiência de assinatura:</legend>
+                <div>
+                    <input type="radio" id="experienceIframe" name="signingExperience" value="IFRAME" class="form-radio" checked>
+                    <label for="experienceIframe" class="tw-ml-2 dark:tw-text-gray-300">iFrame na Página</label>
+                </div>
+                <div>
+                    <input type="radio" id="experiencePopup" name="signingExperience" value="POPUP" class="form-radio">
+                    <label for="experiencePopup" class="tw-ml-2 dark:tw-text-gray-300">Popup</label>
+                </div>
+                <div>
+                    <input type="radio" id="experienceFocusMode" name="signingExperience" value="FOCUS_MODE_EMBED" class="form-radio">
+                    <label for="experienceFocusMode" class="tw-ml-2 dark:tw-text-gray-300">Modo Focado (Embed)</label>
+                </div>
+            </fieldset>
+            <button type="submit" id="submitEnvelopeBtn" class="btn tw-w-full">
+                Iniciar Assinatura
+            </button>
+        </form>
+      </div>
+
+      <div id="docusign-modal" class="tw-fixed tw-inset-0 tw-bg-gray-900 tw-bg-opacity-75 tw-flex tw-items-center tw-justify-center tw-hidden tw-z-50">
+        <div class="tw-bg-white dark:tw-bg-gray-800 tw-p-4 tw-rounded-lg tw-shadow-xl tw-w-11/12 tw-h-5/6 md:tw-w-3/4 md:tw-h-5/6 tw-relative">
+          <button id="close-modal-btn" class="tw-absolute tw-top-2 tw-right-2 tw-text-gray-600 dark:tw-text-gray-300 hover:tw-text-gray-900 dark:hover:tw-text-white">
+            <i class="bi bi-x-lg tw-text-2xl"></i>
           </button>
-          <a
-            href="#"
-            aria-label="Acessar sua conta"
-            class="btn tw-flex tw-gap-3 tw-px-3 tw-py-2 tw-transition-transform tw-duration-[0.3s] hover:tw-translate-x-2"
-          >
-            <span>Área do Cliente</span>
-            <i class="bi bi-arrow-right"></i>
-          </a>
+          <div id="docusign-embed-container" class="tw-w-full tw-h-full"></div>
         </div>
       </div>
-      <button
-        class="bi bi-list tw-absolute tw-right-3 tw-top-3 tw-z-50 tw-text-3xl tw-text-gray-500 lg:tw-hidden"
-        onclick="toggleHeader()"
-        aria-label="menu"
-        id="collapse-btn"
-      ></button>
-    </header>
+    </main>
 
-    <section
-      class="hero-section tw-relative tw-mt-20 tw-flex tw-min-h-[100vh] tw-w-full tw-max-w-[100vw] tw-flex-col tw-overflow-hidden max-lg:tw-mt-[100px]"
-      id="hero-section"
-    >
-      <div
-        class="hero-bg-gradient tw-relative tw-flex tw-h-full tw-min-h-[100vh] tw-w-full tw-flex-col tw-place-content-center tw-gap-6 tw-p-[5%] max-xl:tw-place-items-center max-lg:tw-p-4"
-      >
-        <div
-          class="purple-bg-grad reveal-up tw-absolute tw-left-1/2 tw--translate-1/2 tw-top-[10%] tw-h-[120px] tw-w-[120px]"
-        ></div>
+    <div id="footer-placeholder"></div>
 
-        <div
-          class="tw-flex tw-flex-col tw-min-h-[60vh] tw-place-content-center tw-items-center"
-        >
-          <h1
-            class="reveal-up tw-text-center tw-text-7xl tw-font-semibold tw-uppercase tw-leading-[90px] max-lg:tw-text-4xl max-md:tw-leading-snug"
-          >
-            <span> Sua Plataforma de Serviços Financeiros </span>
-            <br />
-          </h1>
-          <p
-            class="reveal-up tw-mt-8 tw-max-w-[550px] tw-text-lg max-lg:tw-text-base tw-p-2 tw-text-center tw-text-gray-800 dark:tw-text-white max-lg:tw-max-w-full"
-          >
-            Transformando a forma como você cuida das suas finanças, oferecendo soluções
-            práticas e acessíveis para o seu dia a dia e para o futuro dos seus negócios.
-          </p>
-          <div
-            class="reveal-up tw-mt-10 max-md:tw-flex-col tw-flex tw-place-items-center tw-gap-4"
-          >
-            <a
-              class="btn tw-group max-lg:!tw-w-[220px] tw-flex tw-gap-2 tw-shadow-lg !tw-w-[240px] !tw-rounded-xl !tw-py-4 max-lg:!tw-py-2 tw-transition-transform tw-duration-[0.3s] hover:tw-scale-x-[1.03]"
-              href="#nossos-servicos"
-            >
-              <span>Explore Nossos Serviços</span>
-              <i
-                class="bi bi-arrow-right group-hover:tw-translate-x-1 tw-duration-300"
-              ></i>
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-
-
+    <script src="./scripts/index.js"></script>
     
-    <section
-      class="tw-relative tw-flex tw-w-full tw-max-w-[100vw] tw-flex-col tw-place-content-center tw-place-items-center tw-overflow-hidden tw-p-8"
-      id="parceiros"
-    >
-      <h2 class="reveal-up tw-text-3xl max-md:tw-text-xl tw-text-center">
-        Confiança e Credibilidade no Mercado Financeiro
-      </h2>
+    <script src="./scripts/loadPartials.js" defer></script>
 
-      <div class="reveal-up carousel-container">
-        <div
-          class="carousel lg:w-place-content-center tw-mt-10 tw-flex tw-w-full tw-gap-5 max-md:tw-gap-2"
-        >
-          <div class="carousel-img tw-h-[30px] tw-w-[150px]">
-            <img
-              src="./assets/images/brand-logos/google.svg"
-              alt="Google"
-              class="tw-h-full tw-w-full tw-object-contain tw-grayscale tw-transition-colors hover:tw-grayscale-0"
-            />
-          </div>
-          <div class="carousel-img tw-h-[30px] tw-w-[150px]">
-            <img
-              src="./assets/images/brand-logos/microsoft.svg"
-              alt="Microsoft"
-              class="tw-h-full tw-w-full tw-object-contain tw-grayscale tw-transition-colors hover:tw-grayscale-0"
-            />
-          </div>
-          <div class="carousel-img tw-h-[30px] tw-w-[150px]">
-            <img
-              src="./assets/images/brand-logos/adobe.svg"
-              alt="Adobe"
-              class="tw-h-full tw-w-full tw-object-contain tw-grayscale tw-transition-colors hover:tw-grayscale-0"
-            />
-          </div>
-          <div class="carousel-img tw-h-[30px] tw-w-[150px]">
-            <img
-              src="./assets/images/brand-logos/airbnb.svg"
-              alt="Airbnb"
-              class="tw-h-full tw-w-full tw-object-contain tw-grayscale tw-transition-colors hover:tw-grayscale-0"
-            />
-          </div>
-          <div class="carousel-img tw-h-[30px] tw-w-[150px]">
-            <img
-              src="./assets/images/brand-logos/stripe.svg"
-              alt="Stripe"
-              class="tw-h-full tw-w-full tw-object-contain tw-grayscale tw-transition-colors hover:tw-grayscale-0"
-            />
-          </div>
-          <div class="carousel-img tw-h-[30px] tw-w-[150px]">
-            <img
-              src="./assets/images/brand-logos/reddit.svg"
-              alt="Reddit"
-              class="tw-h-full tw-w-full tw-object-contain tw-grayscale tw-transition-colors hover:tw-grayscale-0"
-            />
-          </div>
-        </div>
-      </div>
-    </section>
+    <script>
+      // Função para ser chamada por loadPartials.js se houver scripts específicos da página
+      // que dependem de elementos GERAIS da página (não do header/footer)
+      function initializePageSpecificScripts() {
+        console.log("Scripts específicos da embedded.html (se houver) podem ser inicializados aqui.");
+        
+        const form = document.getElementById('signingForm');
+        const submitEnvelopeBtn = document.getElementById('submitEnvelopeBtn');
+        const docusignModal = document.getElementById('docusign-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const embedContainer = document.getElementById('docusign-embed-container');
 
-<section
-      class="tw-relative tw-mt-10 tw-flex tw-min-h-[100vh] tw-w-full tw-max-w-[100vw] tw-flex-col tw-place-items-center lg:tw-p-6"
-      id="nossos-servicos"
-    >
-      <div
-        class="reveal-up tw-mt-[5%] tw-flex tw-h-full tw-w-full tw-place-content-center tw-gap-2 tw-p-4 max-lg:tw-max-w-full max-lg:tw-flex-col"
-      >
-        <div
-          class="tw-relative tw-flex tw-max-w-[30%] max-lg:tw-max-w-full tw-flex-col tw-place-items-start tw-gap-4 tw-p-2 max-lg:tw-place-items-center max-lg:tw-place-content-center max-lg:tw-w-full"
-        >
-          <div
-            class="tw-top-40 tw-flex tw-flex-col lg:tw-sticky tw-place-items-center tw-max-h-fit tw-max-w-[850px] max-lg:tw-max-h-fit max-lg:tw-max-w-[320px] tw-overflow-hidden"
-          >
-            <h2
-              class="tw-text-5xl tw-font-serif tw-text-center tw-font-medium max-md:tw-text-3xl"
-            >
-              Nossos Serviços Financeiros
-            </h2>
-            <p class="tw-text-center tw-mt-4 tw-text-gray-700 dark:tw-text-gray-300">
-              Soluções completas para suas necessidades financeiras, desde o planejamento até a realização dos seus sonhos.
-            </p>
-            <a
-              href="#" class="btn !tw-mt-8 !tw-bg-transparent !tw-text-black !tw-border-[1px] !tw-border-black dark:!tw-border-white dark:!tw-text-white"
-            >
-              Converse com um especialista
-            </a>
-          </div>
-        </div>
+        if(closeModalBtn) {
+            closeModalBtn.addEventListener('click', () => {
+                if(docusignModal) docusignModal.classList.add('tw-hidden');
+                if(embedContainer) embedContainer.innerHTML = '';
+            });
+        }
+        
+        function openSigningModal() {
+            if(docusignModal) docusignModal.classList.remove('tw-hidden');
+        }
 
-        <div
-          class="tw-flex tw-flex-col tw-gap-10 tw-h-full tw-max-w-1/2 max-lg:tw-max-w-full tw-px-[5%] md:tw-px-[10%] max-lg:tw-px-4 max-lg:tw-gap-3 max-lg:tw-w-full lg:tw-top-[20%] tw-place-items-center"
-        >
-          <div class="reveal-up tw-h-auto md:tw-h-[240px] tw-w-full md:tw-w-[450px] max-md:tw-w-full">
-            <a
-              href="credito-imobiliario.html"
-              class="tw-flex tw-w-full tw-h-full tw-gap-8 tw-rounded-xl hover:tw-shadow-lg dark:tw-shadow-[#171717] tw-duration-300 tw-transition-all tw-p-8 tw-group/card"
-            >
-              <div class="tw-text-4xl max-md:tw-text-2xl">
-                <i class="bi bi-house-door"></i>
-              </div>
-              <div class="tw-flex tw-flex-col tw-gap-4">
-                <h3 class="tw-text-2xl max-md:tw-text-xl">Crédito Imobiliário</h3>
-                <p
-                  class="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm"
-                >
-                  Simulação e aprovação rápida de crédito para você adquirir seu imóvel dos sonhos.
-                </p>
-                <div
-                  class="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4"
-                >
-                  <span>Saiba mais</span>
-                  <i
-                    class="bi bi-arrow-up-right group-hover/card:tw--translate-y-1 group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform"
-                  ></i>
-                </div>
-              </div>
-            </a>
-          </div>
+        function closeSigningModal() {
+            if(docusignModal) docusignModal.classList.add('tw-hidden');
+            if(embedContainer) embedContainer.innerHTML = '';
+        }
 
-          <div class="reveal-up tw-h-auto md:tw-h-[240px] tw-w-full md:tw-w-[450px] max-md:tw-w-full">
-            <a
-              href="previdencia-privada.html"
-              class="tw-flex tw-w-full tw-h-full tw-gap-8 tw-rounded-xl hover:tw-shadow-lg dark:tw-shadow-[#171717] tw-duration-300 tw-transition-all tw-p-8 tw-group/card"
-            >
-              <div class="tw-text-4xl max-md:tw-text-2xl">
-                <i class="bi bi-shield-shaded"></i>
-              </div>
-              <div class="tw-flex tw-flex-col tw-gap-4">
-                <h3 class="tw-text-2xl max-md:tw-text-xl">Previdência Privada</h3>
-                <p
-                  class="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm"
-                >
-                  Garanta um futuro tranquilo e seguro com nossos planos de previdência privada flexíveis.
-                </p>
-                <div
-                  class="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4"
-                >
-                  <span>Saiba mais</span>
-                  <i
-                    class="bi bi-arrow-up-right group-hover/card:tw--translate-y-1 group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform"
-                  ></i>
-                </div>
-              </div>
-            </a>
-          </div>
+        if (form && submitEnvelopeBtn) {
+          form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const originalButtonInnerHTML = submitEnvelopeBtn.innerHTML;
+            submitEnvelopeBtn.disabled = true;
+            submitEnvelopeBtn.innerHTML = '<span class="tw-animate-pulse">Processando...</span>';
 
-          <div class="reveal-up tw-h-auto md:tw-h-[240px] tw-w-full md:tw-w-[450px] max-md:tw-w-full">
-            <a
-              href="seguros.html"
-              class="tw-flex tw-w-full tw-h-full tw-gap-8 tw-rounded-xl hover:tw-shadow-lg tw-duration-300 tw-transition-all dark:tw-shadow-[#171717] tw-p-8 tw-group/card"
-            >
-              <div class="tw-text-4xl max-md:tw-text-2xl">
-                <i class="bi bi-umbrella"></i>
-              </div>
-              <div class="tw-flex tw-flex-col tw-gap-4">
-                <h3 class="tw-text-2xl max-md:tw-text-xl">Seguros</h3>
-                <p
-                  class="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm"
-                >
-                  Proteja seu patrimônio, sua vida e sua família com nossas diversas opções de seguros.
-                </p>
-                <div
-                  class="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4"
-                >
-                  <span>Saiba mais</span>
-                  <i
-                    class="bi bi-arrow-up-right group-hover/card:tw--translate-y-1 group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform"
-                  ></i>
-                </div>
-              </div>
-            </a>
-          </div>
+            const formData = new FormData(form);
+            const payload = {
+              signerEmail: formData.get('signerEmail'),
+              signerName: formData.get('signerName'),
+              status: 'sent',
+              signerCountryCode: formData.get('signerCountryCode'),
+              signerPhoneNumber: formData.get('signerPhoneNumber'),
+              signerDocType: formData.get('signerDocType'),
+              signerDocNumber: formData.get('signerDocNumber'),
+              signerAddress: formData.get('signerAddress')
+            };
+            const selectedExperience = document.querySelector('input[name="signingExperience"]:checked').value;
 
-          <div class="reveal-up tw-h-auto md:tw-h-[240px] tw-w-full md:tw-w-[450px] max-md:tw-w-full">
-            <a
-              href="emprestimo-pessoal.html"
-              class="tw-flex tw-w-full dark:tw-shadow-[#171717] tw-h-full tw-gap-8 tw-rounded-xl hover:tw-shadow-lg tw-duration-300 tw-transition-all tw-p-8 tw-group/card"
-            >
-              <div class="tw-text-4xl max-md:tw-text-2xl">
-                <i class="bi bi-cash-coin"></i>
-              </div>
-              <div class="tw-flex tw-flex-col tw-gap-4">
-                <h3 class="tw-text-2xl max-md:tw-text-xl">Empréstimo Pessoal</h3>
-                <p
-                  class="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm"
-                >
-                  Dinheiro rápido para suas emergências ou para realizar seus projetos pessoais.
-                </p>
-                <div
-                  class="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4"
-                >
-                  <span>Saiba mais</span>
-                  <i
-                    class="bi bi-arrow-up-right group-hover/card:tw--translate-y-1 group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform"
-                  ></i>
-                </div>
-              </div>
-            </a>
-          </div>
-          
-          <div class="reveal-up tw-h-auto md:tw-h-[240px] tw-w-full md:tw-w-[450px] max-md:tw-w-full">
-            <a
-              href="financiamento.html"
-              class="tw-flex tw-w-full dark:tw-shadow-[#171717] tw-h-full tw-gap-8 tw-rounded-xl hover:tw-shadow-lg tw-duration-300 tw-transition-all tw-p-8 tw-group/card"
-            >
-              <div class="tw-text-4xl max-md:tw-text-2xl">
-                <i class="bi bi-receipt-cutoff"></i>
-              </div>
-              <div class="tw-flex tw-flex-col tw-gap-4">
-                <h3 class="tw-text-2xl max-md:tw-text-xl">Financiamento</h3>
-                <p
-                  class="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm"
-                >
-                 Financie seus estudos, veículos ou outros bens com condições que cabem no seu bolso.
-                </p>
-                <div
-                  class="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4"
-                >
-                  <span>Saiba mais</span>
-                  <i
-                    class="bi bi-arrow-up-right group-hover/card:tw--translate-y-1 group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform"
-                  ></i>
-                </div>
-              </div>
-            </a>
-          </div>
+            try {
+              let response = await fetch('/.netlify/functions/docusign-actions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: "CREATE_ENVELOPE_FROM_TEMPLATE_RECIPIENT_PROVIDED", payload })
+              });
 
-          <div class="reveal-up tw-h-auto md:tw-h-[240px] tw-w-full md:tw-w-[450px] max-md:tw-w-full">
-            <a
-              href="investimentos.html"
-              class="tw-flex tw-w-full tw-h-full tw-gap-8 tw-rounded-xl hover:tw-shadow-lg dark:tw-shadow-[#171717] tw-duration-300 tw-transition-all tw-p-8 tw-group/card"
-            >
-              <div class="tw-text-4xl max-md:tw-text-2xl">
-                <i class="bi bi-graph-up-arrow"></i>
-              </div>
-              <div class="tw-flex tw-flex-col tw-gap-4">
-                <h3 class="tw-text-2xl max-md:tw-text-xl">Investimentos</h3>
-                <p
-                  class="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm"
-                >
-                  Faça seu dinheiro render mais com nossas opções de investimento em renda fixa, variável e tesouro direto.
-                </p>
-                <div
-                  class="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4"
-                >
-                  <span>Saiba mais</span>
-                  <i
-                    class="bi bi-arrow-up-right group-hover/card:tw--translate-y-1 group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform"
-                  ></i>
-                </div>
-              </div>
-            </a>
-          </div>
+              if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: `Erro HTTP ${response.status}` }));
+                throw new Error(errorData.error || `Falha ao criar envelope.`);
+              }
+              const envelopeResult = await response.json();
+              const envelopeId = envelopeResult.envelopeId;
 
-          <div class="reveal-up tw-h-auto md:tw-h-[240px] tw-w-full md:tw-w-[450px] max-md:tw-w-full">
-            <a
-              href="assinatura-embarcada.html" 
-              class="tw-flex tw-w-full tw-h-full tw-gap-8 tw-rounded-xl hover:tw-shadow-lg dark:tw-shadow-[#171717] tw-duration-300 tw-transition-all tw-p-8 tw-group/card"
-            >
-              <div class="tw-text-4xl max-md:tw-text-2xl">
-                <i class="bi bi-vector-pen"></i> 
-              </div>
-              <div class="tw-flex tw-flex-col tw-gap-4">
-                <h3 class="tw-text-2xl max-md:tw-text-xl">Assinatura Embarcada</h3>
-                <p
-                  class="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm"
-                >
-                  Integre o processo de assinatura digital diretamente em seu portal ou aplicação de forma simples.
-                </p>
-                <div
-                  class="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4"
-                >
-                  <span>Conhecer</span>
-                  <i
-                    class="bi bi-arrow-up-right group-hover/card:tw--translate-y-1 group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform"
-                  ></i>
-                </div>
-              </div>
-            </a>
-          </div>
-          
-          <div class="reveal-up tw-h-auto md:tw-h-[240px] tw-w-full md:tw-w-[450px] max-md:tw-w-full">
-            <a
-              href="atualizacao-perfil-investidor.html" 
-              class="tw-flex tw-w-full tw-h-full tw-gap-8 tw-rounded-xl hover:tw-shadow-lg dark:tw-shadow-[#171717] tw-duration-300 tw-transition-all tw-p-8 tw-group/card"
-            >
-              <div class="tw-text-4xl max-md:tw-text-2xl">
-                <i class="bi bi-person-lines-fill"></i> </div>
-              <div class="tw-flex tw-flex-col tw-gap-4">
-                <h3 class="tw-text-2xl max-md:tw-text-xl">Atualização do perfil de investidor</h3>
-                <p
-                  class="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm"
-                >
-                  Mantenha seu perfil sempre atualizado para receber as melhores recomendações de investimento.
-                </p>
-                <div
-                  class="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4"
-                >
-                  <span>Atualizar Perfil</span>
-                  <i
-                    class="bi bi-arrow-up-right group-hover/card:tw--translate-y-1 group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform"
-                  ></i>
-                </div>
-              </div>
-            </a>
-          </div>
+              const recipientViewPayload = {
+                envelopeId: envelopeId,
+                recipientEmail: payload.signerEmail,
+                recipientName: payload.signerName,
+                returnUrl: window.location.origin + '/callback.html?event=signing_complete&envelopeId=' + envelopeId, // URL de retorno mais específica
+                authenticationMethod: 'None'
+              };
 
-        </div>
-      </div>
-    </section>
+              response = await fetch('/.netlify/functions/docusign-actions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: "GET_EMBEDDED_SIGNING_URL", payload: recipientViewPayload })
+              });
 
+              if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: `Erro HTTP ${response.status}` }));
+                throw new Error(errorData.error || `Falha ao obter URL de assinatura.`);
+              }
+              const signingResult = await response.json();
+              const signingUrl = signingResult.signingUrl;
 
+              if (signingUrl && window.DocuSign && typeof window.DocuSign.loadDocuSign === 'function') {
+                  // IMPORTANTE: DOCUSIGN_IK deve ser seu Integration Key do DocuSign,
+                  // idealmente carregado de uma variável de ambiente ou configuração segura.
+                  // Para um app cliente, o IK é público, mas gerencie-o com cuidado.
+                  const DOCUSIGN_IK = "SEU_DOCUSIGN_INTEGRATION_KEY_AQUI"; // SUBSTITUA OU CARREGUE DE FORMA SEGURA
 
-<section
-      class="tw-relative tw-mt-10 tw-flex tw-min-h-[100vh] tw-w-full tw-max-w-[100vw] tw-flex-col tw-place-items-center lg:tw-p-6"
-      id="nossos-servicos"
-    >
-      <div
-        class="reveal-up tw-mt-[5%] tw-flex tw-h-full tw-w-full tw-place-content-center tw-gap-2 tw-p-4 max-lg:tw-max-w-full max-lg:tw-flex-col"
-      >
-        <div
-          class="tw-relative tw-flex tw-max-w-[30%] max-lg:tw-max-w-full tw-flex-col tw-place-items-start tw-gap-4 tw-p-2 max-lg:tw-place-items-center max-lg:tw-place-content-center max-lg:tw-w-full"
-        >
-          <div
-            class="tw-top-40 tw-flex tw-flex-col lg:tw-sticky tw-place-items-center tw-max-h-fit tw-max-w-[850px] max-lg:tw-max-h-fit max-lg:tw-max-w-[320px] tw-overflow-hidden"
-          >
-            <h2
-              class="tw-text-5xl tw-font-serif tw-text-center tw-font-medium max-md:tw-text-3xl"
-            >
-              Nossos Serviços Financeiros
-            </h2>
-            <p class="tw-text-center tw-mt-4 tw-text-gray-700 dark:tw-text-gray-300">
-              Soluções completas para suas necessidades financeiras, desde o planejamento até a realização dos seus sonhos.
-            </p>
-            <a
-              href="#" class="btn !tw-mt-8 !tw-bg-transparent !tw-text-black !tw-border-[1px] !tw-border-black dark:!tw-border-white dark:!tw-text-white"
-            >
-              Converse com um especialista
-            </a>
-          </div>
-        </div>
+                  window.DocuSign.loadDocuSign(DOCUSIGN_IK)
+                    .then((docusign) => {
+                      embedContainer.innerHTML = ''; // Limpa container
+                      const signingExperience = docusign.signing({
+                          url: signingUrl,
+                          displayFormat: selectedExperience,
+                          source: "WEB",
+                          container: selectedExperience !== 'POPUP' ? embedContainer : undefined,
+                          style: { modal: { backdrop: "rgba(0,0,0,0.7)" } }
+                      });
+                      if (selectedExperience !== 'POPUP') {
+                          openSigningModal();
+                          signingExperience.mount(embedContainer);
+                      }
+                      signingExperience.on('sessionEnd', (event) => {
+                          console.log("DocuSign Session End:", event);
+                          closeSigningModal();
+                          alert(`Evento de assinatura: ${event.type}`);
+                          // Lógica adicional baseada no evento (ex: redirecionar se event.type === 'SIGNING_COMPLETE')
+                          if (event.type === 'SIGNING_COMPLETE') {
+                              // window.location.href = '/caminho/para/agradecimento.html';
+                          }
+                      });
+                    })
+                    .catch((ex) => {
+                      console.error(`Erro ao carregar Docusign.js SDK: ${ex.message}`, ex);
+                      closeSigningModal();
+                      alert("Não foi possível carregar o componente de assinatura Docusign (SDK).");
+                    });
+              } else { 
+                if (!signingUrl) throw new Error("URL de assinatura não retornada.");
+                if (!(window.DocuSign && typeof window.DocuSign.loadDocuSign === 'function')) {
+                     console.error("DocuSign JS SDK não carregado ou loadDocuSign não é uma função.");
+                     alert("SDK do DocuSign não está pronto.");
+                }
+              }
+            } catch (error) {
+              console.error("Erro no processo Docusign:", error);
+              alert(`Ocorreu um erro: ${error.message}`);
+            } finally {
+              if(submitEnvelopeBtn) {
+                  submitEnvelopeBtn.disabled = false;
+                  submitEnvelopeBtn.innerHTML = originalButtonInnerHTML;
+              }
+            }
+          });
+        }
+      }
+      // Se loadPartials.js já chama uma função global como initializePageSpecificScripts,
+      // então esta atribuição é importante.
+      window.initializePageSpecificScripts = initializePageSpecificScripts;
 
-        <div
-          class="tw-flex tw-flex-col tw-gap-10 tw-h-full tw-max-w-1/2 max-lg:tw-max-w-full tw-px-[5%] md:tw-px-[10%] max-lg:tw-px-4 max-lg:tw-gap-3 max-lg:tw-w-full lg:tw-top-[20%] tw-place-items-center"
-        >
-          <div class="reveal-up tw-h-auto md:tw-h-[240px] tw-w-full md:tw-w-[450px] max-md:tw-w-full">
-            <a
-              href="credito-imobiliario.html"
-              class="tw-flex tw-w-full tw-h-full tw-gap-8 tw-rounded-xl hover:tw-shadow-lg dark:tw-shadow-[#171717] tw-duration-300 tw-transition-all tw-p-8 tw-group/card"
-            >
-              <div class="tw-text-4xl max-md:tw-text-2xl">
-                <i class="bi bi-house-door"></i>
-              </div>
-              <div class="tw-flex tw-flex-col tw-gap-4">
-                <h3 class="tw-text-2xl max-md:tw-text-xl">Crédito Imobiliário</h3>
-                <p
-                  class="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm"
-                >
-                  Simulação e aprovação rápida de crédito para você adquirir seu imóvel dos sonhos.
-                </p>
-                <div
-                  class="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4"
-                >
-                  <span>Saiba mais</span>
-                  <i
-                    class="bi bi-arrow-up-right group-hover/card:tw--translate-y-1 group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform"
-                  ></i>
-                </div>
-              </div>
-            </a>
-          </div>
+      // Se esta página NÃO usa loadPartials.js para carregar o header/footer,
+      // e os scripts são específicos e não precisam esperar por eles,
+      // você pode chamar diretamente no DOMContentLoaded.
+      // Mas com loadPartials, é melhor que ele controle a chamada.
+      // document.addEventListener('DOMContentLoaded', initializePageSpecificScripts);
 
-          <div class="reveal-up tw-h-auto md:tw-h-[240px] tw-w-full md:tw-w-[450px] max-md:tw-w-full">
-            <a
-              href="previdencia-privada.html"
-              class="tw-flex tw-w-full tw-h-full tw-gap-8 tw-rounded-xl hover:tw-shadow-lg dark:tw-shadow-[#171717] tw-duration-300 tw-transition-all tw-p-8 tw-group/card"
-            >
-              <div class="tw-text-4xl max-md:tw-text-2xl">
-                <i class="bi bi-shield-shaded"></i>
-              </div>
-              <div class="tw-flex tw-flex-col tw-gap-4">
-                <h3 class="tw-text-2xl max-md:tw-text-xl">Previdência Privada</h3>
-                <p
-                  class="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm"
-                >
-                  Garanta um futuro tranquilo e seguro com nossos planos de previdência privada flexíveis.
-                </p>
-                <div
-                  class="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4"
-                >
-                  <span>Saiba mais</span>
-                  <i
-                    class="bi bi-arrow-up-right group-hover/card:tw--translate-y-1 group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform"
-                  ></i>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <div class="reveal-up tw-h-auto md:tw-h-[240px] tw-w-full md:tw-w-[450px] max-md:tw-w-full">
-            <a
-              href="seguros.html"
-              class="tw-flex tw-w-full tw-h-full tw-gap-8 tw-rounded-xl hover:tw-shadow-lg tw-duration-300 tw-transition-all dark:tw-shadow-[#171717] tw-p-8 tw-group/card"
-            >
-              <div class="tw-text-4xl max-md:tw-text-2xl">
-                <i class="bi bi-umbrella"></i>
-              </div>
-              <div class="tw-flex tw-flex-col tw-gap-4">
-                <h3 class="tw-text-2xl max-md:tw-text-xl">Seguros</h3>
-                <p
-                  class="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm"
-                >
-                  Proteja seu patrimônio, sua vida e sua família com nossas diversas opções de seguros.
-                </p>
-                <div
-                  class="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4"
-                >
-                  <span>Saiba mais</span>
-                  <i
-                    class="bi bi-arrow-up-right group-hover/card:tw--translate-y-1 group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform"
-                  ></i>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <div class="reveal-up tw-h-auto md:tw-h-[240px] tw-w-full md:tw-w-[450px] max-md:tw-w-full">
-            <a
-              href="emprestimo-pessoal.html"
-              class="tw-flex tw-w-full dark:tw-shadow-[#171717] tw-h-full tw-gap-8 tw-rounded-xl hover:tw-shadow-lg tw-duration-300 tw-transition-all tw-p-8 tw-group/card"
-            >
-              <div class="tw-text-4xl max-md:tw-text-2xl">
-                <i class="bi bi-cash-coin"></i>
-              </div>
-              <div class="tw-flex tw-flex-col tw-gap-4">
-                <h3 class="tw-text-2xl max-md:tw-text-xl">Empréstimo Pessoal</h3>
-                <p
-                  class="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm"
-                >
-                  Dinheiro rápido para suas emergências ou para realizar seus projetos pessoais.
-                </p>
-                <div
-                  class="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4"
-                >
-                  <span>Saiba mais</span>
-                  <i
-                    class="bi bi-arrow-up-right group-hover/card:tw--translate-y-1 group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform"
-                  ></i>
-                </div>
-              </div>
-            </a>
-          </div>
-          
-          <div class="reveal-up tw-h-auto md:tw-h-[240px] tw-w-full md:tw-w-[450px] max-md:tw-w-full">
-            <a
-              href="financiamento.html"
-              class="tw-flex tw-w-full dark:tw-shadow-[#171717] tw-h-full tw-gap-8 tw-rounded-xl hover:tw-shadow-lg tw-duration-300 tw-transition-all tw-p-8 tw-group/card"
-            >
-              <div class="tw-text-4xl max-md:tw-text-2xl">
-                <i class="bi bi-receipt-cutoff"></i>
-              </div>
-              <div class="tw-flex tw-flex-col tw-gap-4">
-                <h3 class="tw-text-2xl max-md:tw-text-xl">Financiamento</h3>
-                <p
-                  class="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm"
-                >
-                 Financie seus estudos, veículos ou outros bens com condições que cabem no seu bolso.
-                </p>
-                <div
-                  class="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4"
-                >
-                  <span>Saiba mais</span>
-                  <i
-                    class="bi bi-arrow-up-right group-hover/card:tw--translate-y-1 group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform"
-                  ></i>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <div class="reveal-up tw-h-auto md:tw-h-[240px] tw-w-full md:tw-w-[450px] max-md:tw-w-full">
-            <a
-              href="investimentos.html"
-              class="tw-flex tw-w-full tw-h-full tw-gap-8 tw-rounded-xl hover:tw-shadow-lg dark:tw-shadow-[#171717] tw-duration-300 tw-transition-all tw-p-8 tw-group/card"
-            >
-              <div class="tw-text-4xl max-md:tw-text-2xl">
-                <i class="bi bi-graph-up-arrow"></i>
-              </div>
-              <div class="tw-flex tw-flex-col tw-gap-4">
-                <h3 class="tw-text-2xl max-md:tw-text-xl">Investimentos</h3>
-                <p
-                  class="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm"
-                >
-                  Faça seu dinheiro render mais com nossas opções de investimento em renda fixa, variável e tesouro direto.
-                </p>
-                <div
-                  class="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4"
-                >
-                  <span>Saiba mais</span>
-                  <i
-                    class="bi bi-arrow-up-right group-hover/card:tw--translate-y-1 group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform"
-                  ></i>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <div class="reveal-up tw-h-auto md:tw-h-[240px] tw-w-full md:tw-w-[450px] max-md:tw-w-full">
-            <a
-              href="assinatura-embarcada.html" 
-              class="tw-flex tw-w-full tw-h-full tw-gap-8 tw-rounded-xl hover:tw-shadow-lg dark:tw-shadow-[#171717] tw-duration-300 tw-transition-all tw-p-8 tw-group/card"
-            >
-              <div class="tw-text-4xl max-md:tw-text-2xl">
-                <i class="bi bi-vector-pen"></i> </div>
-              <div class="tw-flex tw-flex-col tw-gap-4">
-                <h3 class="tw-text-2xl max-md:tw-text-xl">Assinatura Embarcada</h3>
-                <p
-                  class="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm"
-                >
-                  Integre o processo de assinatura digital diretamente em seu portal ou aplicação de forma simples.
-                </p>
-                <div
-                  class="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4"
-                >
-                  <span>Conhecer</span>
-                  <i
-                    class="bi bi-arrow-up-right group-hover/card:tw--translate-y-1 group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform"
-                  ></i>
-                </div>
-              </div>
-            </a>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-
-
-
-    <section
-      class="tw-relative tw-flex tw-w-full tw-flex-col tw-place-content-center tw-place-items-center tw-gap-[5%] md:tw-gap-[10%] tw-p-[5%] tw-px-[5%] md:tw-px-[10%]"
-      id="faq"
-    >
-      <h3 class="tw-text-4xl tw-font-medium max-md:tw-text-2xl">Perguntas Frequentes (FAQ)</h3>
-      <div
-        class="tw-mt-5 tw-flex tw-min-h-[300px] tw-w-full tw-max-w-[850px] tw-flex-col tw-gap-4"
-      >
-        <div class="faq tw-w-full">
-          <h4
-            class="faq-accordion tw-flex tw-w-full tw-select-none tw-text-xl max-md:tw-text-lg tw-cursor-pointer"
-          >
-            <span>Como funciona o crédito imobiliário na Fontara?</span>
-            <i
-              class="bi bi-plus tw-text-xl tw-origin-center tw-duration-300 tw-transition-transform tw-ml-auto tw-font-semibold"
-            ></i>
-          </h4>
-          <div class="content max-lg:tw-text-sm" style="max-height: 0px; overflow: hidden; padding: 0px 18px;">
-            Oferecemos um processo simplificado para financiamento imobiliário, desde a simulação online até a aprovação do crédito, com taxas competitivas e consultoria especializada para ajudar você a escolher as melhores condições para seu perfil.
-          </div>
-        </div>
-        <hr />
-        <div class="faq tw-w-full">
-          <h4
-            class="faq-accordion tw-flex tw-w-full tw-select-none tw-text-xl max-md:tw-text-lg tw-cursor-pointer"
-          >
-            <span>Quais são os tipos de seguro que a Fontara oferece?</span>
-            <i
-              class="bi bi-plus tw-text-xl tw-origin-center tw-duration-300 tw-transition-transform tw-ml-auto tw-font-semibold"
-            ></i>
-          </h4>
-          <div class="content max-lg:tw-text-sm" style="max-height: 0px; overflow: hidden; padding: 0px 18px;">
-            Dispomos de uma vasta gama de seguros, incluindo seguro de vida, residencial, automotivo, saúde, viagem, entre outros, para proteger você, sua família e seu patrimônio em todas as situações.
-          </div>
-        </div>
-        <hr />
-        <div class="faq tw-w-full">
-          <h4
-            class="faq-accordion tw-flex tw-w-full tw-select-none tw-text-xl max-md:tw-text-lg tw-cursor-pointer"
-          >
-            <span>É seguro investir com a Fontara?</span>
-            <i
-              class="bi bi-plus tw-text-xl tw-origin-center tw-duration-300 tw-transition-transform tw-ml-auto tw-font-semibold"
-            ></i>
-          </h4>
-          <div class="content max-lg:tw-text-sm" style="max-height: 0px; overflow: hidden; padding: 0px 18px;">
-            Sim, a Fontara Financial segue rigorosos padrões de segurança e conformidade regulatória. Nossos especialistas em investimentos estão prontos para orientá-lo a tomar as melhores decisões de acordo com seu perfil e objetivos.
-          </div>
-        </div>
-        <hr />
-    
-        <div class="faq tw-w-full">
-          <h4
-            class="faq-accordion tw-flex tw-w-full tw-select-none tw-text-xl max-md:tw-text-lg tw-cursor-pointer"
-          >
-            <span>Como posso contratar um empréstimo pessoal?</span>
-            <i
-              class="bi bi-plus tw-text-xl tw-origin-center tw-duration-300 tw-transition-transform tw-ml-auto tw-font-semibold"
-            ></i>
-          </h4>
-          <div class="content max-lg:tw-text-sm" style="max-height: 0px; overflow: hidden; padding: 0px 18px;">
-            Você pode simular e solicitar seu empréstimo pessoal diretamente em nossa plataforma online. O processo é rápido, e após a análise de crédito, o valor pode ser liberado em sua conta em pouco tempo.
-          </div>
-        </div>
-        <hr />
-      </div>
-      <div
-        class="purple-bg-grad max-md:tw-hidden reveal-up tw-absolute tw-bottom-14 tw-right-[20%] tw-h-[150px] tw-w-[150px] tw-rounded-full"
-      ></div>
-    </section>
-
-    <section
-      class="tw-flex tw-w-full tw-flex-col tw-place-content-center tw-place-items-center tw-gap-[5%] md:tw-gap-[10%] tw-p-[5%] tw-px-[5%] md:tw-px-[10%] max-md:tw-px-2"
-    >
-      <div
-        class="tw-flex tw-w-full tw-max-w-[80%] tw-place-content-center tw-place-items-center tw-justify-between tw-gap-3 tw-rounded-lg tw-bg-[#F6F7FB] dark:tw-bg-[#171717] tw-p-6 max-md:tw-max-w-full max-md:tw-flex-col"
-      >
-        <div class="tw-flex tw-flex-col max-lg:tw-text-center tw-gap-1">
-          <h2
-            class="tw-text-2xl tw-text-gray-800 dark:tw-text-gray-200 max-md:tw-text-xl"
-          >
-            Cadastre-se em nossa newsletter
-          </h2>
-          <div class="tw-text-gray-700 dark:tw-text-gray-300">
-            Receba atualizações e novidades sobre nossos serviços e dicas financeiras diretamente em seu email.
-          </div>
-        </div>
-
-        <div
-          class="tw-flex tw-h-[60px] tw-place-items-center tw-gap-2 tw-overflow-hidden tw-p-2"
-        >
-          <input
-            type="email"
-            class="input tw-h-full tw-w-full !tw-border-gray-600 tw-p-2 tw-outline-none"
-            placeholder="seuemail@exemplo.com"
-          />
-          <a
-            class="btn !tw-rounded-full !tw-border-[1px] !tw-text-black !tw-border-solid !tw-border-black dark:!tw-text-white dark:!tw-border-gray-300 !tw-bg-transparent tw-transition-colors tw-duration-[0.3s]"
-            href="#"
-          >
-            Assinar
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <footer
-      class="tw-mt-auto tw-flex tw-flex-col tw-w-full tw-gap-4 tw-text-sm tw-pt-[5%] tw-pb-10 tw-px-[5%] md:tw-px-[10%] tw-text-black dark:tw-text-white max-md:tw-flex-col"
-    >
-      <div
-        class="tw-flex max-md:tw-flex-col max-md:tw-gap-6 tw-gap-3 tw-w-full tw-place-content-around"
-      >
-        <div
-          class="tw-flex tw-h-full tw-w-[250px] tw-flex-col tw-place-items-center tw-gap-6 max-md:tw-w-full"
-        >
-          <a
-            href="index.html"
-            class="tw-w-full tw-place-items-center tw-flex tw-flex-col tw-gap-6"
-          >
-            <img
-              src="./assets/logo/logo.png"
-              alt="Fontara Financial Logo"
-              srcset=""
-              class="tw-max-w-[120px] dark:tw-invert"
-            />
-          </a>
-          <div class="tw-flex tw-gap-4 tw-text-lg">
-            <a href="https://github.com" aria-label="Github" target="_blank" rel="noopener">
-              <i class="bi bi-github"></i>
-            </a>
-            <a href="https://twitter.com" aria-label="Twitter" target="_blank" rel="noopener">
-              <i class="bi bi-twitter"></i>
-            </a>
-            <a href="https://www.linkedin.com/" aria-label="Linkedin" target="_blank" rel="noopener">
-              <i class="bi bi-linkedin"></i>
-            </a>
-          </div>
-        </div>
-
-        <div
-          class="tw-flex max-md:tw-flex-col tw-flex-wrap tw-gap-6 tw-h-full tw-w-full tw-justify-around"
-        >
-          <div class="tw-flex tw-h-full tw-w-[200px] tw-flex-col tw-gap-4">
-            <h2 class="tw-text-xl">Recursos</h2>
-            <div class="tw-flex tw-flex-col tw-gap-3">
-              <a href="#" class="footer-link">Blog Financeiro</a>
-              <a href="#" class="footer-link">Simuladores</a>
-              <a href="#" class="footer-link">Glossário Financeiro</a>
-              <a href="#" class="footer-link">Status dos Serviços</a>
-              <a href="#" class="footer-link">Taxas e Tarifas</a>
-            </div>
-          </div>
-
-          <div class="tw-flex tw-h-full tw-w-[200px] tw-flex-col tw-gap-4">
-            <h2 class="tw-text-xl">Fontara</h2>
-            <div class="tw-flex tw-flex-col tw-gap-3">
-              <a href="#" class="footer-link">Sobre Nós</a>
-              <a href="#" class="footer-link">Carreiras</a>
-              <a href="#" class="footer-link">Imprensa</a>
-              <a href="#" class="footer-link">Fale Conosco</a>
-              <a href="#" class="footer-link">Compliance</a>
-            </div>
-          </div>
-
-          <div class="tw-flex tw-h-full tw-w-[200px] tw-flex-col tw-gap-4">
-            <h2 class="tw-text-xl">Legal</h2>
-            <div class="tw-flex tw-flex-col tw-gap-3">
-              <a href="#" class="footer-link">Termos de Uso</a>
-              <a href="#" class="footer-link">Política de Privacidade</a>
-              <a href="#" class="footer-link">Ouvidoria</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <hr class="tw-mt-8" />
-      <div
-        class="tw-mt-2 tw-flex tw-gap-2 tw-flex-col tw-text-gray-700 dark:tw-text-gray-300 tw-place-items-center tw-text-[12px] tw-w-full tw-text-center tw-place-content-around"
-      >
-        <span>Copyright &#169; 2023-2025 Fontara Financial. Todos os direitos reservados.</span>
-        <span
-          >Todas as marcas registradas e direitos autorais pertencem aos seus respectivos proprietários.</span
-        >
-      </div>
-    </footer>
+    </script>
   </body>
-
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/gsap.min.js"
-    integrity="sha512-B1lby8cGcAUU3GR+Fd809/ZxgHbfwJMp0jLTVfHiArTuUt++VqSlJpaJvhNtRf3NERaxDNmmxkdx2o+aHd4bvw=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  ></script>
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/ScrollTrigger.min.js"
-    integrity="sha512-AY2+JxnBETJ0wcXnLPCcZJIJx0eimyhz3OJ55k2Jx4RtYC+XdIi2VtJQ+tP3BaTst4otlGG1TtPJ9fKrAUnRdQ=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  ></script>
-
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.10/typed.min.js"
-    integrity="sha512-hIlMpy2enepx9maXZF1gn0hsvPLerXoLHdb095CmRY5HG3bZfN7XPBZ14g+TUDH1aGgfLyPHmY9/zuU53smuMw=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  ></script>
-
-  <script src="./scripts/components.js"></script>
-  <script src="./scripts/index.js"></script>
 </html>

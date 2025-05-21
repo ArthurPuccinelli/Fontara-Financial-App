@@ -6,7 +6,7 @@
     <title>Assinatura Embarcada - Fontara Financial</title>
     <meta
       name="description"
-      content="Assine documentos digitalmente com diferentes experiências Docusign: Clássica, Focada ou com Termos de Aceite."
+      content="Assine documentos digitalmente com diferentes experiências Docusign."
     />
     <link rel="shortcut icon" href="./assets/logo/logo.png" type="image/x-icon" />
     <link rel="stylesheet" href="./css/tailwind-build.css" />
@@ -38,7 +38,6 @@
       }
       @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-      /* Modal para Docusign.js e Iframe Clássico */
       .signing-modal-overlay {
         position: fixed; inset: 0;
         background-color: rgba(0,0,0,0.85);
@@ -86,8 +85,7 @@
         background-color: #fff; 
       }
       .dark #docusign-view-container { background-color: #1f2937; }
-      /* Iframe específico (para experiência clássica se mantida) */
-      #docusign-classic-iframe {
+      #docusign-classic-iframe { /* Adicionado ID para o iframe da experiência clássica */
         width: 100%;
         height: 100%;
         border: none;
@@ -102,7 +100,7 @@
 
     <main class="tw-mt-20 tw-pt-10 tw-pb-10 tw-px-[5%] lg:tw-px-[10%]">
       <div class="tw-mx-auto tw-w-full lg:tw-max-w-5xl"> 
-        <h1 class="tw-text-3xl md:tw-text-4xl tw-font-semibold tw-text-center tw-mb-8">Assinatura Embarcada Avançada</h1>
+        <h1 class="tw-text-3xl md:tw-text-4xl tw-font-semibold tw-text-center tw-mb-8">Assinatura Embarcada</h1>
         
         <form id="envelopeForm" class="tw-w-full tw-space-y-6 tw-bg-white dark:tw-bg-gray-800 tw-p-6 md:tw-p-8 tw-rounded-lg tw-shadow-md">
           <div>
@@ -141,15 +139,15 @@
             <div class="tw-space-y-3">
                 <div class="tw-flex tw-items-center">
                   <input type="radio" id="expClassic" name="signingExperience" value="classic" checked class="form-radio">
-                  <label for="expClassic" class="form-choice-label">Experiência Clássica (Iframe com UI Docusign)</label>
+                  <label for="expClassic" class="form-choice-label">Experiência Clássica (Iframe)</label>
                 </div>
                 <div class="tw-flex tw-items-center">
                   <input type="radio" id="expFocused" name="signingExperience" value="focused" class="form-radio">
-                  <label for="expFocused" class="form-choice-label">Visualização Focada (UI Docusign Simplificada)</label>
+                  <label for="expFocused" class="form-choice-label">Visualização Focada (Docusign.js)</label>
                 </div>
                 <div class="tw-flex tw-items-center">
                   <input type="radio" id="expClickToAgree" name="signingExperience" value="click_to_agree" class="form-radio">
-                  <label for="expClickToAgree" class="form-choice-label">Apresentar Termos para Aceite (Exemplo)</label>
+                  <label for="expClickToAgree" class="form-choice-label">Apresentar Termos para Aceite (Docusign.js)</label>
                 </div>
             </div>
           </fieldset>
@@ -183,8 +181,15 @@
       const DEFAULT_DOC_BASE64 = "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVGl0bGUgKP7/KQovQ3JlYXRvciAo/v8pCi9Qcm9kdWNlciAo/v9Ta2lhL1BERiBtODgpCi9Nb2REYXRlIChEOjIwMjQwNTE2MTgwNzM0Wi0wMycGVJPT0JFigovQ3JlYXRpb25EYXRlIChEOjIwMjQwNTE2MTgwNzM0Wi0wMycGVJPT0JFigPjwvcGFnZWxhYmVsICgveHMxXCIpPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL0NhdGFsb2cKL1BhZ2VzIDMgMCBSCi9MYW5nIChwdC1CUikKL01ldGFkYXRhIDEgMCBSCj4+CmVuZG9iagozIDAgb2JqCjw8Ci9UeXBlIC9QYWdlcwovQ291bnQgMQovS2lkcyBbIDQgMCBSIF0KPj4KZW5kb2JqCjQgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAzIDAgUgovUmVzb3VyY2VzIDw8Ci9Gb250IDw8Ci9GMSA1IDAgUgovUHJvY1NldCBbIC9QREYgL1RleHQgL0ltYWdlQiAvSW1hZ2VDIC9JbWFnZUkgXQo+PgovTWVkaWFCb3ggWyAwIDAgMjUwIDUwIF0KL0NvbnRlbnRzIDYgMCBSCi9Hcm91cCA8PAovVHlwZSAvR3JvdXAKL1MgL1RyYW5zcGFyZW5jeQovQ1MgL0RldmljZVJHQgovSSB0cnVlCj4+Ci9UYWJzIC9TCj4+CmVuZG9iago1IDAgb2JqCjw8Ci9UeXBlIC9Gb250Ci9TdWJ0eXBlIC9UeXBlMQovTmFtZSAvRjEKL0Jhc2VGb250IC9IZWx2ZXRpY2EKL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcKPj4KZW5kb2JqCjYgMCBvYmoKPDwKL0xlbmd0aCAzNzE+PgpzdHJlYW0KMiAwIDAgMiAwIDAgbW92ZXRvCjAgMCAwIHJnYgpHCmJ0CjAuODYyNzQ1IDAuODYyNzQ1IDAuODYyNzQ1IHJnCmJ0CjkgMCBDb1NjYW4KL01lc3NhZ2VDb250ZW50ICgvU3BhY2UKMTIgMCAwIDEyIDEwIDUwIHRtCjQgMCAwIDQgMTIgMCAoKQpQUk9QZXJ0aWVzICgwKSAvQ1NTSW5mbzMwMSAvRkFBREFOIEhlbHZldGljYSAvQXBwbGljYWJsZSBUcnVlCi9Eb2N1bWVudElEIDEgMCBSCmFjY2Vzc2liaWxpdHkgL0ZvbnRTaXplIDEyKQpTdGFydExpbmVTZXQgdG9wbW9zdAovRjEgMTIgVGYKKCBTdGFydExpbmUpIFRKOwoyMCAwIHRkCi9GMSA1MiBUZgpodS9YIDAgMCAwIEZpcm1hIC9Tb2Z0TWFzayAvRjEgNTAgMCAxMSA4NSBwb3N0CmVuZFNldHRpbmdzCjEgMCAwIDEgMCAwIHBvc3Rtb2RlL1NwYWNlCjI1MC4wMCA1MC4wMCByZWN0CnQgcG9wCiBTcGFjZSAvU3BhY2UKCiAgQmFzZUZvbnRGYW1pbHkgKEhlbHZldGljYSkKICBDYWNoZUNvbXBsZXRlZCAodHJ1ZSkKICBEZWNvZGVGb3JtYXQgKHRydWUpCiAgRGlzcGxheSAoZmFsc2UpCiAgRW5jb2RpbmdTY2hlbWUgKEFkb2JlU3RhbmRhcmRFbmNvZGluZykKICBGb250RmlsbGluZ1ggMC4wMAogIEZvbnRNYXRyaXggWzEgMCAwIDEgMCAwIF0KICBGb250UmV2aXNpb24gMC4wMAogIEZvbnRTdGFja0hlaWdodCA1MC4wMAogIEZvbnRJZCAxCmVuZG9iagoNCjEgMCAwIDEgMCAwIGNtCmJ0CjIwIDM1IHRkCjAuMCAwLjAgMC4wIHJnCigtIDEtKSBUagplVAplbmRzdHJlYW0KZW5kb2JqCnhyZWYKMCA3CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTgzIDAwMDAwIG4gCjAwMDAwMDAyNjAgMDAwMDAgbiAKMDAwMDAwMDMyNSAwMDAwMCBuIAowMDAwMDAwNTEzIDAwMDAwIG4gCjAwMDAwMDA2MDYgMDAwMDAgbiAKdHJhaWxlcgo8PAovU2l6ZSA3Ci9Sb290IDIgMCBSCi9JbmZvIDEgMCBSCj4+CnN0YXJ0eHJlZgo5ODUKJSVFT0YK";
       const DEFAULT_DOC_NAME = "ContratoPadraoFontara.pdf";
       const DEFAULT_DOC_ID = "1";
+      // Sua Chave de Integração (IK). EM PRODUÇÃO, considere como gerenciar isso de forma segura se o Docusign.js exigir no cliente.
+      // Muitas vezes, o Docusign.js é inicializado com a URL de assinatura e não precisa do IK diretamente no cliente.
+      // A documentação do Docusign.js diz: loadDocuSign(YOUR_IK_HERE_OR_LOGIN_HINT)
+      // O login_hint é para casos onde o usuário já está logado. Para embedded signing com URL,
+      // o IK pode não ser necessário para loadDocuSign(), mas sim para obter a URL via backend.
+      // Se DOCUSIGN_JS_CLIENT_ID não for usado por window.DocuSign.loadDocuSign(), pode remover.
       const DOCUSIGN_JS_CLIENT_ID = "f0197e49-8018-439d-88a4-996635a6044d"; 
-      const DOCUSIGN_JS_ENVIRONMENT = "demo";
+      const DOCUSIGN_JS_ENVIRONMENT = "demo"; 
+      const docusignExpectedOrigin = DOCUSIGN_JS_ENVIRONMENT === "demo" ? "https://demo.docusign.net" : `https://{YOUR_PROD_DS_REGION}.docusign.net`;
 
       document.addEventListener('DOMContentLoaded', function() {
         const yearSpan = document.getElementById('current-year');
@@ -202,8 +207,7 @@
         const docusignViewContainer = document.getElementById('docusign-view-container');
         const mainHeader = document.getElementById('mainHeader'); 
         let originalHeaderZIndex = ''; 
-        const docusignExpectedOrigin = DOCUSIGN_JS_ENVIRONMENT === "demo" ? "https://demo.docusign.net" : `https://{YOUR_PROD_DS_REGION}.docusign.net`; // Ajuste para produção
-
+        
         function showFileUpload(show) {
           if (fileUploadContainer && uploadedDocInput) {
             if (show) {
@@ -251,25 +255,36 @@
             });
         }
 
-        // Função para tratar eventos do Docusign.js
-        function handleDocusignJsEvents(sdkEvent, envelopeId, signerName) {
-            console.log(`[Docusign.js Event] ${sdkEvent.type}`, sdkEvent.data);
-            const returnUrlBase = `${window.location.origin}/agradecimento/obrigado.html?recipientName=${encodeURIComponent(signerName)}&envelopeId=${envelopeId || (sdkEvent.data && sdkEvent.data.envelopeId) || ''}`;
-            let docusignInternalEvent = sdkEvent.type ? sdkEvent.type.toLowerCase().replace(/\s+/g, '_') : 'unknown';
-            
-            // Mapeia eventos do SDK para os eventos que a página de agradecimento espera
-            if (sdkEvent.type === 'SIGNING_COMPLETE' || sdkEvent.type === 'FINISH') {
-                docusignInternalEvent = 'signing_complete';
-            } else if (sdkEvent.type === 'CLOSE' || sdkEvent.type === 'CANCEL') {
-                docusignInternalEvent = 'cancel';
-            } else if (sdkEvent.type === 'DECLINE') {
-                docusignInternalEvent = 'decline';
-            } // Adicione mais mapeamentos se necessário
+        // Função para tratar eventos do Docusign.js (e também postMessage legado se necessário)
+        function handleDocusignCompletionEvent(docusignEventData, envelopeId, signerName) {
+            let eventType = '';
+            if (typeof docusignEventData === 'string' && docusignEventData.includes('event=')) { // Legado postMessage
+                const params = new URLSearchParams(docusignEventData.startsWith('?') ? docusignEventData.substring(1) : docusignEventData);
+                eventType = params.get('event');
+                console.log(`[Assinatura Embarcada] Evento postMessage Docusign recebido: ${eventType}`);
+            } else if (docusignEventData && docusignEventData.type) { // Evento Docusign.js
+                eventType = docusignEventData.type.toLowerCase().replace(/\s+/g, '_');
+                console.log(`[Assinatura Embarcada] Evento Docusign.js recebido: ${eventType}`, docusignEventData);
+            }
 
-            closeSigningModal();
-            window.location.href = `${returnUrlBase}&event=${docusignInternalEvent}`;
+            const returnUrlBase = `${window.location.origin}/agradecimento/obrigado.html?recipientName=${encodeURIComponent(signerName)}&envelopeId=${envelopeId || (docusignEventData.data && docusignEventData.data.envelopeId) || ''}`;
+
+            if (eventType === 'signing_complete' || eventType === 'finish') {
+                closeSigningModal();
+                window.location.href = `${returnUrlBase}&event=signing_complete`;
+            } else if (['decline', 'cancel', 'session_timeout', 'ttl_expired', 'error', 'exception'].includes(eventType)) {
+                closeSigningModal();
+                window.location.href = `${returnUrlBase}&event=${eventType}`;
+            }
         }
-        
+        window.addEventListener('message', (event) => {
+             // Verificação de origem para postMessage legado (se ainda aplicável)
+            if (event.origin === docusignExpectedOrigin || docusignExpectedOrigin.includes(new URL(event.origin).host) ) {
+                 handleDocusignCompletionEvent(event.data, null, document.getElementById('signerName').value || 'Cliente');
+            }
+        }, false);
+
+
         if(envelopeForm) {
             envelopeForm.addEventListener('submit', async function(event) {
               event.preventDefault();
@@ -311,7 +326,7 @@
                 const clientUserId = `fontara_${signerEmail.replace(/[^a-zA-Z0-9]/g, "")}_${Date.now()}`; 
                 const envelopePayload = {
                   emailSubject: emailSubject,
-                  documents: [{ name: documentName, fileExtension: documentFileExtension, documentId: documentId, documentBase64: documentBase64 }],
+                  documents: [{ name: documentName, fileExtension: documentFileExtension, documentId: documentId, documentBase64: documentBase64, transformPdfFields: "false" }], // Adicionado transformPdfFields
                   recipients: {
                     signers: [{
                       email: signerEmail, name: signerName, recipientId: "1", 
@@ -322,9 +337,21 @@
                   status: "sent"
                 };
 
-                // Lógica para "Click to Agree" (se precisar modificar o envelope)
                 if (selectedExperience === 'click_to_agree') {
-                    console.warn("Atenção: Para um 'Click to Agree' que modifica o conteúdo do envelope (ex: adicionando termos como documento ou abas de aceite obrigatórias), o envelopePayload precisaria ser ajustado aqui ANTES de ser enviado para a Netlify Function. A configuração atual do Docusign.js apenas exibe termos simples no modal do SDK.");
+                    // Se o "Click to Agree" requer uma aba específica no documento, adicione-a aqui
+                    // Exemplo: Adicionar uma aba de checkbox obrigatória para termos.
+                    // Certifique-se que seu documento tenha uma âncora para isso, ex: "\\agreeTerms\\"
+                    if (!envelopePayload.recipients.signers[0].tabs.checkboxTabs) {
+                        envelopePayload.recipients.signers[0].tabs.checkboxTabs = [];
+                    }
+                    // envelopePayload.recipients.signers[0].tabs.checkboxTabs.push({
+                    //     anchorString: "\\agreeTerms\\", // Defina uma âncora no seu documento
+                    //     tabLabel: "Li e concordo com os Termos e Condições Adicionais.",
+                    //     shared: "false", 
+                    //     required: "true", // Torna o aceite obrigatório
+                    //     selected: "false" // Começa desmarcado
+                    // });
+                    console.log("Opção 'Click to Agree' selecionada. Se necessário, ajuste o envelopePayload para incluir abas de aceite.");
                 }
 
                 let response = await fetch('/.netlify/functions/docusign-actions', {
@@ -344,9 +371,8 @@
                   envelopeId: envelopeId, signerEmail: signerEmail, signerName: signerName,
                   clientUserId: clientUserId,
                   returnUrl: `${window.location.origin}/agradecimento/obrigado.html?recipientName=${encodeURIComponent(signerName)}&event=FALLBACK_IFRAME_REDIRECT&envelopeId=${envelopeId}`,
-                  // A função backend docusign-actions já lida com 'useFocusedView' para a URL clássica se precisar.
-                  // Para Docusign.js, o frontend controla o displayFormat.
-                  useFocusedView: selectedExperience === 'focused' // Apenas para informação, o backend pode usar se for iframe.
+                  // Passa a flag para o backend, que a usa em createRecipientView para chromeControls
+                  useFocusedView: (selectedExperience === 'focused' || selectedExperience === 'classic_focused') // 'classic_focused' seria um novo valor se quisesse iframe focado
                 };
 
                 response = await fetch('/.netlify/functions/docusign-actions', {
@@ -367,56 +393,46 @@
 
                   if (selectedExperience === 'classic') {
                     const iframe = document.createElement('iframe');
-                    // Se 'useFocusedView' foi passado para o backend e ele modificou a URL para chrome=hide, isso será refletido.
                     iframe.src = signingUrl; 
-                    iframe.id = 'docusign-classic-iframe'; // ID para o iframe
+                    iframe.id = 'docusign-classic-iframe';
                     docusignViewContainer.appendChild(iframe);
-                  } else { // 'focused' ou 'click_to_agree' usarão Docusign.js
-                    window.DocuSign.loadDocuSign(DOCUSIGN_JS_CLIENT_ID)
-                      .then((docusignSdk) => {
-                        const sdkConfig = {
-                            // Define o displayFormat com base na escolha do usuário
-                            displayFormat: selectedExperience === 'focused' ? 'focused' : 'lucid', 
-                            style: { branding: { primaryButton: { backgroundColor: '#007bff', color: '#ffffff' } } }
-                            // Você pode adicionar mais opções de estilo ou comportamento aqui
-                            // https://developers.docusign.com/docs/esign-rest-api/reference/accounts/accountsettings/
-                        };
-                        if (selectedExperience === 'click_to_agree') {
-                            sdkConfig.termsOfService = [
-                                {
+                  } else { // focused' ou 'click_to_agree' usam Docusign.js
+                    if (typeof window.DocuSign !== 'undefined') { // Verifica se o SDK carregou
+                        window.DocuSign.loadDocuSign(DOCUSIGN_JS_CLIENT_ID)
+                          .then((docusignSdk) => {
+                            const sdkConfig = {
+                                displayFormat: selectedExperience === 'focused' ? 'focused' : 'lucid',
+                                style: { branding: { primaryButton: { backgroundColor: '#007bff', color: '#ffffff' } } }
+                            };
+                            if (selectedExperience === 'click_to_agree') {
+                                sdkConfig.termsOfService = [{
                                     type: "modal", 
-                                    documentName: "Termos de Uso Adicionais",
-                                    text: "Ao clicar em 'Eu Concordo', você aceita os termos e condições adicionais para esta operação. [Link para termos completos se houver]", 
+                                    documentName: "Termos Adicionais Fontara", 
+                                    text: "Ao prosseguir, você concorda com os Termos Adicionais da Fontara Financial.", 
                                     button: { text: "Eu Concordo", style: "primary" }
-                                }
-                            ];
-                        }
+                                }];
+                            }
+                            const signingExperience = docusignSdk.signing(sdkConfig);
+                            signingExperience.on('sessionEnd', (sdkEventData) => handleDocusignJsEvents(sdkEventData, envelopeId, signerName));
+                            signingExperience.on('error', (sdkEventData) => handleDocusignJsEvents(sdkEventData, envelopeId, signerName)); // Trata erros também
 
-                        const signingExperience = docusignSdk.signing(sdkConfig);
-                        
-                        // Usando o evento 'sessionEnd' como principal para tratar todas as finalizações
-                        signingExperience.on('sessionEnd', (sdkEventData) => handleDocusignJsEvents(sdkEventData, envelopeId, signerName));
-                        
-                        // Outros eventos podem ser úteis para logging ou UI mais granular
-                        signingExperience.on('ready', (sdkEventData) => console.log('Docusign.js: Pronto para assinatura.', sdkEventData));
-                        signingExperience.on('error', (sdkEventData) => {
-                            console.error('Docusign.js: Erro na cerimônia.', sdkEventData.data);
+                            signingExperience.mount(signingUrl, '#docusign-view-container')
+                              .catch(error => {
+                                 console.error("Erro ao montar Docusign.js:", error);
+                                 closeSigningModal();
+                                 alert("Falha ao iniciar a experiência de assinatura Docusign (mount).");
+                              });
+                          })
+                          .catch((ex) => {
+                            console.error("Erro ao carregar Docusign.js SDK (loadDocuSign):", ex);
                             closeSigningModal();
-                            alert(`Ocorreu um erro na assinatura Docusign: ${sdkEventData.data ? sdkEventData.data.error : 'Erro desconhecido'}`);
-                        });
-
-                        signingExperience.mount(signingUrl, '#docusign-view-container')
-                          .catch(error => {
-                             console.error("Erro ao montar Docusign.js:", error);
-                             closeSigningModal();
-                             alert("Falha ao iniciar a experiência de assinatura Docusign.");
+                            alert("Não foi possível carregar o componente de assinatura Docusign (SDK).");
                           });
-                      })
-                      .catch((ex) => {
-                        console.error("Erro ao carregar Docusign.js SDK:", ex);
+                    } else {
+                        console.error("Docusign.js SDK não está carregado (window.DocuSign is undefined).");
+                        alert("Componente de assinatura Docusign não pôde ser carregado. Verifique sua conexão ou tente mais tarde.");
                         closeSigningModal();
-                        alert("Não foi possível carregar o componente de assinatura Docusign.");
-                      });
+                    }
                   }
                 } else { throw new Error("URL de assinatura não retornada."); }
               } catch (error) {

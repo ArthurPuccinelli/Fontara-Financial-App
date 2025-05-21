@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="tw-dark">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,20 +15,35 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"
     />
+    <script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.js"></script>
     <script src="https://js-d.docusign.com/bundle.js"></script>
+
     <style>
-      /* ... seus estilos existentes ... */
       body {
         display: flex;
         flex-direction: column;
         min-height: 100vh;
+        background-color: #f9fafb; /* Tailwind gray-50 */
+      }
+      html.tw-dark body {
+         background-color: #1f2937; /* Tailwind gray-800 */
       }
       main {
         flex-grow: 1;
       }
+      .form-input-custom {
+        @apply tw-block tw-w-full tw-px-4 tw-py-3 tw-border tw-border-black dark:tw-border-gray-500 tw-bg-gray-100 dark:tw-bg-gray-700 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-indigo-500 focus:tw-border-indigo-500 dark:tw-text-white tw-text-base;
+        min-height: 50px;
+      }
+      .form-label {
+        @apply tw-block tw-mb-2 tw-text-sm tw-font-medium tw-text-gray-900 dark:tw-text-gray-300;
+      }
+      .form-radio {
+        @apply tw-w-4 tw-h-4 tw-text-indigo-600 tw-bg-gray-100 tw-border-gray-300 focus:tw-ring-indigo-500 dark:focus:tw-ring-indigo-600 dark:tw-ring-offset-gray-800 focus:tw-ring-2 dark:tw-bg-gray-700 dark:tw-border-gray-600;
+      }
     </style>
   </head>
-  <body class="tw-flex tw-min-h-[100vh] tw-flex-col tw-bg-gray-50 dark:tw-bg-gray-800">
+  <body>
     <div id="header-placeholder"></div>
 
     <main class="tw-container tw-mx-auto tw-p-4 tw-pt-24">
@@ -65,7 +80,6 @@
                 <label for="signerAddress" class="form-label">Endereço Completo:</label>
                 <input type="text" id="signerAddress" name="signerAddress" class="form-input-custom" value="Rua Exemplo, 123, Bairro, Cidade - UF, 00000-000">
             </div>
-
             <fieldset class="tw-space-y-2">
                 <legend class="form-label">Escolha a experiência de assinatura:</legend>
                 <div>
@@ -86,7 +100,6 @@
             </button>
         </form>
       </div>
-
       <div id="docusign-modal" class="tw-fixed tw-inset-0 tw-bg-gray-900 tw-bg-opacity-75 tw-flex tw-items-center tw-justify-center tw-hidden tw-z-50">
         <div class="tw-bg-white dark:tw-bg-gray-800 tw-p-4 tw-rounded-lg tw-shadow-xl tw-w-11/12 tw-h-5/6 md:tw-w-3/4 md:tw-h-5/6 tw-relative">
           <button id="close-modal-btn" class="tw-absolute tw-top-2 tw-right-2 tw-text-gray-600 dark:tw-text-gray-300 hover:tw-text-gray-900 dark:hover:tw-text-white">
@@ -96,32 +109,25 @@
         </div>
       </div>
     </main>
+
     <div id="footer-placeholder"></div>
 
-    <script src="./scripts/partials-loader.js"></script> <script src="./scripts/components.js"></script>
-    <script src="./scripts/index.js"></script> <script>
-      document.addEventListener('DOMContentLoaded', async () => {
-        // Carrega o header e o footer
-        await loadHTML('./_header.html', 'header-placeholder');
-        await loadHTML('./_footer.html', 'footer-placeholder');
+    <script src="./scripts/index.js"></script>
+    <script src="./scripts/loadPartials.js" defer></script> 
 
-        // (Opcional mas recomendado) Chame uma função para reinicializar/anexar scripts APÓS o HTML ser carregado
-        if (typeof initializePageScripts === 'function') {
-          initializePageScripts();
-        }
-        
-        // Restante do seu script original de embedded.html para lidar com o formulário Docusign
+    <script>
+      function initializePageSpecificScripts() {
+        console.log("embedded.html: initializePageSpecificScripts chamada.");
         const form = document.getElementById('signingForm');
         const submitEnvelopeBtn = document.getElementById('submitEnvelopeBtn');
         const docusignModal = document.getElementById('docusign-modal');
         const closeModalBtn = document.getElementById('close-modal-btn');
         const embedContainer = document.getElementById('docusign-embed-container');
 
-        // Lógica para fechar o modal
         if(closeModalBtn) {
             closeModalBtn.addEventListener('click', () => {
                 if(docusignModal) docusignModal.classList.add('tw-hidden');
-                if(embedContainer) embedContainer.innerHTML = ''; // Limpa o container
+                if(embedContainer) embedContainer.innerHTML = '';
             });
         }
         
@@ -134,7 +140,6 @@
             if(embedContainer) embedContainer.innerHTML = '';
         }
 
-
         if (form && submitEnvelopeBtn) {
           form.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -146,16 +151,13 @@
             const payload = {
               signerEmail: formData.get('signerEmail'),
               signerName: formData.get('signerName'),
-              status: 'sent', // Obrigatório para DocuSign eSignature REST API
-              // Campos adicionais que você possa ter no seu envelope/template
+              status: 'sent',
               signerCountryCode: formData.get('signerCountryCode'),
               signerPhoneNumber: formData.get('signerPhoneNumber'),
               signerDocType: formData.get('signerDocType'),
               signerDocNumber: formData.get('signerDocNumber'),
               signerAddress: formData.get('signerAddress')
             };
-
-            // Obter a experiência de assinatura selecionada
             const selectedExperience = document.querySelector('input[name="signingExperience"]:checked').value;
 
             try {
@@ -170,15 +172,14 @@
                 throw new Error(errorData.error || `Falha ao criar envelope.`);
               }
               const envelopeResult = await response.json();
-              const envelopeId = envelopeResult.envelopeId; // Supondo que sua função retorne o ID do envelope
+              const envelopeId = envelopeResult.envelopeId;
 
-              // Passo 2: Obter a URL de assinatura embarcada
               const recipientViewPayload = {
                 envelopeId: envelopeId,
                 recipientEmail: payload.signerEmail,
                 recipientName: payload.signerName,
-                returnUrl: window.location.href, // Ou uma página de agradecimento
-                authenticationMethod: 'None' // Ou o método apropriado
+                returnUrl: window.location.origin + '/callback.html?event=signing_complete&envelopeId=' + envelopeId,
+                authenticationMethod: 'None'
               };
 
               response = await fetch('/.netlify/functions/docusign-actions', {
@@ -194,56 +195,43 @@
               const signingResult = await response.json();
               const signingUrl = signingResult.signingUrl;
 
-              if (signingUrl) {
-                if (window.DocuSign && typeof window.DocuSign.loadDocuSign === 'function') {
-                    const docusignToken = signingResult.docusignToken || DOCUSIGN_IK; // Use o IK do seu ambiente
-                    
-                    window.DocuSign.loadDocuSign(docusignToken)
-                      .then((docusign) => {
-                        const signingExperience = docusign.signing({
-                            url: signingUrl,
-                            displayFormat: selectedExperience, // IFRAME, POPUP, FOCUS_MODE_EMBED
-                            source: "WEB", // Opcional: para rastreamento
-                            // Para IFRAME e FOCUS_MODE_EMBED, especifique o elemento container
-                            container: selectedExperience !== 'POPUP' ? embedContainer : undefined, 
-                            style: {
-                                // Estilos para a experiência de assinatura
-                                modal: { // Para FOCUS_MODE_EMBED como modal
-                                    backdrop: "rgba(0,0,0,0.7)"
-                                },
-                                // Outras opções de estilo conforme a documentação do DocuSign.js
-                            }
-                        });
-                        
-                        if (selectedExperience !== 'POPUP' && embedContainer) {
-                            embedContainer.innerHTML = ''; // Limpa antes de montar
-                            openSigningModal(); // Abre o modal que contém o embedContainer
-                            signingExperience.mount(embedContainer);
-                        } else if (selectedExperience === 'POPUP') {
-                            // A experiência POPUP abre automaticamente uma nova janela/aba
-                        }
-                        
-                        signingExperience.on('ready', (event) => console.log("DocuSign Ready:", event));
-                        signingExperience.on('sessionEnd', (event) => {
-                            console.log("DocuSign Session End:", event); // Evento como 'SIGNING_COMPLETE', 'CANCEL', 'ERROR', etc.
-                            closeSigningModal();
-                            alert(`Evento de assinatura: ${event.type}`);
-                            // Você pode redirecionar ou atualizar a UI aqui com base no event.type
-                        });
+              if (signingUrl && window.DocuSign && typeof window.DocuSign.loadDocuSign === 'function') {
+                  const DOCUSIGN_IK = "SEU_DOCUSIGN_INTEGRATION_KEY_AQUI"; // SUBSTITUA
 
-                      })
-                      .catch((ex) => {
-                        console.error(`Erro ao carregar Docusign.js SDK: ${ex.message}`, ex);
-                        closeSigningModal();
-                        alert("Não foi possível carregar o componente de assinatura Docusign (SDK).");
+                  window.DocuSign.loadDocuSign(DOCUSIGN_IK)
+                    .then((docusign) => {
+                      embedContainer.innerHTML = ''; 
+                      const signingExperience = docusign.signing({
+                          url: signingUrl,
+                          displayFormat: selectedExperience,
+                          source: "WEB",
+                          container: selectedExperience !== 'POPUP' ? embedContainer : undefined,
+                          style: { modal: { backdrop: "rgba(0,0,0,0.7)" } }
                       });
-                } else {
-                    console.error("Docusign.js SDK não está carregado ou loadDocuSign não é uma função.");
-                    alert("Componente de assinatura Docusign não pôde ser carregado (SDK não encontrado).");
-                    closeSigningModal();
-                }
+                      if (selectedExperience !== 'POPUP') {
+                          openSigningModal();
+                          signingExperience.mount(embedContainer);
+                      }
+                      signingExperience.on('sessionEnd', (event) => {
+                          console.log("DocuSign Session End:", event);
+                          closeSigningModal();
+                          alert(`Evento de assinatura: ${event.type}`);
+                          if (event.type === 'SIGNING_COMPLETE') {
+                              // Ação pós assinatura
+                          }
+                      });
+                    })
+                    .catch((ex) => {
+                      console.error(`Erro ao carregar Docusign.js SDK: ${ex.message}`, ex);
+                      closeSigningModal();
+                      alert("Não foi possível carregar o componente de assinatura Docusign (SDK).");
+                    });
               } else { 
-                throw new Error("URL de assinatura não retornada."); 
+                if (!signingUrl) throw new Error("URL de assinatura não retornada.");
+                if (!(window.DocuSign && typeof window.DocuSign.loadDocuSign === 'function')) {
+                     console.error("DocuSign JS SDK não carregado ou loadDocuSign não é uma função.");
+                     alert("SDK do DocuSign não está pronto.");
+                }
               }
             } catch (error) {
               console.error("Erro no processo Docusign:", error);
@@ -256,7 +244,8 @@
             }
           });
         }
-      });
+      }
+      window.initializePageSpecificScripts = initializePageSpecificScripts;
     </script>
   </body>
 </html>

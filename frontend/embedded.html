@@ -42,7 +42,7 @@
         position: fixed; inset: 0;
         background-color: rgba(0,0,0,0.85);
         z-index: 5000 !important; 
-        display: none; /* JS controla a visibilidade */
+        display: none; 
         align-items: center;
         justify-content: center;
         padding: 1rem;
@@ -82,7 +82,7 @@
       #docusign-view-container { 
         flex-grow: 1;
         width: 100%;
-        height: calc(100% - 50px); 
+        height: calc(100% - 50px); /* Subtrai altura do header do modal */
         background-color: #fff; 
       }
       .dark #docusign-view-container { background-color: #1f2937; }
@@ -182,9 +182,12 @@
       const DEFAULT_DOC_BASE64 = "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVGl0bGUgKP7/KQovQ3JlYXRvciAo/v8pCi9Qcm9kdWNlciAo/v9Ta2lhL1BERiBtODgpCi9Nb2REYXRlIChEOjIwMjQwNTE2MTgwNzM0Wi0wMycGVJPT0JFigovQ3JlYXRpb25EYXRlIChEOjIwMjQwNTE2MTgwNzM0Wi0wMycGVJPT0JFigPjwvcGFnZWxhYmVsICgveHMxXCIpPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL0NhdGFsb2cKL1BhZ2VzIDMgMCBSCi9MYW5nIChwdC1CUikKL01ldGFkYXRhIDEgMCBSCj4+CmVuZG9iagozIDAgb2JqCjw8Ci9UeXBlIC9QYWdlcwovQ291bnQgMQovS2lkcyBbIDQgMCBSIF0KPj4KZW5kb2JqCjQgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAzIDAgUgovUmVzb3VyY2VzIDw8Ci9Gb250IDw8Ci9GMSA1IDAgUgovUHJvY1NldCBbIC9QREYgL1RleHQgL0ltYWdlQiAvSW1hZ2VDIC9JbWFnZUkgXQo+PgovTWVkaWFCb3ggWyAwIDAgMjUwIDUwIF0KL0NvbnRlbnRzIDYgMCBSCi9Hcm91cCA8PAovVHlwZSAvR3JvdXAKL1MgL1RyYW5zcGFyZW5jeQovQ1MgL0RldmljZVJHQgovSSB0cnVlCj4+Ci9UYWJzIC9TCj4+CmVuZG9iago1IDAgb2JqCjw8Ci9UeXBlIC9Gb250Ci9TdWJ0eXBlIC9UeXBlMQovTmFtZSAvRjEKL0Jhc2VGb250IC9IZWx2ZXRpY2EKL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcKPj4KZW5kb2JqCjYgMCBvYmoKPDwKL0xlbmd0aCAzNzE+PgpzdHJlYW0KMiAwIDAgMiAwIDAgbW92ZXRvCjAgMCAwIHJnYgpHCmJ0CjAuODYyNzQ1IDAuODYyNzQ1IDAuODYyNzQ1IHJnCmJ0CjkgMCBDb1NjYW4KL01lc3NhZ2VDb250ZW50ICgvU3BhY2UKMTIgMCAwIDEyIDEwIDUwIHRtCjQgMCAwIDQgMTIgMCAoKQpQUk9QZXJ0aWVzICgwKSAvQ1NTSW5mbzMwMSAvRkFBREFOIEhlbHZldGljYSAvQXBwbGljYWJsZSBUcnVlCi9Eb2N1bWVudElEIDEgMCBSCmFjY2Vzc2liaWxpdHkgL0ZvbnRTaXplIDEyKQpTdGFydExpbmVTZXQgdG9wbW9zdAovRjEgMTIgVGYKKCBTdGFydExpbmUpIFRKOwoyMCAwIHRkCi9GMSA1MiBUZgpodS9YIDAgMCAwIEZpcm1hIC9Tb2Z0TWFzayAvRjEgNTAgMCAxMSA4NSBwb3N0CmVuZFNldHRpbmdzCjEgMCAwIDEgMCAwIHBvc3Rtb2RlL1NwYWNlCjI1MC4wMCA1MC4wMCByZWN0CnQgcG9wCiBTcGFjZSAvU3BhY2UKCiAgQmFzZUZvbnRGYW1pbHkgKEhlbHZldGljYSkKICBDYWNoZUNvbXBsZXRlZCAodHJ1ZSkKICBEZWNvZGVGb3JtYXQgKHRydWUpCiAgRGlzcGxheSAoZmFsc2UpCiAgRW5jb2RpbmdTY2hlbWUgKEFkb2JlU3RhbmRhcmRFbmNvZGluZykKICBGb250RmlsbGluZ1ggMC4wMAogIEZvbnRNYXRyaXggWzEgMCAwIDEgMCAwIF0KICBGb250UmV2aXNpb24gMC4wMAogIEZvbnRTdGFja0hlaWdodCA1MC4wMAogIEZvbnRJZCAxCmVuZG9iagoNCjEgMCAwIDEgMCAwIGNtCmJ0CjIwIDM1IHRkCjAuMCAwLjAgMC4wIHJnCigtIDEtKSBUagplVAplbmRzdHJlYW0KZW5kb2JqCnhyZWYKMCA3CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMTgzIDAwMDAwIG4gCjAwMDAwMDAyNjAgMDAwMDAgbiAKMDAwMDAwMDMyNSAwMDAwMCBuIAowMDAwMDAwNTEzIDAwMDAwIG4gCjAwMDAwMDA2MDYgMDAwMDAgbiAKdHJhaWxlcgo8PAovU2l6ZSA3Ci9Sb290IDIgMCBSCi9JbmZvIDEgMCBSCj4+CnN0YXJ0eHJlZgo5ODUKJSVFT0YK";
       const DEFAULT_DOC_NAME = "ContratoPadraoFontara.pdf";
       const DEFAULT_DOC_ID = "1";
+      // Sua Chave de Integração (IK / Client ID).
+      // IMPORTANTE: Para Docusign.js, o `loadDocuSign` pode não precisar do IK se você apenas montar uma URL já autenticada.
+      // Mas é bom tê-lo caso alguma configuração do SDK precise.
       const DOCUSIGN_JS_IK = "f0197e49-8018-439d-88a4-996635a6044d"; 
-      const DOCUSIGN_JS_ENVIRONMENT = "demo"; 
-      const docusignJsHostOrigin = "https://apps-d.docusign.com"; // Docusign UI (iframe/SDK) host for demo
+      const DOCUSIGN_JS_ENVIRONMENT = "demo"; // 'demo' para sandbox, 'prod' para produção
+      const docusignUiHostOrigin = "https://apps-d.docusign.com"; // Origem da UI do Docusign para postMessage
 
       document.addEventListener('DOMContentLoaded', function() {
         const yearSpan = document.getElementById('current-year');
@@ -250,31 +253,34 @@
             });
         }
 
-        function handleDocusignJsEvents(sdkEvent, envelopeIdFromFunction, signerName) {
-            console.log(`[Assinatura Embarcada] Evento Docusign.js: ${sdkEvent.type}`, sdkEvent.data);
-            const finalEnvelopeId = (sdkEvent.data && sdkEvent.data.envelopeId) || envelopeIdFromFunction || '';
-            const returnUrlBase = `${window.location.origin}/agradecimento/obrigado.html?recipientName=${encodeURIComponent(signerName)}&envelopeId=${finalEnvelopeId}`;
-            let eventTypeParam = sdkEvent.type ? sdkEvent.type.toLowerCase().replace(/\s+/g, '_') : 'unknown';
-            
-            if (sdkEvent.type === 'SIGNING_COMPLETE' || sdkEvent.type === 'FINISH') {
+        function handleDocusignJsCallback(sdkEvent, envelopeId, signerName) {
+            console.log(`[Docusign.js Callback] Evento: ${sdkEvent.event}`, sdkEvent);
+            const returnUrlBase = `${window.location.origin}/agradecimento/obrigado.html?recipientName=${encodeURIComponent(signerName)}&envelopeId=${envelopeId || (sdkEvent.data && sdkEvent.data.envelopeId) || ''}`;
+            let eventTypeParam = sdkEvent.event ? sdkEvent.event.toLowerCase().replace(/\s+/g, '_') : 'unknown';
+
+            // Mapeia eventos do SDK para os que a página de agradecimento espera
+            if (sdkEvent.event === 'SIGNING_COMPLETE' || sdkEvent.event === 'FINISH' || sdkEvent.event === 'DONE') {
                 eventTypeParam = 'signing_complete';
-            } else if (sdkEvent.type === 'CLOSE_SESSION' || sdkEvent.type === 'CANCEL') { // 'CLOSE_SESSION' é um evento do SDK para o X do modal
+            } else if (sdkEvent.event === 'CLOSE_VIEW' || sdkEvent.event === 'CANCEL_SESSION') { // CLOSE_VIEW é comum quando o usuário fecha
                 eventTypeParam = 'cancel';
-            } else if (sdkEvent.type === 'DECLINE') {
+            } else if (sdkEvent.event === 'DECLINE_SIGNING') {
                 eventTypeParam = 'decline';
-            } else if (sdkEvent.type === 'ERROR') {
-                console.error("Docusign.js: Erro na cerimônia.", sdkEvent.data);
-                alert(`Ocorreu um erro na assinatura Docusign: ${sdkEvent.data ? (sdkEvent.data.error || sdkEvent.data.code || 'Erro desconhecido') : 'Erro desconhecido'}`);
+            } else if (sdkEvent.event === 'SESSION_END' && sdkEvent.data && sdkEvent.data.type === 'done') { // Outra forma de 'signing_complete'
+                 eventTypeParam = 'signing_complete';
+            } else if (sdkEvent.event === 'SESSION_END' && sdkEvent.data && sdkEvent.data.type) {
+                eventTypeParam = sdkEvent.data.type; // Usa o sub-tipo do sessionEnd
+            } else if (sdkEvent.event === 'ERROR_OCCURRED') {
+                 eventTypeParam = 'error';
+                 console.error("Docusign.js: Erro na cerimônia.", sdkEvent.data);
+                 alert(`Ocorreu um erro na assinatura Docusign: ${sdkEvent.data ? (sdkEvent.data.message || 'Erro desconhecido') : 'Erro desconhecido'}`);
             }
 
-            // Redireciona para eventos de finalização
-            if (['signing_complete', 'cancel', 'decline', 'session_timeout', 'ttl_expired'].includes(eventTypeParam)) {
+
+            if (['signing_complete', 'cancel', 'decline', 'session_timeout', 'ttl_expired', 'exception', 'error'].includes(eventTypeParam)) {
                 closeSigningModal();
-                window.location.href = `${returnUrlBase}&event=${eventTypeParam}`;
-            } else if (sdkEvent.type === 'ERROR' && !(sdkEvent.data && sdkEvent.data.isSigningCeremonyActive)) {
-                // Se for um erro e a cerimônia não estiver mais ativa, redireciona.
-                closeSigningModal();
-                 window.location.href = `${returnUrlBase}&event=error`;
+                 if (eventTypeParam !== 'error' || (sdkEvent.data && !sdkEvent.data.isSigningCeremonyActive)) {
+                    window.location.href = `${returnUrlBase}&event=${eventTypeParam}`;
+                }
             }
         }
         
@@ -330,13 +336,8 @@
                   status: "sent"
                 };
 
-                if (selectedExperience === 'click_to_agree' && envelopePayload.recipients.signers[0].tabs) {
-                    // Exemplo: Adicionar uma aba de checkbox para o "Click to Agree" no documento
-                    // Certifique-se de ter uma âncora como "\\agreeTerms\\" no seu documento.
-                    // envelopePayload.recipients.signers[0].tabs.checkboxTabs = [
-                    //    { anchorString: "\\agreeTerms\\", tabLabel: "Li e concordo com os Termos Adicionais", required: "true", selected: "false" }
-                    // ];
-                    // console.warn("Para 'Click to Agree' no documento, ajuste o payload do envelope e a âncora no documento.");
+                if (selectedExperience === 'click_to_agree') {
+                    // Lógica para modificar envelopePayload se necessário (ex: adicionar aba de aceite)
                 }
 
                 let response = await fetch('/.netlify/functions/docusign-actions', {
@@ -356,7 +357,7 @@
                   envelopeId: envelopeId, signerEmail: signerEmail, signerName: signerName,
                   clientUserId: clientUserId,
                   returnUrl: `${window.location.origin}/agradecimento/obrigado.html?recipientName=${encodeURIComponent(signerName)}&event=FALLBACK_IFRAME_REDIRECT&envelopeId=${envelopeId}`,
-                  useFocusedView: selectedExperience === 'focused' // Backend usa isso para chromeControls='hide' na URL
+                  useFocusedView: selectedExperience === 'focused' // Passado para o backend
                 };
 
                 response = await fetch('/.netlify/functions/docusign-actions', {
@@ -382,11 +383,14 @@
                     docusignViewContainer.appendChild(iframe);
                   } else { 
                     if (typeof window.DocuSign !== 'undefined' && typeof window.DocuSign.loadDocuSign === 'function') {
-                        window.DocuSign.loadDocuSign(DOCUSIGN_JS_IK) // Use o IK aqui
+                        // Opcionalmente, você pode passar o IK aqui se a configuração do Docusign.js exigir,
+                        // mas geralmente ele funciona com a URL de assinatura apenas para montar.
+                        // window.DocuSign.loadDocuSign(DOCUSIGN_JS_IK) 
+                        window.DocuSign.loadDocuSign() // Tentar sem o IK se a URL já é autenticada
                           .then((docusignSdk) => {
                             if (!docusignSdk || typeof docusignSdk.signing !== 'function') {
-                                console.error("docusignSdk.signing não é uma função. SDK pode não ter carregado corretamente ou a API mudou.");
-                                throw new Error("Falha na inicialização do Docusign SDK signing.");
+                                console.error("docusignSdk.signing não é uma função. SDK Docusign.js não carregou corretamente ou API mudou.");
+                                throw new Error("Falha na inicialização do Docusign.js SDK signing.");
                             }
                             const sdkConfig = {
                                 displayFormat: selectedExperience === 'focused' ? 'focused' : 'lucid',
@@ -397,23 +401,34 @@
                                 sdkConfig.termsOfService = [{
                                     type: "modal", 
                                     documentName: "Termos de Aceite Fontara", 
-                                    text: "Ao clicar em 'Eu Concordo', você aceita os termos e condições para esta transação. Estes termos são importantes e devem ser lidos com atenção. [Você pode adicionar um link para os termos completos aqui, se desejar]", 
+                                    text: "Ao prosseguir, você concorda com os Termos Adicionais da Fontara Financial.", 
                                     button: { text: "Eu Concordo", style: "primary" }
                                 }];
                             }
                             const signingExperience = docusignSdk.signing(sdkConfig);
                             
                             // Registra listeners para eventos do Docusign.js
-                            // O evento 'sessionEnd' é um bom catch-all para finalizações
-                            signingExperience.on('sessionEnd', (sdkEventData) => handleDocusignJsEvents(sdkEventData, envelopeId, signerName));
-                            // Você pode adicionar listeners mais específicos se precisar de lógica diferente para cada um:
-                            // signingExperience.on('SIGNING_COMPLETE', (sdkEventData) => handleDocusignJsEvents(sdkEventData, envelopeId, signerName));
-                            // signingExperience.on('CANCEL', (sdkEventData) => handleDocusignJsEvents(sdkEventData, envelopeId, signerName));
-                            // signingExperience.on('DECLINE', (sdkEventData) => handleDocusignJsEvents(sdkEventData, envelopeId, signerName));
-                            signingExperience.on('ERROR', (sdkEventData) => handleDocusignJsEvents({ type: 'ERROR', data: sdkEventData }, envelopeId, signerName));
-                            signingExperience.on('READY', (data) => console.log('Docusign.js SDK: Cerimônia pronta.', data));
+                            // A documentação do Docusign.js v1.x usa 'EVENT_NAME'
+                            // Ex: signingExperience.on('READY', callback); signingExperience.on('SESSION_END', callback);
+                            // O erro "Cannot read properties of undefined (reading 'add')" ocorre em "Object.on"
+                            // Isso sugere que 'signingExperience' pode não ser o objeto esperado ou
+                            // a forma de registrar o listener está incorreta para a versão do SDK.
+                            
+                            // Tentativa de registrar listeners de forma mais segura:
+                            if (signingExperience && typeof signingExperience.on === 'function') {
+                                signingExperience.on('SESSION_END', (sdkEventData) => handleDocusignJsEvents(sdkEventData, envelopeId, signerName));
+                                signingExperience.on('ERROR', (sdkEventData) => handleDocusignJsEvents({ type: 'ERROR', data: sdkEventData }, envelopeId, signerName));
+                                signingExperience.on('READY', (data) => console.log('Docusign.js SDK: Cerimônia pronta.', data));
+                                // Adicione outros listeners conforme documentação do Docusign.js
+                                // signingExperience.on('SIGNING_COMPLETE', (sdkEventData) => handleDocusignJsEvents(sdkEventData, envelopeId, signerName));
+                                // signingExperience.on('CANCEL_SESSION', (sdkEventData) => handleDocusignJsEvents(sdkEventData, envelopeId, signerName));
+                                // signingExperience.on('DECLINE_SIGNING', (sdkEventData) => handleDocusignJsEvents(sdkEventData, envelopeId, signerName));
+                            } else {
+                                console.error("Objeto signingExperience do Docusign.js não possui o método '.on()'.");
+                                throw new Error("Falha ao registrar listeners de evento do Docusign.js.");
+                            }
 
-                            signingExperience.mount(signingUrl, docusignViewContainer) // Monta diretamente no elemento div
+                            signingExperience.mount(signingUrl, docusignViewContainer)
                               .catch(error => {
                                  console.error("Erro ao montar Docusign.js:", error);
                                  closeSigningModal();
@@ -421,12 +436,12 @@
                               });
                           })
                           .catch((ex) => {
-                            console.error("Erro ao carregar Docusign.js SDK (window.DocuSign.loadDocuSign):", ex);
+                            console.error(`Erro ao carregar Docusign.js SDK (window.DocuSign.loadDocuSign): ${ex.message}`, ex);
                             closeSigningModal();
                             alert("Não foi possível carregar o componente de assinatura Docusign (SDK).");
                           });
                     } else {
-                        console.error("Docusign.js SDK não está carregado (window.DocuSign ou loadDocuSign está undefined).");
+                        console.error("Docusign.js SDK não está carregado (window.DocuSign ou window.DocuSign.loadDocuSign está undefined). Verifique a URL do script: https://js-d.docusign.com/bundle.js");
                         alert("Componente de assinatura Docusign não pôde ser carregado.");
                         closeSigningModal();
                     }

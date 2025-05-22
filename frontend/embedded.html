@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-  <head>
+<html lang="pt-BR"> <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Assinatura Embarcada - Fontara Financial</title>
@@ -15,7 +14,6 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"
     />
-    <script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.js"></script>
     <script src="https://js-d.docusign.com/bundle.js"></script>
 
     <style>
@@ -23,10 +21,10 @@
         display: flex;
         flex-direction: column;
         min-height: 100vh;
-        background-color: #f9fafb; /* Tailwind gray-50 */
+        background-color: #f9fafb; 
       }
       html.tw-dark body {
-         background-color: #1f2937; /* Tailwind gray-800 */
+         background-color: #1f2937; 
       }
       main {
         flex-grow: 1;
@@ -114,10 +112,15 @@
 
     <script src="./scripts/index.js"></script>
     <script src="./scripts/loadPartials.js" defer></script> 
-
     <script>
-      function initializePageSpecificScripts() {
-        console.log("embedded.html: initializePageSpecificScripts chamada.");
+      // Lógica do DocuSign que já estava na sua embedded.html
+      // Garanta que esta lógica seja executada após o DOM estar pronto
+      // e, se depender de algo inicializado por `index.js` ou `loadPartials.js`,
+      // pode ser necessário encapsulá-la em uma função e chamá-la
+      // como `initializePageSpecificScripts` em `loadPartials.js`.
+
+      function initializeEmbeddedPageDocuSign() {
+        console.log("embedded.html: Inicializando lógica DocuSign específica da página.");
         const form = document.getElementById('signingForm');
         const submitEnvelopeBtn = document.getElementById('submitEnvelopeBtn');
         const docusignModal = document.getElementById('docusign-modal');
@@ -196,7 +199,7 @@
               const signingUrl = signingResult.signingUrl;
 
               if (signingUrl && window.DocuSign && typeof window.DocuSign.loadDocuSign === 'function') {
-                  const DOCUSIGN_IK = "SEU_DOCUSIGN_INTEGRATION_KEY_AQUI"; // SUBSTITUA
+                  const DOCUSIGN_IK = "SEU_DOCUSIGN_INTEGRATION_KEY_AQUI"; // SUBSTITUA PELO SEU IK
 
                   window.DocuSign.loadDocuSign(DOCUSIGN_IK)
                     .then((docusign) => {
@@ -245,7 +248,8 @@
           });
         }
       }
-      window.initializePageSpecificScripts = initializePageSpecificScripts;
+      // Expor para loadPartials.js poder chamar se necessário
+      window.initializePageSpecificScripts = initializeEmbeddedPageDocuSign;
     </script>
   </body>
 </html>

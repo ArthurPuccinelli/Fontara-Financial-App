@@ -1,272 +1,408 @@
-// frontend/scripts/index.js (SEU ARQUIVO ATUAL, MODIFICADO)
+// initialization
 
-console.log("index.js: Script carregado.");
+const RESPONSIVE_WIDTH = 1024;
 
-// Variáveis que eram globais, agora serão definidas dentro de initializePageScripts
-// ou podem permanecer globais se suas funções as acessarem diretamente e forem chamadas após a atribuição.
-// Para segurança, vamos atribuí-las dentro da função de inicialização.
-let RESPONSIVE_WIDTH = 1024;
-let isHeaderCollapsed;
-let collapseBtn;
-let collapseHeaderItems;
-let navToggle;
-let navDropdown;
-let themeToggleButton; // Para o botão de tema
-let themeToggleIcon;   // Para o ícone do tema
+let headerWhiteBg = false;
+let isHeaderCollapsed = window.innerWidth < RESPONSIVE_WIDTH;
+const collapseBtn = document.getElementById("collapse-btn");
+const collapseHeaderItems = document.getElementById("collapsed-header-items");
 
-// Suas funções originais: toggleHeader, onHeaderClickOutside, toggleNavDropdown
+const navToggle = document.querySelector("#nav-dropdown-toggle-0");
+const navDropdown = document.querySelector("#nav-dropdown-list-0");
+
+
 function onHeaderClickOutside(e) {
     // Garante que collapseHeaderItems exista antes de chamar .contains()
-    // e que o menu esteja aberto (isHeaderCollapsed === false)
-    if (collapseHeaderItems && !collapseHeaderItems.contains(e.target) && 
-        collapseBtn && !collapseBtn.contains(e.target) && 
-        !isHeaderCollapsed) {
-        toggleHeader();
+    if (collapseHeaderItems && !collapseHeaderItems.contains(e.target) && collapseBtn && !collapseBtn.contains(e.target)) {
+        // Apenas fecha se o clique for fora do header E fora do botão de toggle (para evitar fechar ao clicar no botão para abrir)
+        if (!isHeaderCollapsed) { // Só chama toggleHeader se o menu estiver aberto
+             toggleHeader();
+        }
     }
 }
 
+
 function toggleHeader() {
+    // Verifica se os elementos existem antes de manipulá-los
     if (!collapseHeaderItems || !collapseBtn) {
-        console.warn("index.js (toggleHeader): Elementos do header (collapseHeaderItems ou collapseBtn) não encontrados.");
+        console.warn("Elementos do header (collapseHeaderItems ou collapseBtn) não encontrados.");
         return;
     }
 
-    // Sua lógica original para abrir/fechar o menu mobile
-    // Recomendo usar classes para controlar a visibilidade e animações em vez de style.height direto
-    if (isHeaderCollapsed) { // Se está colapsado (true), então vamos abrir
-        collapseHeaderItems.classList.remove("max-lg:tw-hidden"); // Remove a classe que esconde
-        // Adicione classes para animação de abertura se desejar
-        collapseHeaderItems.classList.add("max-lg:!tw-opacity-100"); // Exemplo
+    if (isHeaderCollapsed) {
+        collapseHeaderItems.classList.add("max-lg:!tw-opacity-100", "tw-min-h-[90vh]");
+        collapseHeaderItems.style.height = "90vh";
         collapseBtn.classList.remove("bi-list");
-        collapseBtn.classList.add("bi-x"); // , "max-lg:tw-fixed" // Removido max-lg:tw-fixed daqui para ver se melhora
-    } else { // Se está aberto (false), então vamos fechar
-        collapseHeaderItems.classList.add("max-lg:tw-hidden"); // Adiciona a classe para esconder
-        collapseHeaderItems.classList.remove("max-lg:!tw-opacity-100");
-        collapseBtn.classList.remove("bi-x"); // , "max-lg:tw-fixed"
+        collapseBtn.classList.add("bi-x", "max-lg:tw-fixed");
+        isHeaderCollapsed = false;
+
+        document.body.classList.add("modal-open");
+
+        // Adiciona o listener APENAS se o menu for aberto
+        setTimeout(() => window.addEventListener("click", onHeaderClickOutside), 1);
+
+    } else {
+        collapseHeaderItems.classList.remove("max-lg:!tw-opacity-100", "tw-min-h-[90vh]");
+        collapseHeaderItems.style.height = "0vh";
+        
+        collapseBtn.classList.remove("bi-x", "max-lg:tw-fixed");  
         collapseBtn.classList.add("bi-list");
+        document.body.classList.remove("modal-open");
+
+        isHeaderCollapsed = true;
+        // Remove o listener ao fechar o menu
+        window.removeEventListener("click", onHeaderClickOutside);
     }
-    isHeaderCollapsed = !isHeaderCollapsed; // Alterna o estado
-    console.log("index.js: toggleHeader executado, novo estado isHeaderCollapsed:", isHeaderCollapsed);
+}
+
+function responsive() {
+    // Verifica se os elementos do header existem
+    if (!collapseHeaderItems || !navToggle || !navDropdown) {
+        // Se estivermos numa página sem header completo (ex: obrigado.html), não faz nada ou loga um aviso
+        // console.warn("Elementos de navegação do header não encontrados na função responsive. Isso pode ser normal em algumas páginas.");
+        return; 
+    }
+
+    // Se o menu estiver aberto e a tela for redimensionada para maior que RESPONSIVE_WIDTH,
+    // e o menu colapsável móvel estiver ativo, ele deve ser fechado.
+    if (window.innerWidth > RESPONSIVE_WIDTH && !isHeaderCollapsed && collapseHeaderItems.style.height === "90vh") {
+        toggleHeader(); // Fecha o menu móvel
+    } else if (window.innerWidth <= RESPONSIVE_WIDTH && isHeaderCollapsed && collapseHeaderItems.style.height !== "0vh" && collapseHeaderItems.style.height !== "") {
+        // Se a tela ficar pequena e o menu não estiver devidamente colapsado (height 0), força o colapso.
+        // Esta condição pode precisar de ajuste dependendo do estado inicial exato.
+        // Geralmente, a lógica de toggleHeader já deve tratar isso.
+    }
+
+
+    if (window.innerWidth > RESPONSIVE_WIDTH) {
+        collapseHeaderItems.style.height = ""; // Reseta a altura para o estilo desktop
+        navToggle.addEventListener("mouseenter", openNavDropdown);
+        navToggle.addEventListener("mouseleave", navMouseLeave);
+    } else {
+        // isHeaderCollapsed = true; // Não deve forçar isHeaderCollapsed aqui, pois pode estar aberto
+        navToggle.removeEventListener("mouseenter", openNavDropdown);
+        navToggle.removeEventListener("mouseleave", navMouseLeave);
+    }
+}
+// Chama responsive na carga inicial, mas após o DOM estar mais estável para pegar elementos
+document.addEventListener("DOMContentLoaded", function() {
+    // Verifica se estamos numa página que TEM o header antes de rodar 'responsive' e adicionar listener
+    if (document.getElementById("collapse-btn")) { // Um elemento chave do header
+        responsive();
+        window.addEventListener("resize", responsive);
+    }
+});
+
+
+/** Dark and light theme */
+// Esta função é chamada globalmente, então deve verificar se o ícone existe
+function updateToggleModeBtn() {
+    const toggleIcon = document.querySelector("#toggle-mode-icon");
+    if (toggleIcon) { // IMPORTANTE: Verifica se o elemento existe
+        if (document.documentElement.classList.contains("tw-dark")) {
+            toggleIcon.classList.remove("bi-sun");
+            toggleIcon.classList.add("bi-moon-stars-fill"); // Usando um ícone de lua mais preenchido
+        } else {
+            toggleIcon.classList.add("bi-sun");
+            toggleIcon.classList.remove("bi-moon-stars-fill");
+        }
+    }
+}
+
+function toggleMode() {
+    document.documentElement.classList.toggle("tw-dark");
+    if (document.documentElement.classList.contains("tw-dark")) {
+        localStorage.setItem("color-mode", "dark");
+    } else {
+        localStorage.setItem("color-mode", "light");
+    }
+    updateToggleModeBtn();
+}
+
+// Lógica de inicialização do tema
+(function() {
+    const storedTheme = localStorage.getItem('color-mode');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let applyDarkTheme = false;
+
+    // Verifica se estamos na página de agradecimento para forçar o tema claro inicial
+    if (window.location.pathname.includes('/agradecimento/')) {
+        document.documentElement.classList.remove('tw-dark');
+        // Não definimos localStorage aqui para não sobrescrever a preferência global
+    } else {
+        // Lógica para todas as outras páginas
+        if (storedTheme === 'dark' || (!storedTheme && systemPrefersDark)) {
+            applyDarkTheme = true;
+        }
+    }
+
+    if (applyDarkTheme) {
+        document.documentElement.classList.add('tw-dark');
+    } else {
+        document.documentElement.classList.remove('tw-dark');
+    }
+    
+    // Chama updateToggleModeBtn após o DOM estar pronto ou se já estiver
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", updateToggleModeBtn);
+    } else {
+        updateToggleModeBtn();
+    }
+})();
+
+
+// --- SEÇÃO DO PIXA PLAYGROUND REMOVIDA/COMENTADA ---
+/*
+const promptWindowElement = document.querySelector("#pixa-playground");
+if (promptWindowElement) { // Só inicializa se o elemento existir
+    const promptWindow =  new Prompt("#pixa-playground"); // Supondo que a classe Prompt esteja definida em components.js
+    const promptForm = document.querySelector("#prompt-form");
+    const promptInput = promptForm ? promptForm.querySelector("input[name='prompt']") : null;
+
+    const MAX_PROMPTS = 3;
+
+    if (promptForm && promptInput && promptWindow) {
+        promptForm.addEventListener("submit", (event) => {
+            event.preventDefault();
+            if (promptWindow.promptList.length >= MAX_PROMPTS)
+                return false;
+            promptWindow.addPrompt(promptInput.value);
+            promptInput.value = "";
+            if (promptWindow.promptList.length >= MAX_PROMPTS){
+                const signUpPrompt = document.querySelector("#signup-prompt");
+                if (signUpPrompt) {
+                    signUpPrompt.classList.add("tw-scale-100");
+                    signUpPrompt.classList.remove("tw-scale-0");
+                }
+                promptForm.querySelectorAll("input").forEach(e => {e.disabled = true});
+            }
+            return false;
+        });
+    }
+
+    // Se os dropdowns são para o seletor de modelo de IA do Pixa Playground:
+    const dropdownElements = document.querySelectorAll('.dropdown.ai-model-selector'); // Adicione uma classe específica se necessário
+    if (dropdownElements.length > 0 && typeof Dropdown !== 'undefined' && promptWindow) {
+        dropdownElements.forEach(dropdown => new Dropdown(`#${dropdown.id}`, promptWindow.setAIModel));
+    }
+}
+*/
+// --- FIM DA SEÇÃO DO PIXA PLAYGROUND ---
+
+
+// Lógica do menu dropdown de navegação (deve funcionar em todas as páginas com o header)
+if (navToggle && navDropdown) {
+    navToggle.addEventListener("click", toggleNavDropdown);
+    navDropdown.addEventListener("mouseleave", closeNavDropdown); // Continua com mouseleave para fechar
+    // Adiciona um listener para fechar o dropdown se clicar fora dele (no desktop)
+    document.addEventListener('click', function(event) {
+        if (window.innerWidth > RESPONSIVE_WIDTH && navDropdown.getAttribute('data-open') === 'true') {
+            if (!navDropdown.contains(event.target) && !navToggle.contains(event.target)) {
+                closeNavDropdown();
+            }
+        }
+    });
 }
 
 
 function toggleNavDropdown() {
-    if (!navToggle || !navDropdown) {
-        console.warn("index.js (toggleNavDropdown): Elementos do dropdown Soluções não encontrados.");
-        return;
-    }
-    const isOpen = navDropdown.getAttribute('data-open') === 'true';
-    if (isOpen) {
-        navDropdown.setAttribute('data-open', 'false');
-        navDropdown.classList.add('tw-scale-0', 'tw-opacity-0', 'max-lg:tw-h-0', 'max-lg:tw-w-0');
-        navDropdown.classList.remove('max-lg:!tw-h-auto', 'max-lg:!tw-w-auto');
-        navToggle.setAttribute('aria-expanded', 'false');
+    if (!navDropdown) return;
+    if (navDropdown.getAttribute("data-open") === "true") {
+        closeNavDropdown();
     } else {
-        navDropdown.setAttribute('data-open', 'true');
-        navDropdown.classList.remove('tw-scale-0', 'tw-opacity-0', 'max-lg:tw-h-0', 'max-lg:tw-w-0');
-        navDropdown.classList.add('max-lg:!tw-h-auto', 'max-lg:!tw-w-auto');
-        navToggle.setAttribute('aria-expanded', 'true');
+        openNavDropdown();
     }
-    console.log("index.js: toggleNavDropdown executado, data-open:", navDropdown.getAttribute('data-open'));
 }
 
-// --- Lógica de Tema (Adicionada para funcionar com o header) ---
-function applyInitialTheme() {
-  console.log("index.js: Aplicando tema inicial...");
-  const htmlElement = document.documentElement;
-  // themeToggleIcon é definido em initializePageScripts
-  const storedTheme = localStorage.getItem('theme');
-
-  if (storedTheme === 'dark') {
-    htmlElement.classList.add('tw-dark');
-    if (themeToggleIcon) {
-      themeToggleIcon.classList.remove('bi-sun');
-      themeToggleIcon.classList.add('bi-moon');
+function navMouseLeave() {
+    // Considerar um pequeno delay para permitir que o mouse entre no dropdown antes de fechar
+    // Se o dropdown estiver aberto por clique, o mouseleave não deve fechá-lo imediatamente em mobile.
+    // Esta lógica é mais para desktop.
+    if (window.innerWidth > RESPONSIVE_WIDTH) {
+        setTimeout(() => {
+            if (navDropdown && !navDropdown.matches(':hover') && navToggle && !navToggle.matches(':hover')) {
+                closeNavDropdown();
+            }
+        }, 300); // Delay de 300ms
     }
-  } else { 
-    htmlElement.classList.remove('tw-dark');
-    if (themeToggleIcon) {
-      themeToggleIcon.classList.remove('bi-moon');
-      themeToggleIcon.classList.add('bi-sun');
-    }
-  }
-  console.log("index.js: Tema inicial aplicado.");
 }
 
-function toggleMode() { 
-  console.log("index.js: Alternando tema...");
-  const htmlElement = document.documentElement;
-  // themeToggleIcon é definido em initializePageScripts
-  htmlElement.classList.toggle('tw-dark');
+function openNavDropdown() {
+    if (!navDropdown) return;
+    // Ajuste para que a altura se adapte ao conteúdo no desktop também, se 'lg:tw-h-auto' for usado no HTML
+    navDropdown.classList.add("tw-opacity-100", "tw-scale-100", 
+                            "max-lg:tw-min-h-[450px]", "max-lg:!tw-h-fit", "tw-min-w-[320px]");
+    if (window.innerWidth > RESPONSIVE_WIDTH) {
+        navDropdown.classList.add("lg:tw-h-auto"); // Garante que no desktop a altura seja automática
+    }
+    navDropdown.setAttribute("data-open", "true");
+}
 
-  if (htmlElement.classList.contains('tw-dark')) {
-    localStorage.setItem('theme', 'dark');
-    if (themeToggleIcon) {
-      themeToggleIcon.classList.remove('bi-sun');
-      themeToggleIcon.classList.add('bi-moon');
-    }
-  } else {
-    localStorage.setItem('theme', 'light');
-    if (themeToggleIcon) {
-      themeToggleIcon.classList.remove('bi-moon');
-      themeToggleIcon.classList.add('bi-sun');
-    }
-  }
-  console.log("index.js: Modo de tema alternado.");
+function closeNavDropdown() {
+    if (!navDropdown) return;
+    navDropdown.classList.remove("tw-opacity-100", "tw-scale-100", 
+        "max-lg:tw-min-h-[450px]", "tw-min-w-[320px]", "max-lg:!tw-h-fit", "lg:tw-h-auto");
+    navDropdown.setAttribute("data-open", "false");
 }
 
 
-// --- Função de Inicialização Principal (Chamada por loadPartials.js) ---
-function initializePageScripts(headerElement) {
-    console.log("index.js: initializePageScripts chamada com headerElement:", headerElement ? "encontrado" : "NÃO encontrado");
-    if (!headerElement) {
-        console.error("index.js: Elemento do header não fornecido. Funcionalidades do header não serão iniciadas.");
-        return;
+// Lógica do Modal de Vídeo (se existir na página atual)
+const videoBg = document.querySelector("#video-container-bg");
+const videoContainer = document.querySelector("#video-container");
+
+if (videoBg && videoContainer) { // Só adiciona listeners se os elementos existirem
+    // A função openVideo() seria chamada por um botão específico, ex:
+    // const openVideoBtn = document.getElementById("open-video-btn");
+    // if (openVideoBtn) openVideoBtn.addEventListener('click', openVideo);
+    // (Assumindo que openVideo é chamada de outra forma no seu HTML)
+}
+
+function openVideo() {
+    if (!videoBg || !videoContainer) return;
+    videoBg.classList.remove("tw-scale-0", "tw-opacity-0");
+    videoBg.classList.add("tw-scale-100", "tw-opacity-100");
+    videoContainer.classList.remove("tw-scale-0");
+    videoContainer.classList.add("tw-scale-100");
+    document.body.classList.add("modal-open");
+}
+
+function closeVideo() {
+    if (!videoBg || !videoContainer) return;
+    videoContainer.classList.add("tw-scale-0");
+    videoContainer.classList.remove("tw-scale-100");
+    setTimeout(() => {
+        videoBg.classList.remove("tw-scale-100", "tw-opacity-100");
+        videoBg.classList.add("tw-scale-0", "tw-opacity-0");
+    }, 400);
+    document.body.classList.remove("modal-open");
+}
+
+// Animações Typed.js (se o elemento existir na página atual)
+const typedElement = document.querySelector('#prompts-sample');
+if (typedElement && typeof Typed !== 'undefined') { // Verifica se Typed está definido
+    const typed = new Typed('#prompts-sample', {
+        strings: [
+            "Simule seu crédito imobiliário conosco.", 
+            "Planeje sua aposentadoria com segurança.", 
+            "Encontre o seguro ideal para você e sua família.", 
+            "Precisando de crédito? Fale com a Fontara!"
+        ], // Textos atualizados para o contexto financeiro
+        typeSpeed: 70,
+        smartBackspace: true, 
+        loop: true,
+        backDelay: 2500,
+    });
+} else if (!typedElement) {
+    // console.warn("Elemento #prompts-sample para Typed.js não encontrado. Isso é normal se não estiver na página atual.");
+}
+
+
+// Animações GSAP (se GSAP e ScrollTrigger estiverem carregados)
+if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Animação inicial para .reveal-up (pode ser global)
+    // gsap.set(".reveal-up", { opacity: 0, y: "50px" }); // Define estado inicial
+
+    // Animação da "dashboard" (se existir na página atual)
+    const dashboardElement = document.querySelector("#dashboard");
+    if (dashboardElement) {
+        gsap.to("#dashboard", {
+            scale: 1,
+            translateY: 0,
+            rotateX: "0deg",
+            scrollTrigger: {
+                trigger: "#hero-section", // Certifique-se que #hero-section existe
+                start: window.innerWidth > RESPONSIVE_WIDTH ? "top 95%" : "top 70%",
+                end: "bottom bottom",
+                scrub: 1,
+            }
+        });
     }
 
-    // ATRIBUIÇÃO DAS VARIÁVEIS GLOBAIS (ou do escopo do módulo)
-    // Seleciona os elementos DENTRO do headerElement injetado
-    collapseBtn = headerElement.querySelector("#collapse-btn"); 
-    collapseHeaderItems = headerElement.querySelector("#collapsed-header-items");
-    navToggle = headerElement.querySelector("#nav-dropdown-toggle-0");
-    navDropdown = headerElement.querySelector("#nav-dropdown-list-0");
-    themeToggleButton = headerElement.querySelector('#theme-toggle'); // Botão de tema no _header.html
-    themeToggleIcon = headerElement.querySelector('#toggle-mode-icon'); // Ícone dentro do botão de tema
-
-    // Inicializa o estado do menu mobile
-    isHeaderCollapsed = true; // Começa colapsado em mobile por padrão
-    if (collapseHeaderItems) {
-        if (window.innerWidth >= RESPONSIVE_WIDTH) { // Se desktop
-            isHeaderCollapsed = false; // Começa aberto em desktop
-            collapseHeaderItems.classList.remove("max-lg:tw-hidden");
-        } else { // Se mobile
-            collapseHeaderItems.classList.add("max-lg:tw-hidden");
+    // Animações de revelação para seções
+    const sections = gsap.utils.toArray("section.reveal-section-content"); // Use uma classe específica para seções que devem ter este efeito
+    sections.forEach((sec) => {
+        const revealElements = sec.querySelectorAll(".reveal-up");
+        if (revealElements.length > 0) {
+            gsap.fromTo(revealElements, 
+                { opacity: 0, y: "50px" }, 
+                {
+                    opacity: 1,
+                    y: "0%",
+                    duration: 0.8,
+                    stagger: 0.2,
+                    scrollTrigger: {
+                        trigger: sec,
+                        start: "top 80%", // Quando o topo da seção atinge 80% da altura da viewport
+                        end: "bottom 20%",
+                        toggleActions: "play none none none", // Anima uma vez quando entra na viewport
+                        // markers: true, // Descomente para debug
+                    }
+                }
+            );
         }
-    } else {
-        console.warn("index.js: #collapsed-header-items não encontrado para estado inicial.");
-    }
-    if (collapseBtn && isHeaderCollapsed) { // Ajusta o ícone do botão hamburguer
-        collapseBtn.classList.remove("bi-x");
-        collapseBtn.classList.add("bi-list");
-    }
+    });
 
-
-    // Anexar event listeners do seu index.js original
-    if (collapseBtn) {
-        collapseBtn.addEventListener('click', toggleHeader);
-        console.log("index.js: Listener para toggleHeader anexado ao #collapse-btn.");
-    } else {
-        console.warn("index.js: #collapse-btn (botão hamburguer) não encontrado no header injetado.");
-    }
-
-    if (navToggle && navDropdown) {
-        navToggle.addEventListener('click', (event) => {
-            event.stopPropagation(); // Importante para não fechar imediatamente
-            toggleNavDropdown();
-        });
-        console.log("index.js: Listener para toggleNavDropdown anexado ao #nav-dropdown-toggle-0.");
-
-        // Fechar dropdown Soluções ao clicar fora (lógica similar à anterior)
-        document.addEventListener('click', (event) => {
-            if (navDropdown && navDropdown.getAttribute('data-open') === 'true' && 
-                !navToggle.contains(event.target) && !navDropdown.contains(event.target)) {
-                toggleNavDropdown(); 
-            }
-        });
-         // Fechar o dropdown com a tecla Escape
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && navToggle.getAttribute('aria-expanded') === 'true') {
-                toggleNavDropdown();
-            }
-        });
-    } else {
-        console.warn("index.js: Elementos do dropdown Soluções (#nav-dropdown-toggle-0 ou #nav-dropdown-list-0) não encontrados.");
-    }
-    
-    // Lógica de Tema
-    if (themeToggleButton && themeToggleIcon) { // Verifica ambos
-        applyInitialTheme(); 
-        themeToggleButton.addEventListener('click', toggleMode);
-        console.log("index.js: Listener para toggleMode anexado ao #theme-toggle.");
-    } else {
-        if(!themeToggleButton) console.warn("index.js: Botão de tema (#theme-toggle) não encontrado.");
-        if(!themeToggleIcon) console.warn("index.js: Ícone de tema (#toggle-mode-icon) não encontrado.");
-    }
-    
-    // Anexar listener para fechar header mobile ao clicar fora
-    // document.addEventListener('click', onHeaderClickOutside); // Removido temporariamente para simplificar
-
-    // Chamada para inicializar FAQ (do seu index.js original)
-    initializeFaqAccordions(); 
-
-    console.log("index.js: initializePageScripts concluída.");
+} else {
+    // console.warn("GSAP ou ScrollTrigger não estão carregados.");
 }
-// Expor a função para loadPartials.js
-window.initializePageScripts = initializePageScripts;
 
 
-// Lógica do FAQ Accordion (do seu index.js original)
-function initializeFaqAccordions() {
-    // Seu código original do FAQ aqui...
-    const accordions = document.querySelectorAll('.faq-accordion');
-    if (accordions.length > 0) {
-        console.log("index.js: Inicializando FAQ accordions.");
-        accordions.forEach(accordion => {
-            // Verifica se já tem listener para não duplicar
-            if (accordion.dataset.faqInitialized) return;
-            accordion.dataset.faqInitialized = 'true';
+// Lógica do FAQ Accordion (deve funcionar em qualquer página com a estrutura do FAQ)
+const faqAccordion = document.querySelectorAll('.faq-accordion');
+if (faqAccordion.length > 0) {
+    faqAccordion.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            // this.classList.toggle('active'); // 'active' não parecia estar sendo usada para funcionalidade
+            let content = this.nextElementSibling;
+            let icon = this.querySelector(".bi-plus");
 
-            accordion.addEventListener('click', function() {
-                const content = this.nextElementSibling;
-                const icon = this.querySelector('i.bi');
-
-                if (!content) return;
+            if (content && icon) { // Verifica se os elementos existem
+                // Fecha outros accordions abertos na mesma seção FAQ (opcional)
+                // faqAccordion.forEach(otherBtn => {
+                //     if (otherBtn !== btn) {
+                //         let otherContent = otherBtn.nextElementSibling;
+                //         let otherIcon = otherBtn.querySelector(".bi-plus");
+                //         if (otherContent && otherContent.style.maxHeight !== '0px') {
+                //             otherContent.style.maxHeight = '0px';
+                //             otherContent.style.padding = '0px 18px';
+                //             if (otherIcon) otherIcon.style.transform = "rotate(0deg)";
+                //         }
+                //     }
+                // });
 
                 if (content.style.maxHeight && content.style.maxHeight !== '0px') {
                     content.style.maxHeight = '0px';
-                    // Adiciona um pequeno delay para a transição de padding ocorrer após o maxHeight
-                    setTimeout(() => {
-                        content.style.paddingTop = '0px';
-                        content.style.paddingBottom = '0px';
-                        content.style.overflow = 'hidden';
-                    }, 300); // Tempo da transição do maxHeight
-                    if (icon) icon.classList.replace('bi-dash', 'bi-plus');
+                    content.style.paddingTop = '0px';
+                    content.style.paddingBottom = '0px';
+                    // A transição no CSS deve cuidar do padding lateral, mas podemos ser explícitos.
+                    // content.style.padding = '0px 18px'; // Cuidado para não sobrescrever o padding lateral desejado
+                    icon.style.transform = "rotate(0deg)";
                 } else {
-                    content.style.paddingTop = '10px'; 
-                    content.style.paddingBottom = '10px';
-                    content.style.maxHeight = content.scrollHeight + "px";
-                    content.style.overflow = 'visible'; // Permite ver o conteúdo durante a transição
-                    if (icon) icon.classList.replace('bi-plus', 'bi-dash');
+                    content.style.maxHeight = content.scrollHeight + "px"; // Ajusta para a altura real do conteúdo
+                    content.style.paddingTop = '20px'; // Ajuste conforme seu CSS para .content
+                    content.style.paddingBottom = '20px';
+                    // content.style.padding = '20px 18px';
+                    icon.style.transform = "rotate(45deg)";
                 }
-            });
+            }
         });
-    } else {
-        console.log("index.js: Nenhum FAQ accordion encontrado para inicializar.");
-    }
+    });
 }
 
-// Lógica de inicialização geral da página que NÃO DEPENDE do header/footer
-// ou que precisa rodar sempre, como o FAQ se ele não estiver em parciais.
+// Lógica para inicializar o estado dos ícones de FAQ se eles não começam com bi-plus
 document.addEventListener("DOMContentLoaded", function() {
-    console.log("index.js: DOMContentLoaded evento disparado.");
-    
-    // A inicialização do FAQ pode ser chamada aqui se o FAQ estiver sempre no corpo principal da página
-    // e não dentro do header/footer carregados dinamicamente.
-    // Se `loadPartials.js` já chama `initializePageScripts` que por sua vez chama `initializeFaqAccordions`,
-    // esta chamada aqui pode ser redundante ou causar dupla inicialização se o FAQ estiver fora dos parciais.
-    // Vamos deixar `initializePageScripts` cuidar disso por enquanto.
-    // if (typeof initializeFaqAccordions === 'function') {
-    //     initializeFaqAccordions();
-    // }
-
-    // Suas outras inicializações globais como GSAP, ScrollTrigger, Typed.js devem vir aqui,
-    // após verificar se as bibliotecas estão carregadas.
-    // Exemplo:
-    // if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
-    //   gsap.registerPlugin(ScrollTrigger);
-    //   // Sua lógica GSAP aqui
-    // }
-    // if (typeof Typed !== 'undefined') {
-    //   // Sua lógica Typed.js aqui
-    // }
+    const allFaqIcons = document.querySelectorAll('.faq-accordion .bi');
+    allFaqIcons.forEach(icon => {
+        if (!icon.classList.contains('bi-plus')) {
+            // Se o ícone não for 'bi-plus' mas estiver dentro de um faq-accordion,
+            // e for o ícone de toggle, garantir que ele comece como 'bi-plus'
+            // Esta lógica pode precisar de ajuste se houver outros ícones dentro de .faq-accordion
+            const parentAccordion = icon.closest('.faq-accordion');
+            if (parentAccordion && parentAccordion.querySelector('.bi-plus') === icon) {
+                // Assume que deve ser bi-plus, mas pode ser mais complexo
+            }
+        }
+    });
 });

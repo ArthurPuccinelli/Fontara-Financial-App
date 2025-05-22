@@ -1,67 +1,56 @@
 // Em: frontend/scripts/loadPartials.js
-
 async function fetchAndInjectHTML(filePath, placeholderId) {
   try {
-    const response = await fetch(filePath); 
+    const response = await fetch(filePath);
     if (!response.ok) {
       console.error(`loadPartials.js: Erro ao carregar ${filePath}: ${response.status} ${response.statusText}`);
       const placeholder = document.getElementById(placeholderId);
-      if (placeholder) {
-        placeholder.innerHTML = `<p style="color:red; text-align:center;">Erro ao carregar conteúdo (${filePath}).</p>`;
-      }
+      if (placeholder) placeholder.innerHTML = `<p style="color:red; text-align:center;">Erro (${filePath})</p>`;
       return null;
     }
     const htmlText = await response.text();
     const placeholderElement = document.getElementById(placeholderId);
-
     if (placeholderElement) {
-      placeholderElement.outerHTML = htmlText; 
-
-      if (placeholderId === 'header-placeholder') {
-        return document.getElementById('mainHeader'); // Assumindo que _header.html tem <header id="mainHeader">
-      }
-      if (placeholderId === 'footer-placeholder') {
-        return document.querySelector('footer'); // Assumindo que _footer.html tem <footer ...> como raiz
-      }
-    } else {
-      console.warn(`loadPartials.js: Placeholder com ID '${placeholderId}' não encontrado para ${filePath}.`);
+      placeholderElement.outerHTML = htmlText;
+      if (placeholderId === 'header-placeholder') return document.getElementById('mainHeader');
+      if (placeholderId === 'footer-placeholder') return document.querySelector('footer');
     }
   } catch (error) {
-    console.error(`loadPartials.js: Falha ao buscar e injetar ${filePath}:`, error);
-    const placeholder = document.getElementById(placeholderId); 
-    if (placeholder) {
-      placeholder.innerHTML = `<p style="color:red; text-align:center;">Falha ao carregar conteúdo (${filePath}).</p>`;
-    }
+    console.error(`loadPartials.js: Falha ao injetar ${filePath}:`, error);
+    const placeholder = document.getElementById(placeholderId);
+    if (placeholder) placeholder.innerHTML = `<p style="color:red; text-align:center;">Falha (${filePath})</p>`;
   }
   return null;
 }
 
 async function initializePagePartials() {
-  console.log("loadPartials.js: Iniciando carregamento de parciais...");
+  console.log("loadPartials.js: Carregando parciais...");
   const headerInjectedElement = await fetchAndInjectHTML('./_header.html', 'header-placeholder');
   const footerInjectedElement = await fetchAndInjectHTML('./_footer.html', 'footer-placeholder');
 
   if (headerInjectedElement) {
-    console.log("loadPartials.js: Header carregado. Chamando initializePageScripts (que agora vem do seu index.js)...");
-    if (typeof window.initializePageScripts === 'function') { // Nome da função que seu index.js deve expor
-      window.initializePageScripts(headerInjectedElement); 
+    console.log("loadPartials.js: Header carregado. Chamando initializePageScripts...");
+    if (typeof window.initializePageScripts === 'function') {
+      window.initializePageScripts(headerInjectedElement);
     } else {
-      console.error("loadPartials.js: ERRO CRÍTICO - Função window.initializePageScripts NÃO definida em index.js!");
+      console.error("loadPartials.js: ERRO: window.initializePageScripts NÃO definida em index.js!");
     }
   } else {
-    console.error("loadPartials.js: Header não pôde ser carregado ou injetado.");
+    console.error("loadPartials.js: Header não carregado.");
   }
 
   if (footerInjectedElement) {
-    console.log("loadPartials.js: Footer carregado.");
-    const yearSpanInFooter = footerInjectedElement.querySelector('#current-year'); 
-    if (yearSpanInFooter) {
-      yearSpanInFooter.textContent = new Date().getFullYear();
-    }
+    const yearSpan = footerInjectedElement.querySelector('#current-year');
+    if (yearSpan) yearSpan.textContent = new Date().getFullYear();
   } else {
-    console.error("loadPartials.js: Footer não pôde ser carregado ou injetado.");
+    console.error("loadPartials.js: Footer não carregado.");
   }
-  console.log("loadPartials.js: Carregamento de parciais concluído.");
+
+  if (typeof window.initializePageSpecificScripts === 'function') {
+    console.log("loadPartials.js: Chamando initializePageSpecificScripts...");
+    window.initializePageSpecificScripts();
+  }
+  console.log("loadPartials.js: Parciais concluídos.");
 }
 
 if (document.readyState === 'loading') {

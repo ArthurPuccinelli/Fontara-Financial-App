@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR" class="tw-dark">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Assinatura Embarcada - Fontara Financial</title> <meta
+    <title>Assinatura Embarcada - Fontara Financial</title>
+    <meta
       name="description"
-      content="Envie ou use nosso modelo padrão para assinar documentos digitalmente com Fontara Financial e Docusign."
+      content="Assine documentos ou aceite termos digitalmente com Fontara Financial e Docusign."
     />
     <link rel="shortcut icon" href="./assets/logo/logo.png" type="image/x-icon" />
     <link rel="stylesheet" href="./css/tailwind-build.css" />
@@ -14,6 +15,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"
     />
+    <script src="https://js.docusign.com/bundle/docusign.js/"></script>
     <style>
       .form-input-custom {
         @apply tw-block tw-w-full tw-px-4 tw-py-3 tw-border tw-border-black dark:tw-border-gray-500 tw-bg-gray-100 dark:tw-bg-gray-700 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-indigo-500 focus:tw-border-indigo-500 dark:tw-text-white tw-text-base;
@@ -22,26 +24,33 @@
       .form-label {
         @apply tw-block tw-text-base tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2; 
       }
-      .form-checkbox {
-        @apply tw-h-5 tw-w-5 tw-text-indigo-600 tw-border-gray-300 dark:tw-border-gray-600 tw-rounded focus:tw-ring-indigo-500 dark:tw-bg-gray-700 dark:focus:tw-ring-offset-gray-800;
+      .form-radio { /* Estilo para radio buttons */
+        @apply tw-h-5 tw-w-5 tw-text-indigo-600 tw-border-gray-400 dark:tw-border-gray-600 focus:tw-ring-indigo-500 dark:tw-bg-gray-700 dark:focus:tw-ring-offset-gray-800;
       }
-      .form-checkbox-label {
+      .form-radio-label {
         @apply tw-ml-2 tw-block tw-text-base tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer;
       }
-      .modal-iframe-container { flex-grow: 1; display: flex; min-height: 0; }
-      .modal-iframe-container iframe { width: 100%; height: 100%; border: none; }
+      .modal-embedding-container { flex-grow: 1; display: flex; min-height: 0; }
+      #embeddingContainer { width: 100%; height: 100%; border: none; }
       .modal-header { padding: 1rem; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
       .dark .modal-header { border-bottom: 1px solid rgb(55 65 81); }
       .spinner-small { border: 3px solid #f3f3f3; border-top: 3px solid white; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; margin-right: 0.5rem; }
       @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      /* Para garantir que o conteúdo do modal não seja sobreposto pelo header fixo */
+      body.modal-open { overflow: hidden; }
+      #docusignSigningModalOverlay { z-index: 5000 !important; }
+      #docusignSigningModalContent { z-index: 5001 !important; }
+
     </style>
-  </head>
-  <body class="tw-flex tw-min-h-[100vh] tw-flex-col tw-bg-[#fcfcfc] tw-text-black dark:tw-bg-black dark:tw-text-white">
-        <div id="header-placeholder"></div>
+</head>
+<body class="tw-flex tw-min-h-[100vh] tw-flex-col tw-bg-[#fcfcfc] tw-text-black dark:tw-bg-black dark:tw-text-white">
+    <div id="header-placeholder"></div>
     
     <main class="tw-mt-20 tw-pt-10 tw-pb-10 tw-px-[5%] lg:tw-px-[10%]">
       <div class="tw-container tw-mx-auto lg:tw-max-w-5xl"> 
-        <h1 class="tw-text-3xl md:tw-text-4xl tw-font-semibold tw-text-center tw-mb-8">Assinatura Embarcada</h1> <form id="envelopeForm" class="tw-space-y-6 tw-bg-white dark:tw-bg-gray-800 tw-p-6 md:tw-p-8 tw-rounded-lg tw-shadow-md">
+        <h1 class="tw-text-3xl md:tw-text-4xl tw-font-semibold tw-text-center tw-mb-8">Assinatura Embarcada</h1>
+        
+        <form id="signingForm" class="tw-space-y-6 tw-bg-white dark:tw-bg-gray-800 tw-p-6 md:tw-p-8 tw-rounded-lg tw-shadow-md">
           <div>
             <label for="signerName" class="form-label">Seu Nome Completo:</label>
             <input type="text" name="signerName" id="signerName" required class="form-input-custom" placeholder="Ex: João da Silva">
@@ -52,37 +61,67 @@
             <input type="email" name="signerEmail" id="signerEmail" required class="form-input-custom" placeholder="seuemail@email.com">
           </div>
           
-          <div>
-            <label for="emailSubject" class="form-label">Assunto do Documento (para notificação Docusign):</label>
-            <input type="text" name="emailSubject" id="emailSubject" required class="form-input-custom" value="Documento Fontara Financial para Assinatura">
+          <div id="emailSubjectContainer"> <label for="emailSubject" class="form-label">Assunto do Documento (para notificação Docusign):</label>
+            <input type="text" name="emailSubject" id="emailSubject" class="form-input-custom" value="Documento Fontara Financial para Assinatura">
           </div>
 
           <fieldset class="tw-pt-4">
-            <legend class="form-label tw-mb-3">Escolha o Documento para Assinatura:</legend>
-            <div class="tw-flex tw-items-center tw-mb-3">
-              <input id="useDefaultDoc" name="documentChoice" type="radio" value="default" checked class="form-checkbox">
-              <label for="useDefaultDoc" class="form-checkbox-label">Usar Contrato Padrão Fontara</label>
-            </div>
-            <div class="tw-flex tw-items-center">
-              <input id="useUploadedDoc" name="documentChoice" type="radio" value="upload" class="form-checkbox">
-              <label for="useUploadedDoc" class="form-checkbox-label">Enviar meu próprio documento (PDF)</label>
+            <legend class="form-label tw-mb-3">Escolha o Tipo de Experiência Embarcada:</legend>
+            <div class="tw-space-y-3">
+              <div>
+                <input id="signingTypeClassic" name="signingType" type="radio" value="classic" checked class="form-radio">
+                <label for="signingTypeClassic" class="form-radio-label">Assinatura Clássica (Envelope)</label>
+                <p class="tw-mt-1 tw-ml-7 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">Interface padrão do DocuSign para assinar documentos, carregada em um iframe.</p>
+              </div>
+              <div>
+                <input id="signingTypeFocused" name="signingType" type="radio" value="focused" class="form-radio">
+                <label for="signingTypeFocused" class="form-radio-label">Visualização Focada (Envelope com DocuSign.js)</label>
+                <p class="tw-mt-1 tw-ml-7 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">Interface simplificada para assinar documentos, renderizada via DocuSign.js.</p>
+              </div>
+              <div>
+                <input id="signingTypeClickToAgree" name="signingType" type="radio" value="click_to_agree" class="form-radio">
+                <label for="signingTypeClickToAgree" class="form-radio-label">Click to Agree (Termos e Condições com DocuSign.js)</label>
+                <p class="tw-mt-1 tw-ml-7 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">Para aceitar termos de serviço, políticas, etc., renderizado via DocuSign.js.</p>
+              </div>
             </div>
           </fieldset>
+
+          <div id="documentOptionsContainer">
+            <fieldset class="tw-pt-4">
+              <legend class="form-label tw-mb-3">Escolha o Documento para Assinatura:</legend>
+              <div class="tw-flex tw-items-center tw-mb-3">
+                <input id="useDefaultDoc" name="documentChoice" type="radio" value="default" checked class="form-radio">
+                <label for="useDefaultDoc" class="form-radio-label">Usar Contrato Padrão Fontara</label>
+              </div>
+              <div class="tw-flex tw-items-center">
+                <input id="useUploadedDoc" name="documentChoice" type="radio" value="upload" class="form-radio">
+                <label for="useUploadedDoc" class="form-radio-label">Enviar meu próprio documento (PDF)</label>
+              </div>
+            </fieldset>
+            
+            <div id="fileUploadContainer" class="tw-hidden"> 
+              <label for="uploadedDoc" class="form-label">Selecione o arquivo PDF:</label>
+              <input type="file" name="uploadedDoc" id="uploadedDoc" class="form-input-custom" accept=".pdf">
+              <p class="tw-mt-1 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">Apenas arquivos .pdf são permitidos. O documento deve conter a âncora de texto `\s1\` onde a assinatura será posicionada.</p>
+            </div>
+          </div>
+
+          <div id="clickToAgreeOptionsContainer" class="tw-hidden tw-pt-4">
+            <div>
+              <label for="clickwrapId" class="form-label">ID do Clickwrap:</label>
+              <input type="text" name="clickwrapId" id="clickwrapId" class="form-input-custom" placeholder="Insira o ID do Clickwrap (ex: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)">
+              <p class="tw-mt-1 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">Este ID é fornecido pela configuração do Clickwrap na sua conta DocuSign.</p>
+            </div>
+             <div>
+              <label for="clickwrapClientUserId" class="form-label tw-mt-4">ID de Usuário do Cliente para Clickwrap (Opcional):</label>
+              <input type="text" name="clickwrapClientUserId" id="clickwrapClientUserId" class="form-input-custom" placeholder="Ex: usuario123 ou deixe em branco para gerar">
+               <p class="tw-mt-1 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">Identificador único para este usuário no contexto do Clickwrap. Se em branco, um será gerado.</p>
+            </div>
+          </div>
           
-          <div id="fileUploadContainer" class="tw-hidden"> 
-            <label for="uploadedDoc" class="form-label">Selecione o arquivo PDF:</label>
-            <input type="file" name="uploadedDoc" id="uploadedDoc" class="form-input-custom" accept=".pdf">
-            <p class="tw-mt-1 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">Apenas arquivos .pdf são permitidos. O documento deve conter a âncora de texto `\s1\` onde a assinatura será posicionada.</p>
-          </div>
-
-          <div class="tw-pt-2 tw-flex tw-items-center">
-            <input type="checkbox" id="useFocusedView" name="useFocusedView" class="form-checkbox">
-            <label for="useFocusedView" class="form-checkbox-label tw-ml-2">Usar Visualização Focada (menos interface Docusign)</label>
-          </div>
-
           <div class="tw-pt-4">
-            <button type="submit" id="submitEnvelopeBtn" class="btn tw-w-full tw-flex tw-justify-center tw-items-center tw-py-3 tw-px-4 tw-text-lg">
-              <i class="bi bi-pencil-square tw-mr-2"></i><span id="submitBtnText">Assinar</span>
+            <button type="submit" id="submitSigningBtn" class="btn tw-w-full tw-flex tw-justify-center tw-items-center tw-py-3 tw-px-4 tw-text-lg">
+              <i class="bi bi-pencil-square tw-mr-2"></i><span id="submitBtnText">Assinar/Aceitar</span>
             </button>
           </div>
         </form>
@@ -90,21 +129,17 @@
     </main>
 
     <div id="footer-placeholder"></div>
-
-    <script src="./scripts/loadPartials.js" defer></script>
     
     <div
-      class="tw-hidden tw-fixed tw-inset-0 tw-bg-black tw-bg-opacity-75 dark:tw-bg-opacity-80 tw-flex tw-items-center tw-justify-center tw-p-4 tw-z-[9999]" 
-      id="docusignSigningModalOverlay" 
-      style="z-index: 5000 !important;"
+      class="tw-hidden tw-fixed tw-inset-0 tw-bg-black tw-bg-opacity-75 dark:tw-bg-opacity-80 tw-flex tw-items-center tw-justify-center tw-p-4" 
+      id="docusignSigningModalOverlay"
     >
       <div
         class="tw-bg-white dark:tw-bg-gray-800 tw-rounded-lg tw-shadow-xl tw-flex tw-flex-col tw-overflow-hidden tw-w-full tw-max-w-4xl tw-h-[90vh]"
         id="docusignSigningModalContent" 
-        style="position: relative; z-index: 5001 !important;"
       >
         <div class="modal-header">
-          <h3 class="tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-white">Assinatura Embarcada</h3>
+          <h3 id="modalTitle" class="tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-white">Processando...</h3>
           <button
             type="button"
             id="closeDocusignSigningModalBtn"
@@ -114,17 +149,390 @@
             <i class="bi bi-x-lg"></i>
           </button>
         </div>
-        <div class="modal-iframe-container tw-flex-grow">
-          <iframe id="docusignSigningIframe" src="about:blank" title="Assinatura Docusign" class="tw-w-full tw-h-full"></iframe>
+        <div class="modal-embedding-container tw-flex-grow">
+            <div id="embeddingContainer" class="tw-w-full tw-h-full"></div>
         </div>
       </div>
     </div>
 
+    <script src="./scripts/loadPartials.js" defer></script>
     <script>
-      // Script JS da página (DEFAULT_DOC_BASE64, lógica do formulário, etc.)
-      // (Conteúdo do script original da página assinatura-embarcada.html aqui)
-      const DEFAULT_DOC_BASE64 = "JVBERi0xLjMKJcTl8uXrp/Og0MTGCjMgMCBvYmoKPDwgL0ZpbHRlciAvRmxhdGVEZWNvZGUgL0xlbmd0aCA4ODA4ID4+CnN0cmVhbQp4Ab2ca3MlSXGGv/evOEJzGMnMaXVXV99Ys8zejL2wttcMBpuBLxsmHMSsIzD/P8LPm1mXPhdJZ2YWs0GMOlWVXZX55rWq9Zfdt7u/7B6++Gu/++6vu87+++t3kLo2RH/2H6aub9ew++773edvdqMP5J9xHNo+jLtxXZo33+8e3rwJu3735k+7u5v73Zs/7756Yy+4klsIsBxCeJyVVjuMczvtpnltedcS2inuJq1i97//tfvt7n/qbvh91679MIdxbLp26sdpmYYd+xvmsV3GYdnN/dzOfbfuvt8N09TOYz/u5m5ppzDNu3e7YYntOk4XSE2Zyagzbu92/737U+KIHOewtusy6SVa+9j1kFha16+7d016ybqh5ReL5lN5i61vwy29xDkig3VtxxjmJm8lzEfr9ukz48Y2jKttr869REv8/D1d23fjsggVbY9E4woI2n6w/0mm4xDakQXwUjQz9+xWpDh3CKCb2yWuU/MOWt/2y6i1Ifph6aF0bRc7CX5ux7mbdiOb7oYRKUEZ4jztYB+WtgssW7R+DGMzBn6IRpnaZZlnxkzt4PqaWMsw2Lyxndgz86Y29MvCqLHtxojyO1AQlglOkeFB7xvbYQn+vsiqVq0dDAyAbAxDC4CcEkMnTkMbQdTcDe0yjOPuO1gNbWANRgPOwQb1YUaVHQJa47ql9O0C2ZYpCNsogDEvg3MaB3HCfMRSvEfWZKqexojNGm1e+FHq71ZQq830ABkKOJ7ibNub5nkxyjAics1D490i2CDXmX2KsnTY+LTOrT1PKI8f0rPmoI156JsyYkEBvfPopS8pibULZEsLQ1fA2sbRB609Qir61pJjHPtGlDEOkiyQgiHvAiZdnKSSTiyRI5S4Stg9g1G7CMsyuGAjZi7xgzg8g2j4K3yCABfakBn1A+hi3rTY1lcElBC4TmGwZc/zhEJsTWGCu222D1Iky+1BiSghDrbb2CHyacV1TKvLdW4j9i1SWBGAMBnGCZlNoI63Sj/r3PsQoyQt9rDcjAIsixPCgkiAJ8aBKdjLwjw0mobcZpamFfUzeB/7tfVBGJwYitAvgMfQMAJapvUAY9ACsPA+Lo0IqE+2BcMBG99Q+hZ4p1lpUMCYkaPYROBY4K+XhaGPjWxmmnuzI2hLHN3aeL9AgkZH1LWxSJQ1wlKUpSvABi0LvEDdYoCE6TDqfWxuniWTYu8LOsYDSCaAckEU5sZHLEroCsyD09KuK2oWJI5c1Xf4a8FiziLH54zmwBKtCMYdGG4rwK5D1fKjmioS4QSsLcSQIxpOAqXbqBARytxHhgNJrUy4I5jgktA2y4c0LShHpFlIzsuHYpBy9zgFRSoo0wDatG3Mv5t7WE3wlHoQBG5DnADH0MtdIUl8d6Vo3ggawfBmVCQ2rloUymBrjBlgKZedV6B5A+5GhqZ1mhsPOPvOVsVmZA2CLO4NFbLhsCz4R6OtCq6izUOUV0P5sDdOfcAvj3DqFkAn3pGl2LzQ9itC1+tWIrcGDYNJE8Oa8dmiRPTLtCQovQ5/sEZfOoD1UWsXxQnhLQBTW3HXC2VeZ3/dgKtLvNbOogbef1CUYlQSMF5/6cFVprhYRGMU6+2JhiAh2eRF0sSrUTyjsIp+mo0ZrlBRAjMJMhwti01AwQPCDUrSqG8wEDJFYrOurL6XV4SyjJNHNwsIMwaLm/b94f4n/INokWXKlPCuuGAI4zqKwvwJ2BSKohveRDG00AydcpPGaMQ6ZQzEaQmK180kAqwSgyPwOMqWdYm4V+LkNPnCo5Q9DgTcgD2ZOAPZi+YBkjmpb5jkTgcidDTuxHWyBjgZAPU+Bkc8rOYh1xEPMffSUZTx4Spw9lDwXobqSiEejDHKoWaaXGMYMFEZcpopD7rM+C1R4gyWLMotuHJRFMdFUIBNrPD/HlN6kgQ8HmkRgNegDuZGmSYiYoqnej+/WtivKKxbs1AHWYPF3CUqDA0K9BZiGCMfr3kslw37PNG07kLTcjEw0dyfWTRKNGWqoyCmPFdoCIs8X6Fg+0o1mAxpnMwC0FS3YjlQhsGcDhSejNJZdocySCvM5DHZZUAHUhD4YwtQ4ClLVa6CRCE4inEUZDiSH78CKVIYtAlciDKuyX+aOxElIBQfkxwMGp+iwdadDtENV0U26KOUP41gAI/sTqgbPG5A68gPGQVklLSOvRINDYJjv2pzpK5dJx8LeBfyHS1T/jq5/nW0ZRJuVsAgpOFyWDgJ8RrM7+LqFvbEPGjjGsRLRo2PEyUo+6UeQV4yZcWryWwS39ABes0DD5aEah5JshTDzL6X6wDaQfKFQFB22XVCmJY5WDqFpM3J+tJZjfSCv2QL2t/MviDMJF9LQHRsIVvpNIBZTSOedaZOAkzEpKSG7DmUsEqb5IkOJwRveTG0aSH9MM+RR62+JLZk+S3r6C1Vlw9iR/Y2wBso0GyedinQTb3ScIF1USiAskWvRXNliQhT2VIO5oVkdmPFiOWSlhk7zaRpviqbEmonuydgeJYFJCVfENGxGTNl5Cu8kvL00qNo4FXzYhuJ80aZBgmqUtDY6qabaYpspD5BNdKWFgdiqihDNDHg7cgijNIrr9a8tfcgybpWJfrSKMGHIgIKsPCoNXQqIqAQXlzrEZRp6UHlqZOwcKCvUqVPwZVEDpNRPh2wTItGo2odo0nGIpGHW6xLMpZuzPc7OrvF8pAzmkG2G+Dh4+KkRB3QDQHPuaFJqP3K/k9pHeFacEfgODW850CKLALeQLqglFkwasFW8ZW8yGjITQRiXCJYgg9ldQ8NGsbJIoLMLPTOimJR6CarWVmn+ejeEmEWTCpUCHobOYVl3RVrhVTdcUFkIckbE4d5p5IP9uGVtEgkS6hIua9X0nHFY0lbolkKRk0OFNIoq6TjgutREVXq6LjgVMx8oVkdLUpn3lDZt+rouChUKQGDkurouPCjMoWStccF4AXCQKmjRaEDofeVOpqALOBoXqqjRRknoqYoVkeLQhzB1QJOFdLYk2gkUFoDzlaFtChdJyznQnpDKYX0hpYKaeMUMFsl7FZIi0J2J9WDHC+kRZtocBjNCmntplOvRriyQloU+gRHhbTkQuq+KaRFIYVPlWM0aQ56iSFP6YkkTqJbCmlpqesNUsBchbQorMa5pkJa2h3CIr6oUJV00XeppOMKXHuKLO3VK2mRVnUrRLJKWsAZJpBfSmlRqH3wsog2ldKCHEWS5sGA8PDOgMnyNAxWqqU1cVSIMkmqltbrcgcgldIi9YOJFnOUpWnhYQEoEolKae3Xylyrbr2UNimlgtdKacGyH7q51tJSiErRUjY7brSTQiJEEGClM6KcKmkCGwSr9okbXkmjDNLgyXVmlTQ5KRooVq4l0qaaUv5GD09Ohf4IUcbyrlRKixLIrE1EVkpvKIRXK6U3JC+ljY9SjGwA9rae121Laa2AvqEbnJXSWvZEBsQ8hXBErM0twTiVUtpMgtKlltIGZLU9Sym9MXmFL0uJDJZWuYN/VdKmSJ/mlXRz5qoUewUKkgUFzBJ8C03QMbkITlTLKhlEo5Im8lUSQSBV0htaqqRFITp5RmeVdEadBVGaZ6gG0I00TCw+WiFdV0+8AlBCL+/10rMU0to0FRxCZpTqvEYUKipRUtklZFKM4lEyRbhTtQy8Ck1CpsLVKvUr+mZSxELuZBRbgeYpZoNhq2xVSItCXNKoVEhLqcQlrSDltJqHojv1bKBZIW0U5tg8y/FEWT3zLYW0uKtnZa+jkG2YvK6zSiwV0qIMs6XVSVC+zBFrZR5xQIW0RiFXXA0UFdK2PXfQUFIhrS3TB0TH0KyQFgWbkfBSIS0K+ZsnEiZyva/QSiGdTVIJQqqtK6kU0rIJ0jVjr0KaZWEkXarcrZCWXAaqT8aUQtrkQv/TaFZJi0J+7KOskpZGLSJYeuOVtPROuS0teyUtSyLZk1zIYlVJCy6kw1JfonzHogjM6mMUmsFTXtIYySwM5mrviZIqaRkcuZH0QCKgSppcTl1YLYDWoyppUWj5JXl6JR3p+k/WLEfqVkkDfDyVcU+VtChTj90apNCAPBwOulMxYmWRKmlRSEAFMxCoSnpDKZV0oW0q6Q0tVdKiIEaviambndeIkvAdpZTWKFKvWkpHfkfnf1NKizLKsmqMVZCkcDaKldL0hsjHo0ddK6VFkflrUq6kcUVU18eVdKWVPE26kY87raQ5DhDdZY/MZmrpDY1MS31WHB3jUJjDxmlNnHQMYZaRxsVJ5zKpkrLWjSiUm46JobOjCrJm7NU6J0CQAgBOcv5pHg1VMDGB9F6xQz3aQDsS3UIj6IkX2QadbKNQPIMudaNI7TQE6UyNCDRhV5tGtiJHVWDJdmZA0Zm3TVA9ouEOJArftsTjZYTTCBgzkRHkEQjw+mxRQqs0ZQ/UIqKQnlq08DRuxg8MeHthjHRXNUmExgY8RaNLomlylJZ9qLnBr+KMf+tBsDAGjlQDiQYEpE+wQMoDhSRxse6+0mvES9uJRNlKvETRPIyH9qVhKI3CrmYq+4Iq6k/cd0ouUjliAsPgfA0CvCijpUQEYJXlItAL8CEIwKJapaFhhWKXM07Hw6113TWzJ32EuZJ2NLxZAhCmgaYIybLItT1VouDSKGX0sjO2MLA4ESLe0ih01T3nQQodgU6jaIeERpLCAJ1iJxqS5uolUTr1cM2wv6NRtM2Vvdj7phlfNpMXEmuNQkwxjU6E30AJKnkCBNLeCQlJRSZhVeYGU6I9FDyL6j1MQD0MjaEXsuJiZBMckWAB5LMUpAJ3oRBfSbYM3JkmnysX/85YJTvBJ0V8oIBMKks8w1Iw+JG0UIrIML5ES9AmybEaj76ecgNtPfUn6BUkUvJGcBSJcs936n090cj+HXHyWk2k0zesOP4qDyjlLM9aFsg/IltydRtlKBSFfp7kz17pADWiEOlSgaMMS/Nkf6k4IZLjS6CEOUt7QDUbijc2BK88ytIYdfvYz5ZGYwOQi7t1LFJfQ0ugx+JZDH2NYKxYFoaKx7G+BgpnFIeA7matryEKaYnmIVHra0gui3AtkvoaLikFNlGsryFp4nqc9ex9jawIDaKOU++zkty9KVWNMhbznk6z/RUa7t1BEbEyIiivTNmrpiaaCZ62hrHb0tTW0CiasR4Kra8hCk0070RlRwJtlXuU8unUokNcMY0NJ1i1BYWDOiOgXXN3kQgzhQQsxVbMHCM2n5HgJ8oag/oqJTxmGrwSbqtsNiRcuq5k0C2vA3HpI8Ui/QUY1smJ5otLCIdmrdTy4sg1EyJ3isq2XCizN31YXNrUqG5y8sUe8qFQrydZ6BSYHgqWQS1j4vLWUBzpidI2YV1IRQ0kUUJKQmi8Ip0tQX0o8J1IauDqhAlBFIpSbK6xiMCWFOTxh2oB2OvtWIluA55WbPiJdgFjeCcdYaNQrQkx2ISOALV91E4BByI7gVzzEImimWhYpebhxXprxJrXx7hGlkbL3MYQB8zBQaMlTGHJPKPFEcfgCR2cSPzBApmSIopWIBs0N2CGIl40QTqlasIQkQtOdHY6vK6gR3CRDaIJdc3kBhSo1CVCBiTBGkV0kdtRAgkTAium5MskIEz0eDUNnpOusDCImzsW6BgGA2dlLXozEfkrW0JUQ0Lon1J9QytpMl4YKP1sRuHc1fLTBrlyoiWwYsVYCQFFe/oPdrKoTPtKdDjWwdMi4oBNMC/n9qiBQ+lKkGYUIC1FL4NwWytvMUYD743cvKHeR3SgV51kTSOqeUHHFla0JsoKTpmGqgZ8IgcFyF6NuawE5k2sfNB5NEIn+2MvUGgBaFEUC6x3SyFDR656Xx6lCGnNaBCcaGYJnEIDPShEWLkcNmPeH8o0p5xdaUnipe6wjVIkYR4xIjklrIwYyotnc2bsWE10rYD8LeRTK4/jUjaaqpYvP6LGZ6ZIn9W3JMeklZ/6mxxngd9kPQYBIyqz5LBOJNohKEonnKLQfkSt9BotS446ZlztbpEaat614TDSjwHIKAblkZxhcqHB46cyS+ILAM73L2jqmJ/gzBR5yQeZFpENJ6v0PiWtlB1FTuHtolSmaJckEbq2sB2FTL39mDmRuHMqbMLJrxOieoxYCvNFgR5SDCkjLxz0+Ek5qVDeHeghomISRQZQOutMJDk13PXJFBcmq6wkwMoJq1HIm2RJQMfqWMbQ9pO1kcEHYhXpmZYAPh2j1sxkmdQ6si3krBNsHD4UK8AZzBG2MIPh4SU1StERI0EEFMU6SGO07h/QUs4H18gZAUqW6jSpBSxLJjU26XK5aWO4RQfZtk0HmKn1ZrIlc6kCb62tZEZc2MDY5RfL20AB2BBvloT9gQtVi8aIVVP7G3ZSiyfvDHiBE0kk7x8QUjYkOzYZAdSOthibzZI08CIkOZcs7wRwVJl1UilZcYRoJEcZhBPS6QB5u2wj0ZhKNML3GkUVumBBe0taoWi2BhkZLTs3rSDySHsIVuRltM+QL3kd+bswRzVgGiBYCIRIkLwpaWVdOVKxWIyX0s019S71TKY6NkUnmWKzlJVZPeejmEfm48fv/CA+FAETmX59F5zA/shiy4LQGwPRW1kylGVWlrnZmAwap2rbJ1SxMSgkMeY8rHPtzwxIQgRthYSAuTFoBOeC2rwzV95FeOOigm4MxLIi2ZRO08ui5e77RWEqb80isw5RBO60fQtvXDBis0lEAqBd/SmCLBTNS+IuNJmJKSQHSjihY6nN3pcygaRaW5QUIYOT9g253GwgoBeMpO2ZxeOrzCiyDCrWspwqpQjTLtIKM8QJGZ36YFxxxUFgCWZ2NfuuNOK8NxeGMvUCKXFTpJAfoyVIOYcVgyG9IVMI3rptRZCB1NsJlC71oSJbBnfZ8Ae6isaCcGy4bW5kGoUJFuiQAtFU3HHc6udQDuGQkBgE8kCZGbCa1H7MFPlIIq3OyTKJA2D6x3gICIZdEajpnDG2aL4Oo59UHXN5iB90TASF+yZYJxS7OkKzncRQ7RowgBHopF00imBxp1Cho2yUUaijB4n/VfrKGFHghBLJY3yaDSrGhpzSMDNAKjwAIebeSGAtFN5QyB65p2ephmVZ4kXI4nKwOYBVxYgoi66RmIuwYoYta74I5P22BOREvjzCCprOaE1y61EegXzJXlKNrDqD10HDPJ25KmlTsdPgZVFTaheGuPisd16ilRyEhIHsgcTA1pH44V2oSXxpInFFTmd9XoBYIiQK1zG1DBVl3vTwboGR7DJBhAByPA/T6VOzoQACFegSYBqldp2d5EsZhQbm1EAThQsqREM0TdQgr8W50yJ3PFB8m3Q4neV0V4ikCGAE81ShKPsEf2Q5UiJ4Bv9QMFj1Vh0QvIVsGxrn/hqFyqxhiPfqCSQmeS77632J4trgXL2QgD+o4zjAKa7WbPRM4wzb4I69jdxXtNexXNkk7tMuqckxcvMHTtmU3bh1SPWnoy8fer5a6HWLnQaUWiszxU7ACVCzEa/z87smP4+YrdpAaXh+FFu7Fo/z4WRLX1F0+AKKsyc+qmjSRxWLfW8B6LmMOO4CuPQvKuL5FxWny/X3f3+2vLxceiNApyw3Pz613OaZb0AwOd0wesNdh7LwhaY4VwSHXY9jLotv+Bzk97u7H93es5G7F/sXP7YfXt7vwu7u7Z098LWIHu7/bvP0k1dGPKQhh/a+Yb4TE+3hfndgns86OMcX97s/7N58/fSnJ+cyJ74oIT1e+umXLEXuHASpS0agnxaiUZazPSPn/KyUUHdb0vD8+KjcmydgcvbtzUD5RF42J0lPJzBpvoWg/+Bpjf4d4YVItkG1P5flcljFJzPv0uj8xGKb98Z0WuxBKMHpgRICob4a4h/6Maz7QJnvEAHwLucfXf3JUGXG10LEEwL2OT/w9t5fILlMK6++88WBXyCKOYPj9C/s2R4EAGf/7sG1/fAy/yCUakwDsvNosOrTfpJ/ANE27ZD+zS+oc9o89HDPd0y8Etzbv3VIl4fsy7rKrP59LEJK4ruubkf4pDVBMoc0HoEYLrRAzCHOzQu2WwzCHqs9kCPiH4o9lMcf0h4OHEmk5W6UF+4bl3qRUxFTFndWQxnRZ4UMSdp5xIukhf0F8VcSs5/3Q9hJc/RB3awepi6xX9jHHSwzok/lbpLdCD5LOnkiKnu+mcuOKD89Knd8xnP+v34DmG2G8toNOnki+XxHZXNXpP1in4Ga7QljcdXUMThyJ2UD2t2laW5Jhv0yHIsyAgZ1/Av0ldhgffYrBOiUFkvyn/Iy8myFFBtbZpdJhdKVQel3LCuZevUTPe9IrEIZfz4McB0tsrmLmVLmj1dC6fjbTI5GyX9IUw58JZl87WmQuGDBhpRqwQk4GUeU0RzJFCDZI7h6CklPfU16DP6EpJr6VCQVlCRI7e6mGcVvLEye8apPVslZVVoczl5TvlkldD6T/VT06zMNXci8wA8DoFtt/1uTy/hp1u35D58c7UZ4fXQ3XOstXpokeVaP4cJ2/r66i8e2k/Ogyg+NUoKtl/gty4cwpGbikxEc2uPyvoBCx1mFYQZaxiFlRQGh/fw0Aq8FR0IgB+Rnvuxnyfw3Blp8WVt++nTrljbofESfZ/IfdSVNn7keztZQ4GmVy2V8nPHj1JPUnz7rOT/g+fPXuBbzdtkNzmX97avsIosfqt6rOLSggGccyqjM6rOM9cSyufs8U4q42jK9vDdP/6IwbMvbigq+zJzKtK9ONvIPecQv8g8w/gCF6OKq2pwXBHj3IQbWc+ykU6xL/Fhhju/PGKzyas6BVX0V06VBQ5eaHtC5qu9+/I9Xs94y5LKRzlMvMPzYpXJN9hEh/NMnN/ubX3yyfcG11ttPOq26tNysqffx7HyNxxUSmnwXt988p6mzeo2mD1cbKF3O+DWYYglwBezneUChFPtBSmZ8XxQbK0nKp19n4JfR4dRIfvmrPKbYERyTlWwLyJTd42mrSza3m/wxAdA7DD6wPJ54ZSny+YbImeSSV9bfCCgZZuoqTMVLfJO3Ur3UhU29j+/URzfc5KJWPXqzFasZUO/Fj1SBoysM9JzfFu5XxwpOjGhbXlofgPrldKrtknP8c/bsxTf+Sxbevxb1P7GzMwWRgdD+84WcZJpXCCqxu+TTaJ5x2MTxr0R2wvmnn7Ch97bChaXSVcYKzzlulHBSXyVAF/AXgGf8c5culrRYN+vUHTxBv/R6Lfo3KV5GP53bgn5hEB1/ltVWTLyUTjUlCfus7uIbStQt1nP+q8ISqZiPSZVKk2ux3d23+fWFTbW94+T8WkhzO57zEAHpdLcflP2AHA4taVSf85OFtKfZz7+VXCZVh20VY5FQlkeuGIuXKSNOxdvcqRZ8Pvk4syu+DacHTqd+u366oCd/YOcUrAa/itWExgxVZMKFk5Q9c6UlPX4EWDdJSAKrvoF2sG6aMCV8FYkhfy9+C+WRbkyj3oehkNZ8+mm/zz+tmU3p3RBNbTQqsX9/Wntg75MCCD89YWB30F9NOd4QKyo5wKkCXKZVA1nGWQU6IK59MDsvVlH9g6pA92lP/UVJMqYMXkRnAiq/eaS+vr4dNJWCmBUceyy34cb+KNSpyFwkVWRZRFlkHOGQieaaTyc69ueEflCREcbORJbLvl3tyxTPWJ3DpbLvfYBWyz7WcCa0R3HmQqlCy0JKQuObXItDnpTZ0w+NMj71OxPZL7tizlVC2WsWJ1CkmH/Ttb/OgaoMKslwcamF9YcFmJkAw99uIMLoI8Uj+9hGmBN0uuiKnLNcs5hxsNWj8ufA0uOj2PyAY56DbngeLZcA9iZ1lb7J/q9IqS1iClm8pAHJ2bavi1grbhmn7Hx3V5V3Hs9qS7O8qYT+orP06uYuXKWis6DHDRTO/Cm4N1t+Iub52Rbfs+qgtqrIn8vZFjfS3OUavSmPj+roqRPbtGRCl063mounW3xRnfSVz7de4FqfS1dT/+bi+dY5RyR9JcNa1KcAzTWWvL5NhP5EavWITN5+FEG7bJs5ENehmVIOnAr4SjzOQ9LRWFMOzSqXfIxWU8gcxOuY0+ygv28+IKvi1oXuVdMT20hhegJiyX9yJZm+TYWYP1eIcX+rhqhmyI8GMarjlfsmHJVzJYyrnlxYwBGJxAHx06e+6pELadwRP+r3ZE2K65FnuPvi9tXb+wP/39+8vb/lx7d3N/FwE3/z+oF//v2b/U3Yt7/F4J9Dz6Yy0+nOUbeJDwW5Bosj7VnAcQy4+93Dq8Or7uEQ0fuV76gI5WMTBE3OfoExzuxKfiYx+gVHa+aGlP7CyEXWv76J+5vP/uPqF2wWzJdHfLZ0ketmwSWmJI/FyTWXMiqc/LnCSZehCNdptJ4+sqRM/koyqQ4mn8br0rajKPur/Uf6q3OO1/srW+ppgzMDvjLOruvuZ2/vPwXnP7o9/HzpXrVk+2/+7HnmY43Us7Cjz8K4mSuvUF/gB1DNE6kBN/V1x6OoMT0XNfL3JTfJQVMe/9ZeQX+q7NgrTPu22+MUvpE7OLx8e/fQHeLtTbj9vN3f3N68hnzb3hTTvf3KPEXklHvfvsCg8Ri3N903dPxvN27lduNGCsLdYaa9VtFkUaS8iS9stmWQP+YE9SMcpo5B3fwVmqudZvzoE5dj0exfvGx/zcYeXtxSkj7nYc4PWSIfMnAB78C1r1PWjzsA7vURT+qZvT9j41k8+rJLJY97AC4g+uOjKcsVaeWTLkB/yym5gBQMf3yFC0iGVD3K5koOHFNkyE7lChdwZplZb5Vbtnty4NPLGSXleJ0zmZo+5CzE04jNrYT8C/JiS3rqlM/OKIVvyXLKfZDcbajNhvdpovLVEactgKju8/nj+qAvRDdRJD1XEHHBtzYm+e67RpEPtbAE/0sBNmtq5AujYwv7T9wIDubLfUgO5xBuXh5wSG/v+On37ny+unm5b39zi1MiFL88fHt4IX91+/Ytv2gPf7gNor/ek1n4LzgoqjnMqfOxrVbfk3aebYtwuinZ+KMqPP4/uB792dVjwezZj3zyQ7jpbl/Fh0+/RkRs09K37uHl4dNf4ZOuzdSqs+t7LkPrb6gd+ERr81Kdm1wMZ+5luHt0VEel54Inbmdv66jy+KhTeia5la9OTulyHcUN9eyU0j3Bl1c4pafqqHOOVzilM5+foV65bZzS52deo7glXEvqLeeCp9wbrF6nVFJXeZKztemipx8M8ddes/ie9yWUIkcByZ9rQOq5cFoLnF15fDaVuSIwPVXg6GOjZDQpLk23Ifzm9R6b+Xz/KtzcfnMTH9r9A74i5PLmV7c3t7/bt/vuIULsbl/c3nx7aGVVD4ebw23Jc9yTfIiF8TcJOObhGz/uV9UV7mh8P21hNIO3HpsPj/VcLUwdqhz1G64LVI9NcOKPI1x/szxF0iftS3/ZKwX9ZF9vdW3vyhzoYtQ/Z/kxBla5bQzsi609pY7Flzn85luyHuZ39fJhDvP5F/n84AIzWleIjXbYT7K5Zu5XmeRZDsM3LPpKXNUFGzoply/liJ5C8/HWUXWRnitYuPJhgSsNt0fA86xJPuWWtwH+pOpPXi90fBV0HMf+SA69qQuI7QfKhRrEawPiQ2yNzwL5rIqb5IfjVz9na/ryZNMV5A+m6LmID6Vwf486MyXZzYbwt4po/DHT9dTi7j/O4i6w/AiL23DbWFzIBpHtIIcvN6ZGF1jMYIrlfJUIJU8uUe3UDssI/0Vzd34umN923h28lI/7SvbcYLMl5fedvOfSPfpH8/1NtZDXAn9/0Ye5BBpofAqmvpEk/rhL+Pb/AAmT8kcKZW5kc3RyZWFtCmVuZG9iagoxIDAgb2JqCjw8IC9UeXBlIC9QYWdlIC9QYXJlbnQgMiAwIFIgL1Jlc291cmNlcyA0IDAgUiAvQ29udGVudHMgMyAwIFIgL01lZGlhQm94IFswIDAgNjEyIDc5Ml0KPj4KZW5kb2JqCjQgMCBvYmoKPDwgL1Byb2NTZXQgWyAvUERGIC9UZXh0IF0gL0NvbG9yU3BhY2UgPDwgL0NzMSA1IDAgUiA+PiAvRm9udCA8PCAvVFQyIDcgMCBSCi9UVDQgOSAwIFIgL1RUNiAxMSAwIFIgL1RUOCAxMyAwIFIgL1RUMTAgMTUgMCBSID4+ID4+CmVuZG9iagoxNiAwIG9iago8PCAvTiAzIC9BbHRlcm5hdGUgL0RldmljZVJHQiAvTGVuZ3RoIDI2MTIgL0ZpbHRlciAvRmxhdGVEZWNvZGUgPj4Kc3RyZWFtCngBnZZ3VFPZFofPvTe90BIiICX0GnoJINI7SBUEUYlJgFAChoQmdkQFRhQRKVZkVMABR4ciY0UUC4OCYtcJ8hBQxsFRREXl3YxrCe+tNfPemv3HWd/Z57fX2Wfvfde6AFD8ggTCdFgBgDShWBTu68FcEhPLxPcCGBABDlgBwOFmZgRH+EQC1Py9PZmZqEjGs/buLoBku9ssv1Amc9b/f5EiN0MkBgAKRdU2PH4mF+UClFOzxRky/wTK9JUpMoYxMhahCaKsIuPEr2z2p+Yru8mYlybkoRpZzhm8NJ6Mu1DemiXho4wEoVyYJeBno3wHZb1USZoA5fco09P4nEwAMBSZX8znJqFsiTJFFBnuifICAAiUxDm8cg6L+TlongB4pmfkigSJSWKmEdeYaeXoyGb68bNT+WIxK5TDTeGIeEzP9LQMjjAXgK9vlkUBJVltmWiR7a0c7e1Z1uZo+b/Z3x5+U/09yHr7VfEm7M+eQYyeWd9s7KwvvRYA9iRamx2zvpVVALRtBkDl4axP7yAA8gUAtN6c8x6GbF6SxOIMJwuL7OxscwGfay4r6Df7n4Jvyr+GOfeZy+77VjumFz+BI0kVM2VF5aanpktEzMwMDpfPZP33EP/jwDlpzcnDLJyfwBfxhehVUeiUCYSJaLuFPIFYkC5kCoR/1eF/GDYnBxl+nWsUaHVfAH2FOVC4SQfIbz0AQyMDJG4/egJ961sQMQrIvrxorZGvc48yev7n+h8LXIpu4UxBIlPm9gyPZHIloiwZo9+EbMECEpAHdKAKNIEuMAIsYA0cgDNwA94gAISASBADlgMuSAJpQASyQT7YAApBMdgBdoNqcADUgXrQBE6CNnAGXARXwA1wCwyAR0AKhsFLMAHegWkIgvAQFaJBqpAWpA+ZQtYQG1oIeUNBUDgUA8VDiZAQkkD50CaoGCqDqqFDUD30I3Qaughdg/qgB9AgNAb9AX2EEZgC02EN2AC2gNmwOxwIR8LL4ER4FZwHF8Db4Uq4Fj4Ot8IX4RvwACyFX8KTCEDICAPRRlgIG/FEQpBYJAERIWuRIqQCqUWakA6kG7mNSJFx5AMGh6FhmBgWxhnjh1mM4WJWYdZiSjDVmGOYVkwX5jZmEDOB+YKlYtWxplgnrD92CTYRm40txFZgj2BbsJexA9hh7DscDsfAGeIccH64GFwybjWuBLcP14y7gOvDDeEm8Xi8Kt4U74IPwXPwYnwhvgp/HH8e348fxr8nkAlaBGuCDyGWICRsJFQQGgjnCP2EEcI0UYGoT3QihhB5xFxiKbGO2EG8SRwmTpMUSYYkF1IkKZm0gVRJaiJdJj0mvSGTyTpkR3IYWUBeT64knyBfJQ+SP1CUKCYUT0ocRULZTjlKuUB5QHlDpVINqG7UWKqYup1aT71EfUp9L0eTM5fzl+PJrZOrkWuV65d7JU+U15d3l18unydfIX9K/qb8uAJRwUDBU4GjsFahRuG0wj2FSUWaopViiGKaYolig+I1xVElvJKBkrcST6lA6bDSJaUhGkLTpXnSuLRNtDraZdowHUc3pPvTk+nF9B/ovfQJZSVlW+Uo5RzlGuWzylIGwjBg+DNSGaWMk4y7jI/zNOa5z+PP2zavaV7/vCmV+SpuKnyVIpVmlQGVj6pMVW/VFNWdqm2qT9QwaiZqYWrZavvVLquNz6fPd57PnV80/+T8h+qwuol6uPpq9cPqPeqTGpoavhoZGlUalzTGNRmabprJmuWa5zTHtGhaC7UEWuVa57VeMJWZ7sxUZiWzizmhra7tpy3RPqTdqz2tY6izWGejTrPOE12SLls3Qbdct1N3Qk9LL1gvX69R76E+UZ+tn6S/R79bf8rA0CDaYItBm8GooYqhv2GeYaPhYyOqkavRKqNaozvGOGO2cYrxPuNbJrCJnUmSSY3JTVPY1N5UYLrPtM8Ma+ZoJjSrNbvHorDcWVmsRtagOcM8yHyjeZv5Kws9i1iLnRbdFl8s7SxTLessH1kpWQVYbbTqsPrD2sSaa11jfceGauNjs86m3ea1rakt33a/7X07ml2w3Ra7TrvP9g72Ivsm+zEHPYd4h70O99h0dii7hH3VEevo4bjO8YzjByd7J7HTSaffnVnOKc4NzqMLDBfwF9QtGHLRceG4HHKRLmQujF94cKHUVduV41rr+sxN143ndsRtxN3YPdn9uPsrD0sPkUeLx5Snk+cazwteiJevV5FXr7eS92Lvau+nPjo+iT6NPhO+dr6rfS/4Yf0C/Xb63fPX8Of61/tPBDgErAnoCqQERgRWBz4LMgkSBXUEw8EBwbuCHy/SXyRc1BYCQvxDdoU8CTUMXRX6cxguLDSsJux5uFV4fnh3BC1iRURDxLtIj8jSyEeLjRZLFndGyUfFRdVHTUV7RZdFS5dYLFmz5EaMWowgpj0WHxsVeyR2cqn30t1Lh+Ps4grj7i4zXJaz7NpyteWpy8+ukF/BWXEqHhsfHd8Q/4kTwqnlTK70X7l35QTXk7uH+5LnxivnjfFd+GX8kQSXhLKE0USXxF2JY0muSRVJ4wJPQbXgdbJf8oHkqZSQlKMpM6nRqc1phLT4tNNCJWGKsCtdMz0nvS/DNKMwQ7rKadXuVROiQNGRTChzWWa7mI7+TPVIjCSbJYNZC7Nqst5nR2WfylHMEeb05JrkbssdyfPJ+341ZjV3dWe+dv6G/ME17msOrYXWrlzbuU53XcG64fW+649tIG1I2fDLRsuNZRvfbore1FGgUbC+YGiz7+bGQrlCUeG9Lc5bDmzFbBVs7d1ms61q25ciXtH1YsviiuJPJdyS699ZfVf53cz2hO29pfal+3fgdgh33N3puvNYmWJZXtnQruBdreXM8qLyt7tX7L5WYVtxYA9pj2SPtDKosr1Kr2pH1afqpOqBGo+a5r3qe7ftndrH29e/321/0wGNA8UHPh4UHLx/yPdQa61BbcVh3OGsw8/rouq6v2d/X39E7Ujxkc9HhUelx8KPddU71Nc3qDeUNsKNksax43HHb/3g9UN7E6vpUDOjufgEOCE58eLH+B/vngw82XmKfarpJ/2f9rbQWopaodbc1om2pDZpe0x73+mA050dzh0tP5v/fPSM9pmas8pnS8+RzhWcmzmfd37yQsaF8YuJF4c6V3Q+urTk0p2usK7ey4GXr17xuXKp2737/FWXq2euOV07fZ19ve2G/Y3WHruell/sfmnpte9tvelws/2W462OvgV95/pd+y/e9rp95Y7/nRsDiwb67i6+e/9e3D3pfd790QepD14/zHo4/Wj9Y+zjoicKTyqeqj+t/dX412apvfTsoNdgz7OIZ4+GuEMv/5X5r0/DBc+pzytGtEbqR61Hz4z5jN16sfTF8MuMl9Pjhb8p/rb3ldGrn353+71nYsnE8GvR65k/St6ovjn61vZt52To5NN3ae+mp4req74/9oH9oftj9MeR6exP+E+Vn40/d3wJ/PJ4Jm1m5t/3hPP7CmVuZHN0cmVhbQplbmRvYmoKNSAwIG9iagpbIC9JQ0NCYXNlZCAxNiAwIFIgXQplbmRvYmoKMjQgMCBvYmoKPDwgL1R5cGUgL0NhdGFsb2cgL1BhZ2VzIDIgMCBSID4+CmVuZG9iago3IDAgb2JqCjw8IC9UeXBlIC9Gb250IC9TdWJ0eXBlIC9UcnVlVHlwZSAvQmFzZUZvbnQgL0FBQUFBQytDb3JiZWwgL0ZvbnREZXNjcmlwdG9yCjI1IDAgUiAvVG9Vbmljb2RlIDI2IDAgUiAvRmlyc3RDaGFyIDMzIC9MYXN0Q2hhciAzMyAvV2lkdGhzIFsgMjAwIF0gPj4KZW5kb2JqCjI2IDAgb2JqCjw8IC9MZW5ndGggMjIzIC9GaWx0ZXIgL0ZsYXRlRGVjb2RlID4+CnN0cmVhbQp4AV2QwW7DIBBE73zFHpNDBPYZIVWpIvnQNqqTD8CwtpBqQGt88N8XiJNKPeyBmXkwLD937513CfiVgukxwei8JVzCSgZhwMl51rRgnUn7qWpm1pHxDPfbknDu/BhASgbAvzOyJNrg8GbDgMeifZFFcn6Cw/3cV6VfY/zBGX0CwZQCi2O+7kPHTz0j8IqeOpt9l7ZTpv4Sty0i5EaZaB6VTLC4RG2QtJ+QSSGUvFwUQ2//WTswjHuybZQsI0Qrav7pFLR88VXJrES5Td1DLVoKOI+vVcUQy4N1fgFuNHASCmVuZHN0cmVhbQplbmRvYmoKMjUgMCBvYmoKPDwgL1R5cGUgL0ZvbnREZXNjcmlwdG9yIC9Gb250TmFtZSAvQUFBQUFDK0NvcmJlbCAvRmxhZ3MgNCAvRm9udEJCb3ggWy01NTMgLTIzOSAxMTEwIDk1Ml0KL0l0YWxpY0FuZ2xlIDAgL0FzY2VudCA3NDQgL0Rlc2NlbnQgLTI1NiAvQ2FwSGVpZ2h0IDY1MyAvU3RlbVYgMCAvTGVhZGluZwoyMDggL1hIZWlnaHQgNDY0IC9BdmdXaWR0aCA1MjkgL01heFdpZHRoIDExMzkgL0ZvbnRGaWxlMiAyNyAwIFIgPj4KZW5kb2JqCjI3IDAgb2JqCjw8IC9MZW5ndGgxIDU3NiAvTGVuZ3RoIDM4NCAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeAErKSpNZeBgaGBgZmBIzk0sYAADxgQgJZWeU5kG5bcA6TkZqYkpED7DHyBtlgEUgMqbAGmVjNySCig/Akhz5OQnw+RrgHy23MQKqPkMd4B8hbzE3FSIeiYFEB/CpiLJCDSLicGIgQVsJhODAIM+A0gMBkBs1jmayWuDC+L5bb4ySHKAZXbHX3QAMc4GXF30e/I/MY6H7HOBXE6gWRAA1Mf6+e9nxpWcskD5UxwPUUwFqWFi3sLAwDgLrJwRKsvDwMbAAxRRBPJhrvBj8AOKgN3HvIXVChgL7AzcDIZAvYKKgiCsamosKizCx8TOxywqqqymZmpix2RuZmZqoqasxMZuamZmbCQHtOyPD3P4XzZGvqpnwvIaYhIGahIRjIxyuhaSCjqRnkYxKspJhraJLiqsVr+OsVr9VmRp+V3TWlvLtEDZTFdVUFhd11KVm12A1cjdVEtE0krH0l5CIERYXNbUC+QBRgYhqHvZGHgZGBxBwFnbOb8oKTWHAQDf1k31CmVuZHN0cmVhbQplbmRvYmoKOSAwIG9iago8PCAvVHlwZSAvRm9udCAvU3VidHlwZSAvVHJ1ZVR5cGUgL0Jhc2VGb250IC9BQUFBQUUrQXJpYWwtQm9sZE1UIC9Gb250RGVzY3JpcHRvcgoyOCAwIFIgL1RvVW5pY29kZSAyOSAwIFIgL0ZpcnN0Q2hhciAzMyAvTGFzdENoYXIgNDcgL1dpZHRocyBbIDI3OCA2NjcgMzg5CjYxMSA2MTEgNTU2IDMzMyA1NTYgNjExIDU1NiA2MTEgMjc4IDYxMSA1NTYgODg5IF0gPj4KZW5kb2JqCjI5IDAgb2JqCjw8IC9MZW5ndGggMjk5IC9GaWx0ZXIgL0ZsYXRlRGVjb2RlID4+CnN0cmVhbQp4AV3Ry2rDMBAF0L2+Qst0ESw7rwaMIaQEvOiDuv0AWxobQS0LWVn473tHTVPo4i6ORiOkUXaun2pno8zewqQbirK3zgSap2vQJDsarBN5IY3V8aa0psfWiwzNzTJHGmvXT7IshZTZO1rmGBa5Opmpowdeew2GgnWDXH2em7TSXL3/opFclEpUlTTU47jn1r+0I8ksta5rg7qNyxpdfzs+Fk8SN0JH/nMlPRmafasptG4gUSpVlZdLJciZfyW8JF2/629bi7wqOUoVqhJlUYCIUrvEDYgodSi4ugV3zH3P3IOHVN0wH0EE1Zx5BNvELbMDEaW2e6YGEWw+Mg2IgMQkEAHTyT2IgCa96vf6/ED+iPvg9DUEzCz9Vhonj8k6un+onzyPJeUbCfeUhgplbmRzdHJlYW0KZW5kb2JqCjI4IDAgb2JqCjw8IC9UeXBlIC9Gb250RGVzY3JpcHRvciAvRm9udE5hbWUgL0FBQUFBRStBcmlhbC1Cb2xkTVQgL0ZsYWdzIDQgL0ZvbnRCQm94ClstNjI4IC0zNzYgMjAwMCAxMDU2XSAvSXRhbGljQW5nbGUgMCAvQXNjZW50IDkwNSAvRGVzY2VudCAtMjEyIC9DYXBIZWlnaHQKNzE2IC9TdGVtViAwIC9MZWFkaW5nIDMzIC9YSGVpZ2h0IDUxOSAvQXZnV2lkdGggNDc5IC9NYXhXaWR0aCAyMDAwIC9Gb250RmlsZTIKMzAgMCBSID4+CmVuZG9iagozMCAwIG9iago8PCAvTGVuZ3RoMSAxODY0IC9MZW5ndGggMTQ1OSAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeAGtVIlPVEcYn3n79i2K4i7s23V1gV2W3UdAWdyzBoouV0FQgS7I4oHLJSiH8WgsrVgJirLWBhVQxItgpdSUVtt6RBukaYxJjY20acTamBqLZ4yJVgPs0G8eaP+Bzsu8mW++md/3+46ZTRs2l6EA9AmSIFRS7V2PxIYPwuBYU/Vh+aT8AiHpnIoyb+mEjMaovgIWJvU2GCMrqjdtmZQLYFxYVVvyRv8LyBHV3i2T+OgPkHU13uqyif0yHYxRE/P/8Y8BS46siBExGZibEV170+ic+/m6cPTv4qIZCS8DNAGiputeQiidXM/+TT0yMuaXo4ANcG7K27NwTpZIlqBkORoZGamTo7ca8Tz85BwsMfMRYu+hdmk+amU3ogzoeSC7YXSBbr8sFNWD3AI9F7pPEoqaQBfH9KJwwMCTqNMQJ8ZGj2bAigRNR4FoGgoCiQWNDLwLQFORFPhNNB7xKBotQ5+jQSzBTrwYN+M+fJuZxkQzVUwbbGKo41L4AE2GkF6hVxjhhwFwTCfpH1soRaNIx/ZTDu3gQ6P0IkW3KvQ8bIPeLnnqj2dK/Z3Si6/Jydf+FsBErbDzNeycgWaLe3VqlYpXcpyMMxg0jNXicNhtJsFkaMW3cVBufW9x+5K116509X2QvCrdflx6UaW/09d0vlLB+39nB8jq2GJXdsX0qRQ5Y/wBG8smIgOyACXB4bBaAFqiVKn1AChwnCHCZLc5HE6HE0wYIjhMrfJKldUCSw47LhuPuXnj0vlMyWwjeRQol0nSu1d2X84/vO+nrOzaTDde5XgU6SxIyUq1ygOZv2I7Dnh2nyPn9+zI0jo1AWlpZ3YVfpqpNeq0Oanx5GawZaaQEJ9vMTkjoXwxygN2C4CdBgSpiZoXLTucUkoMKaACLSp2HnkcVLK0cuu2ddnlPFbGvLj+kDzGqqcD95knlvfdLb2XO5fXmn8YwCbMYhk2ngK/3YDsFSOqhSzp7ZN4wVaLGrKlVIN/NKZgkfWSUdc3hefIKBk404A1/mBzSp13V+Oa0qbO5R4s4AAchDUHGPnY+t6smpPd504cA3wX4AvAXIkAH1O6OsFkp3yRRK+i6CHUHxmnZkbwTMfDPvJ4RyVWDj7FwZx/oaTBm1QoSLbkr0hIwDjX3HHiu5Y7YCiGXCWXt/rScVXdtuTkjWBnP6CfBj/EaguBasPQ92MNGcYa9nvMkrHRRaxpdIhGsx6u5EHgJCAUoudpptVivtUqHg7ZBOotJ07FUNNpPZb4+svb4tK6Vmzuigolw6FCTnxFLBkOW+BwVcwlw6yp5Qt3Xp67aEXKQb+HKToam5DuayMMk3a4cE5a4yE/PGcYQRGzHrCsorFW2N7CQ8UDjTCGZz1kODJnfsamGCAu9Q2u7FgazoSdLnsnu/EMCWdNnd8mVzR+BP7mQlw7AGk6rYkQWzAcR7wSGSIiTUZalJNJy232dz7HNnLtyT7yqhnr2mpqWltratqYiD2YayZXnz0nPzaO9xzt6Tne2dMDuD5SxbYDrpzmi0aHAkN9QfkLtCD+g/ZhzvrV2guYIWMXCj5bCnxVe8uLG3aWrNkFPLNLyZ/ET/4ht9Ly/A8lF85+eeTsqa5jEIMmeBKcogUagwkLapkYcwU+Tt1OXpey2rPsvXfjc82sqX1div1lrKuXPIezceC1HM5GAzcjrR64eZAvIRJqygZMVWrxdtCLqVaxkE8lB8Tj8KzgmpJqp1HJZ5DTy+uH7g/9GkVeKYoKauN0WhO+4il48eyWH5tjcvOitGYdr1RkJuYfar601zcvMSlcZQjjteWLMnfuu/k1cAgff8C0SI+Id5E3KJQiDTW1Aw+FXWGwW+1GBVPXHyhohUUziz/OqpsfOGX7djyLNd0l7oYY7eyhaGtO6rxWfOPuYDfZTV9UjIKh08ahEIRctKXGuDZUeqvmJtVWlS52g+pfVl7A3wplbmRzdHJlYW0KZW5kb2JqCjExIDAgb2JqCjw8IC9UeXBlIC9Gb250IC9TdWJ0eXBlIC9UcnVlVHlwZSAvQmFzZUZvbnQgL0FBQUFBRytBcmlhbE1UIC9Gb250RGVzY3JpcHRvcgozMSAwIFIgL1RvVW5pY29kZSAzMiAwIFIgL0ZpcnN0Q2hhciAzMyAvTGFzdENoYXIgOTYgL1dpZHRocyBbIDI3OCA3MjIgNTU2CjgzMyA1NTYgNzIyIDU1NiAyMjIgMjc4IDI3OCA2MTEgNTU2IDU1NiAzMzMgMjIyIDUwMCA2NjcgNTAwIDU1NiA1NTYgMjc4IDY2Nwo1MDAgNjY3IDI3OCA1NTYgNTU2IDMzMyA2NjcgNTAwIDY2NyA1MDAgNzIyIDU1NiA4MzMgNTU2IDI3OCA1NTYgNTU2IDIyMiA1NTYKNTU2IDY2NyA1NTYgNTU2IDU1NiA1NTYgNTU2IDU1NiA5NDQgNTU2IDc3OCAyNzggNTU2IDU1NiAyNzggNTU2IDcyMiAzMzMgMzMzCjUwMCA2MTEgNTAwIDI3OCBdID4+CmVuZG9iagozMiAwIG9iago8PCAvTGVuZ3RoIDYwNSAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0KeAFdlM1um0AUhfc8xSzTReQxw9iJhJCiVJG86I/q9gEwDBZSDQjjhd++37l20qqLszjcH+53B2b1uvu8G/rFrb7PY7NPi+v6oZ3TebzMTXKHdOyHbJ27tm+Wu7NnzameshXF++t5Safd0I2uLDPnVj8oOS/z1T28tOMhfdKzb3Ob5n44uodfr3t7sr9M0+90SsPifFZVrk0d7b7U09f6lNzKSh93LfF+uT5S9Tfj53VKjomoWN9GasY2nae6SXM9HFNWel+Vb29Vlob2v1D0t4pDd0/N11UpeZ/7KivzHIu8L5JswCLvN51sgUXYVjZiETbKbrCI2iC7xSLvt9b5CYtIbhR9xiKihWyNRb6HWvaARbTayDZYRK1N1WIRdq1owiJa5bIdFhF9xgZ2IWE1VYBVorOSA6wStRaFNRhvoSEDrBK1GjLAKrErjRFglbyPAgywSnQWQoBVIvokC2swImbDQiPRSpsM0EjUapMBGsn7tJWFRiIq3gIaiZm1HJ6ZeJGIwDIxs1loOA7V6kUFNBJRTcXbTIwhXpZt4hQsCk1hRFAThUaiVoAFRBLJ9iJOD3BsZ8mwFsYbtVjWaYLILKzMQ/LWkmHle1Mr7bmAVcIKn+2asOKN8EqMYVF4AcdGs7DyRmzS6UdYJfBZO//D+4e/vv86776MrEKiUIuKrEJiQu2c3iaiZlkDx0p0YyOxhmir4O8gmTVIvNQsa4i3s9ZWI9wSnbXGCLfE/JYMdzT2rZI3sEtEOaB/5tevrSvo48poLvPMbWH3lF0kuiD6IX1cZdM4qYHpD/arPkoKZW5kc3RyZWFtCmVuZG9iagozMSAwIG9iago8PCAvVHlwZSAvRm9udERlc2NyaXB0b3IgL0ZvbnROYW1lIC9BQUFBQUcrQXJpYWxNVCAvRmxhZ3MgNCAvRm9udEJCb3ggWy02NjUgLTMyNSAyMDAwIDEwMzldCi9JdGFsaWNBbmdsZSAwIC9Bc2NlbnQgOTA1IC9EZXNjZW50IC0yMTIgL0NhcEhlaWdodCA3MTYgL1N0ZW1WIDAgL0xlYWRpbmcKMzMgL1hIZWlnaHQgNTE5IC9BdmdXaWR0aCA0NDEgL01heFdpZHRoIDIwMDAgL0ZvbnRGaWxlMiAzMyAwIFIgPj4KZW5kb2JqCjMzIDAgb2JqCjw8IC9MZW5ndGgxIDU4ODggL0xlbmd0aCA0NjY4IC9GaWx0ZXIgL0ZsYXRlRGVjb2RlID4+CnN0cmVhbQp4Aa1YeVxTx/afufcmAVRMCElQWQyBBMUNQhJEluKCK5uKC+KCikBYrCIogguyqrigT9BWrYAiohSXaAtiVbToUym1aP256+tr61K11b62EjK8Mxe0/n5//5LP3GWWM2f9njN32dL0OGSF1iIWoQUpsR8j/sckw21nfHLmoq53ditC0rCEuNiFXe+oA+76BOjoesc+cHdLSFm2ovt9BkLYPnnxgu5xloP+4pTYFd300T14758amxLXNV/+iL53Pf8/XjHQGoOGg2wR0BgkRkMR7aM/Bp7os/Bay+MY0Zq5vf3/Y9XPih+q+EEzkD60RNyUt9dZ4sXIKhJerd+vhXWiQBKGRolRe137SjEIyy/8+zJGCF3McIS4NDSeqUHZfBuOauAeDP0N3WNRMP4Qmj+0vtDoeyi0WGhTYE69YFqnRTANlQouoUXQ9sJzBfcDqgaFGmBOqbAG7YT+3cLhaAGM7YXncrjHwJxhok2oDzxbd+81AeYXwLoIuIdAmwj9UriPhFaIL6EifKmzAu65QLOQ9kEb3X0fB3znw9ogWOMGfbnw3Bdab2ge8E5pT4BnSpvSPQP30bDmATw3w10ILQnU06VzhHoiIdoA70r0EfT1Q15gGQ9kj7zREKRHEqRAw5Ab8kGDkBpJkQ71QRokQk7IAbmCt1ojG1gvRwHIDvkiZ+SO+iJPJAD79kKDUQ+g6YL8kQF26Y1s0UDYJRA5oiCkRSPQALC8DLyBQ36oP/iGijeaDPpS0VZ0DDWjNvQA/YJdsA7H4zx8CrczDsx8Zhmzg7nF2rD+7BQ2gS1kS9l6tpXjuCHcIu4o18T9LnARDBHkCI4K7gt7CkcKFwmrhJeFd4UdIiuRv2ieqFh0RvTCqofVFKtMq3Kr01YPrczWImuptYu1p7XeeqR1hHWMda71QcRQVxLAH3gUgYIkSok7XDAw3NGfPdfxkQCZUX/uHB0f3zmYkwqDQUIv0AMS6IYwGoNcIVdI1Bq1Wudj0Bt0WhntEKnVGolc4czI7IUiGSsUyuzlCqler/NRazApPJRlc1Kmm2RcvGza7KJZJ4x7YjIcGsRxM4oGTTUOf3nGmJgZn2VMXB9b0maSTG8qdi0ZPa8HEyALHlaTfG55hN20ab1D5x92NC6xs7x1lbobt0Wdbrc+JfQQF82OyXa3yHvtTpu/fCi1fjaJZOYJ2sBSCKsZCeVQKxTBXybG+OGOb0KjG3MyNQEqT+xJIhvxX9j25R2L+duZG0pPnyEupP//oSFVIYmPBoTVaEFKmZix5GBPT9cAzcqcxujQVhKJH+HHjfWlG6K/M1vuvCSvCUQ4RjXkAc5FLeBFSAsKApVo9HrDqZaI6d7D9WxLy5KN6tA+sbNgZjD+kjEyKaBrJNUpZcHMAPzlyZOURgNcCoEGjFAaDS0tLdCLOn9mhoN80CvDWowPbSUz+gh+abcHr4vq/JmTCM6B7E5ATWyn13rL5XbAtFDlqlFLxXKtt14iVqtcRcKopLZ9GceXjTS2ld/ILKk/lJ196NDq7AmzmTbM4YAjc0+QzjuEkAu1O7/Ae0jZq19xAja+TCwADh4CtJlhF5BNqZIIhSIdiKZlzKbgtqll/xq6jMsKzHb5fOyVuTDXH/BJBHOdEXKXKdUGmMm7hMqV1wjwB7oB4whFnKjDwCjcKz95Vb0ra91uXC/963rbH+MONlXEONfWBvsvOLf64o+Lkrbv3iBtvf2sdkZN4/6iWC+Ksn1hD7GgAfjpxXuzDmslWplKwkowU2rJY/Zsb242ER2ee4A91THhAClnOGaHJQm4o/pSCqood1KDnGoHvJVnTaqUKVlQH5LZi0B56qgzsl3J60y1xdOLPQ5tZm5bvgjPKzmHrZZt+v2yBa8Vb9h4seKT4+FBcua3IyQjhvxx/VLJ8UeUu1DYQwYacIIYQlgEnkTVLxTpgbodFV7liiRiA7zJsf0HPLDmEw6DxidNC46azwQ3xpssy7/Ne0z+vWf9k9r7FkP45rCl+yuyVtZwU2yNw0KHBb68t2Ae+fO7DS9W44k4Gx86X93UcX92zcwv9+6sq6PeFAtakgsOUh1RPxMiVihS6e3sDLHsyWLyYqK+dz277s16rr22eAexI+Yv79biZ/jSbooCU0CGPiCDArBsGBCjkU8Zpn4thysCGaBHai9/r0L2Q1mw8ePkn86ee5aUUriJ/HH7NvmjZH5BUkL++kXxRX7jt07Jqa5dt+Yg22/ATuO+Ow/3LSobMOhiUWMnwvjclvN4akJe7twFhXkdnaFbw6vWrquppnqtBz4KODVwBxgmhfhgodVDjLAzW1o6DkKsMJ0WQKyZ4BkiwGikgmhRsUpWqmTVGqGIZbTXmRn3D1s+Lb+Nf9sV4uqoFTS0h+BGMpqJxqX1yzdtBNqloLWnQEHSZT+tRAkR9U5sW0aFld5dDq1WAYR6GwIZ8CB4LmXU1VfTFsXnb5m+9nwx2Y4DcnwnTAxZt5fcxSlz1KOi/abuKCa1goaZ9XFzqrSaxrXxx+Z5sZMl8kWh4xcPMO8T9fRNCpmc6QWWW9T5syADIh5iGiuEnMrVDTaxc9N6cxR0wV0Bcu2o5jlTUwC58OMLcuvTOjyq6R4eNOKstmn7oR9iUn4qqPwXw3i9Mp/Hqd/9iKOOPbo6eN+2CvKq5DR5uqER9LkXdBUNkvam+1A5AdMBO+wZkNJd6d0dt+C9yr347eHo1TOXpYWtLGnJJ8fw8JIDXmNCy5LDask1QYPMadJ80nrxICGHYr1r9V5jnlb99OdACDGMKkCbT2CPHvwOMtAY3yo4t469rGfHTTZP0FBLgo6QXrUwG8zM5cNs6w9nV7P3O35kjloi6Ey/WguUjxgZOn9mY3krvYtjvU6ilfDBpR5RJ/p4wXijR9PM8+vOt+B9DtXZo9JWs687+nx5xfgAVlMbD4TVkBABOICn0ibmO/CFN7WU9k4o4HrDKOQTGMNyhd6AlRKVBKuwZCd2w7OGyfsAtmDBaTKtjswQNJhfl4yL+JTtaA/hrpp13CNzf6ACYQTZu1sWLYZtYPnuSyzTcKmDwJocbg3MX2teC5ZYAPa+L7gBPtuPojhSenPUDrzhDWIEoCTxYcDuaAEuwvqrOOSwiZw620oaqi9jp1t3cb/MpyXfkFvMFZyC9zSRA/cekn0nL+Por8ifpBX74H4ncI/t5Mcum3MW4KoXVD1dNqfpm1EqJWB/PnNTczMDtoUmb5v5kvyTFOGsxr2zJ3nlkfWCBlu7uFMpp4nFcoTFxWticmUALQwqB0nBr/k6iqfZHS/gTlIVC+WDWqXiyfNYqyxnNly8tvJKW6hH1KTO35uiUqcPVk58jMvzS8PKKskwQUP45czd3zu5u4WlkyXYK6/Yt4fIks5qDZljEwqofWIAm55DdAAuSQ3ODIRBF+NuGh6lKEzxxQnEicxeIecUPD+Aum7qmC96zb28anHNlIiYESQ5MjF+9et/VL4tEDT0rj10tHy4L749Y+3KAvOeS+TNLnxLnLpp+si00WPiVYpYT0Nl3OLzCxOv5dhu3JwzK1yrTfIYcTIjvTVt2VPgCXjhGkAHXdUVoK1SwkiJE7eB9BP0qq1tfwNz+kCFn8HrCSmxVsr7lVZqB+4lBZzCFKIw3kuyLj106+trgxXPvgtXOQ7+6QJJPU2uakQKe/JPQUNHUNmO527sA0tf8subjSb2c3Ci2cX948aaK6luIHIE42EPKVgXA/x1bYLfkbdmDKTnz9hmisprFNa0WSyM569ki4vSS0a2Mh3MV6QoPShiOs63hHa8ZXoM1kU4E766/rsCEfAVCJlegqvf1SATOp9wjlwg1NoGyPk0vdFkAfBB/zoopfj8GgiGArvIZbRKVKkhF9mC51EQg0ms/8J6Y13j2LRxuqQ78Vg7pmhNptNRh9Rv1xfVRIitFa6Njor5FxfHeKckJlSonXKjQg7nh+WE2dv26uvmbpM6OGDmEoclGyd+FDthyIpfzfkBvvi+h6PYI3TouHmzwgOWUy8tAC5pPPKVElQxWgk4Cji/GFKZhgU/eZ/I8OCDpqXH5tct+Yi8PtOYxPhElWQcOZCecUTQYPnPlvAtV9LIK/L9Hlx6Nmpjy9Vvm2mNFtH5hH0BOoDKBBAbVAARyxdj3YDdJSnrf8zp1ed3yJ9Ln66vvedS12dNdFHN/jzjZpyv+KIVO2GbI5jJqSvvl5R8oe37pnWU7xCg/BD4pvkIKXVUu6DeLtogBFQQ7xlnfeMurrmZbryRO6906AlL/yPpGQeqs1aUF+wtNld+htkNkcGMbXsIY3ftyvnmO9cuAvWJoBVn4FvWnWt4zrsQx16k5IsTrOQrGCE7p2HQy/qn5BW2v3cT2+KOJzbH8xcUW+4wkT19p63PPoSnKSpNcMZhcU/sQR6Qt+L+dQ0JeEfBqIQq6pvgk8xaiFsFRR6VTkvPEmAD0BCNVBkt4I5/9pm0b27GpJh+vt6TR7e2sp8UL0nyCZlut8cmZN784g7AfgaNJJHsM+DZmdZXCpq0eCfSAO80TVKSunep4MMCZVFdD+9Ry1YVOdjijKN3f029vqlxZVXc3X1fPdtVtSq7unbliuoZfSPdvRdGG45uxP73d2JcvHNth/Gv1hWH2YHXz529dqH5AshRCAUSzWn2VA7ejQBgID/whaRQJik0rT6X8flEU3pSxCZ/8JnX22bv322Zy5QXZk3ZvMpymspQBAqBsQ9qGaBUZDKZuOetrWYZpzbfgWqmAg4bfvwsu66KBxt4a8NcvkgtMJEEV72LQW/SBpeN555ev/42a5ft+G1cjHnfxdCFwGsu7GPgKfC85ppoxdMlg1ANOlTxMsioHQAqaIHHC8Jb5EORyr2rjBllLquv7K05oYoJ/PgfphkLJ+X4ceodYXPnz2ioO2XRMHuS5/rt2G8pY46vWBHxSYnldreufoJ95N37dGPAB5sUVqTfn1ceIbYxDUwal3aQU5fVjfk41HuVJY0pSE0J3nbNQmuV0eCnGqDTi6KolC+eoVDnA+1DE4/ev/7ru1ie9XzjQ/Ki/nhhwfET+YXHGSnWbM4gjy0tz9dhZ9zr2tVr17++eoXaoZAkckqga8efCOAQwWsC6j16gILjLRS178OrcL/ftoSib43pD7OitwyRVGWsOHxwWdoxkig4syEysrhzZyUxb5zkZzGz+1suXr159cotusM4ksg+gh3E8LUAYTg88dhAt6Fe+r/Cd9DAsqgz5NXittVfL6mwKI+sSKuqy0ivJImM1YgwPASL9pHcqs3to9jalpYLl258f4lGVT5s0gz0JX9bsiui4Pwrya8ITAyaNSdw5MgRc+ydOXX5knF+BzVjg+YttdyAtUGALcdgLZ9Ju08icO4dAmEEqEzd4cNECpHGn/WpZoKO916flb1C5769eVd4sO/AkimrzkRLjvZMS8w2yuVD++WdLZuW2Lyq9TYOcExaGjc6QOXg7j0+J2xspoeL57iseIfJMZMNKkcnqY2bNjg7Jvqz6UeAH7fO18xAwS6KEO4Kuo1aR4FCYuBPd/z5ghH3neQ/P3lQXt6Jkyelnh7O5Z+JA+MqmAXFWJRMNhVbtocOoiCMckG2R3BagDqnGzU1QA0CR8ELypeLbFD2zTmV4eIeph6S1MjIzSNMu03jUsJ1acw2y4lNXmMjp2wpYoZDKAI9IMo+AXr0DNydvSFt489J8lf/dndx8PylnqRyakte/OKpGUxR15resOY3WCMG20A2BgXqDQZ4UrEa3BvnkV2PK4c4DnI/cYuU4I337/iRp4wHJm/HDhupNZOelm/whJlkNuztAXRuAB0402h1WKhSQoGBRXqtUubB7E+bQcLZhZbzizON+Pk21kq4bbllTpb1p52diM/MgiZGDd+9oPhAweg3+Jrwrr/mff8o+DpF+yPIYprFoF/Nzx+NLiB76OezBE8HOOHpvOHnnwHfG8L3j4R+IQp+SKnwsSqg1OGwDrNHoUdwx+gBV8OEC5oA85BUqmUf5P9yj6vBDuQJjDXDhJUgIYxRTG028QiIkZC7wOwX1FCPkMK3BAgaGo/wfQe8Q6Om52qFCPsNnxmYNELV31W0jk2ZGhQ/ysVVJsfchYTAQL2zymfpUl83Bwf6lTaJzGIcgZYM8oZByx9kKR0D0KSVilr9Pz4FyqhpW0smB/b4yHmO2kkR+MmxJJson4lpPdO5vvZOdo4A+vSHATHoRzUqNVglmP7GegYvTYxNDp36X6BciQ0KZW5kc3RyZWFtCmVuZG9iago0NiAwIG9iago8PCAvUHJvZHVjZXIgKG1jT1MgVmVyc2lvbiAxNS4zLjEgXChCdWlsZCAyNEQ4MVwpIFF1YXJ0eiBQREZDb250ZXh0KSAvQ3JlYXRpb25EYXRlCihEOjIwMjUwNTE0MTg1NzQ4WjAwJzAwJykgL01vZERhdGUgKEQ6MjAyNTA1MTQxODU3NDhaMDAnMDAnKSA+PgplbmRvYmoKeHJlZgowIDQ3CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDA0MzIwNSAwMDAwMCBuIAowMDAwMDY0MzU4IDAwMDAwIG4gCjAwMDAwNDQ1MTYgMDAwMDAgbiAKMDAwMDA0MzQ0MSAwMDAwMCBuIAowMDAwMDU2MjExIDAwMDAwIG4gCjAwMDAwNDQ0ODcgMDAwMDAgbiAKMDAwMDA2NDczOCAwMDAwMCBuIAowMDAwMDQ0NDU4IDAwMDAwIG4gCjAwMDAwNjU5ODggMDAwMDAgbiAKMDAwMDQ0NDI5IDAwMDAwIG4gCjAwMDAwNjg0MjMgMDAwMDAgbiAKMDAwMDQ0NDA3IDAwMDAwIG4gCjAwMDAwNzQ0NjQgMDAwMDAgbiAKMDAwMDQ0Mzg0IDAwMDAwIG4gCjAwMDAwNzU3NjMgMDAwMDAgbiAKMDAwMDA0MzU1OCAwMDAwMCBuIAowMDAwMDY0MDYxIDAwMDAwIG4gCjAwMDAwNTYzMzUgMDAwMDAgbiAKMDAwMDA2NDE3OCAwMDAwMCBuIAowMDAwMDQ0MzU1IDAwMDAwIG4gCjAwMDAwODA1MzQgMDAwMDAgbiAKMDAwMDQ0MzI2IDAwMDAwIG4gCjAwMDAwODc3NDQgMDAwMDAgbiAKMDAwMDA2NDYwMSAwMDAwMCBuIAowMDAwMDY1MTM5IDAwMDAwIG4gCjAwMDAwNjQ5NDkgMDAwMDAgbiAKMDAwMDA2NTM4MSAwMDAwMCBuIAowMDAwMDY2NTU2IDAwMDAwIG4gCjAwMDAwNjYxODQgMDAwMDAgbiAKMDAwMDA2Njc5OSAwMDAwMCBuIAowMDAwMDY5Mzc5IDAwMDAwIG4gCjAwMDAwNjg3MDEgMDAwMDAgbiAKMDAwMDA2OTYyNyAwMDAwMCBuIAowMDAwMDc0OTg0IDAwMDAwIG4gCjAwMDAwNzQ2NjQgMDAwMDAgbiAKMDAwMDA3NTIzNiAwMDAwMCBuIAowMDAwMDgwOTk5IDAwMDAwIG4gCjAwMDAwODA2NzcgMDAwMDAgbiAKMDAwMDA4MTIzNSAwMDAwMCBuIAowMDAwMDg4MTg4IDAwMDAwIG4gCjAwMDAwODc4OTkgMDAwMDAgbiAKMDAwMDA4ODQzOCAwMDAwMCBuIAowMDAwMDg5MTg0IDAwMDAwIG4gCjAwMDAwODg4NDggMDAwMDAgbiAKMDAwMDA4OTQ0MCAwMDAwMCBuIAowMDAwMDY0NTc1IDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgNDcgL1Jvb3QgMjQgMCBSIC9JbmZvIDQ2IDAgUiAvSUQgWyA8MGJkYmMyYzAyYjJkYWY1MGQ2MzE3MWEzYjgyNzU0MzU+CjwwYmRiYzJjMDJiMmRhZjUwZDYzMTcxYTNiODI3NTQzNT4gXSA+PgpzdGFydHhyZWYKODk2MTkKJSVFT0YK
-      </script>
-      <script src="./scripts/index.js"></script>
-      <script src="./scripts/components.js"></script> </body>
+      // PDF Padrão Leve (Base64)
+      const DEFAULT_DOC_BASE64 = "JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUiXSAvQ291bnQgMSA+PgplbmRvYmoKMyAwIG9iago8PCAvVHlwZSAvUGFnZSAvUGFyZW50IDIgMCBSIC9NZWRpYUJveCBbMCAwIDYxMiA3OTJdCi9Db250ZW50cyA0IDAgUgovUmVzb3VyY2VzIDw8IC9Gb250IDw8IC9GMSA1IDAgUiA+PiA+Pgp+PgplbmRvYmoKNCQwIG9iago8PCAvTGVuZ3RoIDU4ID4+CnN0cmVhbQpCVAgvRjEgMjQgVGYKMTAwIDcwMCBUZAooRG9jdW1lbnRvIGRlIFRlc3RlIEZvbnRhcmEpIFRqCkVUCmVuZHN0cmVhbQplbmRvYmoKNSAwIG9iago8PCAvVHlwZSAvRm9udCAvU3VidHlwZSAvVHlwZTEgL0Jhc2VGb250IC9IZWx2ZXRpY2EgPj4KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU2IDAwMDAwIG4gCjAwMDAwMDAxMTEgMDAwMDAgbiAKMDAwMDAwMDIxMCAwMDAwMCBuIAowMDAwMDAwMjkwIDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgNiAvUm9vdCAxIDAgUiA+PgpzdGFydHhyZWYKMzUzCiUlRU9GCg==";
+      const DEFAULT_DOC_NAME = "ContratoPadraoFontara.pdf";
+      const DEFAULT_DOC_ID = "1"; // Usado como documentId no envelope
+
+      // Defina a origem esperada do Docusign para o seu ambiente (demo ou produção)
+      // Para o ambiente de demonstração da DocuSign (sandbox)
+      const DOCUSIGN_JS_HOST = "https://js.docusign.com"; // Para docusign.js
+      const DOCUSIGN_IFRAME_ORIGIN_CLASSIC = "https://demo.docusign.net"; // Para iframe da Clássica
+
+      document.addEventListener('DOMContentLoaded', function() {
+        // Elementos do formulário
+        const signingForm = document.getElementById('signingForm');
+        const signerNameInput = document.getElementById('signerName');
+        const signerEmailInput = document.getElementById('signerEmail');
+        const emailSubjectInput = document.getElementById('emailSubject');
+        const emailSubjectContainer = document.getElementById('emailSubjectContainer');
+        
+        const signingTypeRadios = document.querySelectorAll('input[name="signingType"]');
+        const documentOptionsContainer = document.getElementById('documentOptionsContainer');
+        const useDefaultDocRadio = document.getElementById('useDefaultDoc');
+        const useUploadedDocRadio = document.getElementById('useUploadedDoc');
+        const fileUploadContainer = document.getElementById('fileUploadContainer');
+        const uploadedDocInput = document.getElementById('uploadedDoc');
+        
+        const clickToAgreeOptionsContainer = document.getElementById('clickToAgreeOptionsContainer');
+        const clickwrapIdInput = document.getElementById('clickwrapId');
+        const clickwrapClientUserIdInput = document.getElementById('clickwrapClientUserId');
+
+        const submitSigningBtn = document.getElementById('submitSigningBtn');
+        const submitBtnText = document.getElementById('submitBtnText');
+
+        // Elementos do Modal
+        const docusignModalOverlay = document.getElementById('docusignSigningModalOverlay');
+        const docusignModalContent = document.getElementById('docusignSigningModalContent');
+        const closeDocusignSigningModalBtn = document.getElementById('closeDocusignSigningModalBtn');
+        const embeddingContainer = document.getElementById('embeddingContainer'); // Onde o iframe ou docusign.js renderiza
+        const modalTitle = document.getElementById('modalTitle');
+        
+        let mainHeader = null; // Será definido após o carregamento dos parciais
+        let originalHeaderZIndex = '';
+
+        // Função para mostrar/ocultar campos com base no tipo de assinatura
+        function toggleFormFields() {
+          const selectedType = document.querySelector('input[name="signingType"]:checked').value;
+          
+          if (selectedType === 'click_to_agree') {
+            documentOptionsContainer.classList.add('tw-hidden');
+            emailSubjectContainer.classList.add('tw-hidden');
+            emailSubjectInput.required = false;
+            uploadedDocInput.required = false;
+            clickToAgreeOptionsContainer.classList.remove('tw-hidden');
+            clickwrapIdInput.required = true;
+            submitBtnText.textContent = "Aceitar Termos";
+            modalTitle.textContent = "Aceitar Termos e Condições";
+          } else { // classic ou focused
+            documentOptionsContainer.classList.remove('tw-hidden');
+            emailSubjectContainer.classList.remove('tw-hidden');
+            emailSubjectInput.required = true;
+            clickToAgreeOptionsContainer.classList.add('tw-hidden');
+            clickwrapIdInput.required = false;
+            showFileUpload(useUploadedDocRadio.checked); // Atualiza visibilidade do upload de arquivo
+            submitBtnText.textContent = "Assinar Documento";
+             modalTitle.textContent = "Assinatura de Documento";
+          }
+        }
+
+        // Função para mostrar/ocultar upload de arquivo
+        function showFileUpload(show) {
+          if (fileUploadContainer && uploadedDocInput) {
+            const selectedType = document.querySelector('input[name="signingType"]:checked').value;
+            if (selectedType === 'click_to_agree') { // Nunca mostrar para click to agree
+                fileUploadContainer.classList.add('tw-hidden');
+                uploadedDocInput.required = false;
+                return;
+            }
+
+            if (show) {
+              fileUploadContainer.classList.remove('tw-hidden');
+              uploadedDocInput.required = true;
+            } else {
+              fileUploadContainer.classList.add('tw-hidden');
+              uploadedDocInput.required = false;
+              uploadedDocInput.value = ''; // Limpa o campo se escondido
+            }
+          }
+        }
+
+        // Listeners para os radio buttons de tipo de assinatura
+        signingTypeRadios.forEach(radio => radio.addEventListener('change', toggleFormFields));
+        
+        // Listeners para os radio buttons de escolha de documento
+        if(useDefaultDocRadio) useDefaultDocRadio.addEventListener('change', () => showFileUpload(false));
+        if(useUploadedDocRadio) useUploadedDocRadio.addEventListener('change', () => showFileUpload(true));
+
+        // Estado inicial dos campos
+        toggleFormFields();
+
+
+        function openDocusignModal(title = "Processando...") {
+          modalTitle.textContent = title;
+          embeddingContainer.innerHTML = ''; // Limpa o container
+          docusignModalOverlay.classList.remove('tw-hidden');
+          document.body.classList.add('modal-open');
+          
+          // Tenta pegar o header após parciais carregados
+          if (!mainHeader) mainHeader = document.getElementById('mainHeader');
+          if (mainHeader) {
+            originalHeaderZIndex = mainHeader.style.zIndex; 
+            mainHeader.style.zIndex = '10'; // Abaixa o z-index do header
+          }
+        }
+
+        function closeDocusignModal() {
+          embeddingContainer.innerHTML = ''; // Limpa o container
+          docusignModalOverlay.classList.add('tw-hidden');
+          document.body.classList.remove('modal-open');
+          if (mainHeader) {
+            mainHeader.style.zIndex = originalHeaderZIndex || ''; 
+          }
+        }
+        
+        if(closeDocusignSigningModalBtn) closeDocusignSigningModalBtn.addEventListener('click', closeDocusignModal);
+        if (docusignModalOverlay) {
+            docusignModalOverlay.addEventListener('click', function(event) {
+                if (event.target === docusignModalOverlay) closeDocusignModal();
+            });
+        }
+
+        // Manipulador de eventos para iframe (Visualização Clássica)
+        function handleIframeMessage(event) {
+            if (event.origin !== DOCUSIGN_IFRAME_ORIGIN_CLASSIC) {
+                // console.warn("Mensagem recebida de origem inesperada (iframe):", event.origin);
+                return;
+            }
+            if (typeof event.data === 'string') {
+                const params = new URLSearchParams(event.data.startsWith('?') ? event.data.substring(1) : event.data);
+                const docusignEvent = params.get('event');
+                const envelopeIdFromEvent = params.get('envelopeId'); 
+                console.log(`[Assinatura Clássica IFRAME] Evento Docusign: ${docusignEvent}, EnvelopeID: ${envelopeIdFromEvent || 'N/A'}`);
+                
+                handleSigningCompletion(docusignEvent, envelopeIdFromEvent);
+            }
+        }
+        
+        // Função unificada para lidar com a conclusão da assinatura (de iframe ou docusign.js)
+        function handleSigningCompletion(docusignEvent, envelopeId) {
+            const signerNameFromForm = signerNameInput.value || 'Cliente';
+            // Ajustar a URL de retorno para incluir o envelopeId corretamente
+            const returnUrlBase = `${window.location.origin}/agradecimento/obrigado.html?recipientName=${encodeURIComponent(signerNameFromForm)}&envelopeId=${envelopeId || ''}`;
+
+            if (docusignEvent === 'signing_complete' || docusignEvent === 'done') { // 'done' é comum para Clickwrap
+                closeDocusignModal();
+                window.location.href = `${returnUrlBase}&event=${docusignEvent}`;
+            } else if (['decline', 'cancel', 'session_timeout', 'ttl_expired', 'exception', 'error'].includes(docusignEvent)) {
+                closeDocusignModal();
+                window.location.href = `${returnUrlBase}&event=${docusignEvent}`;
+            }
+        }
+
+
+        // Submissão do formulário
+        if(signingForm) {
+            signingForm.addEventListener('submit', async function(event) {
+              event.preventDefault();
+              const originalButtonInnerHTML = submitSigningBtn.innerHTML;
+              
+              submitSigningBtn.disabled = true;
+              submitSigningBtn.innerHTML = '<div class="spinner-small"></div> Processando...';
+
+              const signerName = signerNameInput.value;
+              const signerEmail = signerEmailInput.value;
+              const emailSubject = emailSubjectInput.value;
+              const selectedSigningType = document.querySelector('input[name="signingType"]:checked').value;
+
+              try {
+                openDocusignModal(selectedSigningType === 'click_to_agree' ? "Aceitar Termos e Condições" : "Assinatura de Documento");
+
+                if (selectedSigningType === 'classic' || selectedSigningType === 'focused') {
+                  // Lógica para Assinatura Clássica ou Focada (Envelope)
+                  const useDefault = useDefaultDocRadio.checked;
+                  let documentBase64 = '';
+                  let documentName = '';
+                  const documentFileExtension = 'pdf'; 
+                  const documentId = DEFAULT_DOC_ID;
+
+                  if (useDefault) {
+                    documentBase64 = DEFAULT_DOC_BASE64;
+                    documentName = DEFAULT_DOC_NAME;
+                  } else {
+                    const file = uploadedDocInput.files[0];
+                    if (!file) throw new Error("Por favor, selecione um arquivo PDF.");
+                    if (file.type !== "application/pdf") throw new Error("Apenas arquivos PDF são permitidos.");
+                    documentName = file.name;
+                    documentBase64 = await new Promise((resolve, reject) => {
+                      const reader = new FileReader();
+                      reader.onload = () => resolve(reader.result.split(',')[1]);
+                      reader.onerror = error => reject(error);
+                      reader.readAsDataURL(file);
+                    });
+                  }
+
+                  const clientUserId = `fontara_${signerEmail.replace(/[^a-zA-Z0-9]/g, "")}_${Date.now()}`; 
+
+                  const envelopePayload = {
+                    emailSubject: emailSubject,
+                    documents: [{ name: documentName, fileExtension: documentFileExtension, documentId: documentId, documentBase64: documentBase64 }],
+                    recipients: {
+                      signers: [{
+                        email: signerEmail, name: signerName, recipientId: "1", 
+                        clientUserId: clientUserId, routingOrder: "1",
+                        tabs: { signHereTabs: [{ anchorString: "\\s1\\", anchorXOffset: "0", anchorYOffset: "10", anchorUnits: "pixels" }] }
+                      }]
+                    },
+                    status: "sent"
+                  };
+                  
+                  // 1. Criar o envelope (comum para Classic e Focused)
+                  let response = await fetch('/.netlify/functions/docusign-actions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: "CREATE_DYNAMIC_EMBEDDED_ENVELOPE", payload: envelopePayload })
+                  });
+                  if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: `Erro HTTP ${response.status}: ${response.statusText}` }));
+                    throw new Error(errorData.error || `Falha ao criar envelope.`);
+                  }
+                  const envelopeResult = await response.json();
+                  const envelopeId = envelopeResult.envelopeId;
+                  if (!envelopeId) throw new Error("ID do envelope não retornado.");
+                  
+                  // 2. Obter a URL de visualização do destinatário
+                  const recipientViewPayload = {
+                    envelopeId: envelopeId, signerEmail: signerEmail, signerName: signerName,
+                    clientUserId: clientUserId,
+                    // A URL de retorno é importante para docusign.js e como fallback para iframe
+                    returnUrl: `${window.location.origin}/agradecimento/obrigado.html?event=FALLBACK_IFRAME_REDIRECT&envelopeId=${envelopeId}&recipientName=${encodeURIComponent(signerName)}`,
+                    // Para 'focused', a API pode otimizar a URL se souber que docusign.js será usado.
+                    // No entanto, docusign.js também funciona com URLs de visualização de destinatário padrão.
+                    // Vamos manter simples por enquanto e deixar docusign.js lidar com a renderização.
+                  };
+
+                  response = await fetch('/.netlify/functions/docusign-actions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: "GET_EMBEDDED_SIGNING_URL", payload: recipientViewPayload })
+                  });
+                  if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: `Erro HTTP ${response.status}: ${response.statusText}` }));
+                    throw new Error(errorData.error || `Falha ao obter URL de assinatura.`);
+                  }
+                  const signingResult = await response.json();
+                  const signingUrl = signingResult.signingUrl;
+                  if (!signingUrl) throw new Error("URL de assinatura não retornada.");
+
+                  if (selectedSigningType === 'classic') {
+                    // Montar Iframe para Visualização Clássica
+                    window.addEventListener('message', handleIframeMessage, false); // Adiciona listener para iframe
+                    const iframe = document.createElement('iframe');
+                    iframe.src = signingUrl;
+                    iframe.id = "docusignSigningIframe"; // Para consistência, se necessário
+                    iframe.title = "Assinatura Docusign";
+                    iframe.classList.add("tw-w-full", "tw-h-full");
+                    embeddingContainer.appendChild(iframe);
+                  } else { // 'focused'
+                    // Montar com DocuSign.js para Visualização Focada
+                    window.removeEventListener('message', handleIframeMessage, false); // Remove listener de iframe se houver
+                    const docusign = window.docusign; // Acessa o objeto docusign.js global
+                    if (!docusign) {
+                        throw new Error("DocuSign.js não foi carregado.");
+                    }
+                    docusign.signing({
+                        url: signingUrl,
+                        host: DOCUSIGN_JS_HOST, // Necessário para docusign.js
+                        // Configurações adicionais para focused view podem ser adicionadas aqui
+                        // Ex: chrome: "false" para remover a barra superior do DocuSign
+                        style: {
+                            /** Aplica estilos ao iframe do docusign.js. Veja a documentação para mais opções.
+                             * signingNavigation: {
+                             * // Cor do botão primário (ex: "Assinar", "Concluir")
+                             * "buttonPrimary": { "backgroundColor": "#3f51b5", "color": "#ffffff" }
+                             * }
+                             */
+                        }
+                    }).mount("#embeddingContainer")
+                    .on("ready", (event) => {
+                        console.log("[Focused View] DocuSign.js pronto:", event);
+                    })
+                    .on("sessionEnd", (event) => { // Evento mais genérico para fim da sessão
+                        console.log("[Focused View] Fim da sessão DocuSign.js:", event);
+                        // O 'event.data.type' pode ser 'signing_complete', 'decline', 'cancel', etc.
+                        handleSigningCompletion(event.data.type, envelopeId);
+                    })
+                    .on("error", (error) => { // Adicionado para capturar erros do docusign.js
+                        console.error("[Focused View] Erro no DocuSign.js:", error);
+                        alert(`Erro na Visualização Focada: ${error.message || 'Erro desconhecido.'}`);
+                        closeDocusignModal();
+                    });
+                  }
+
+                } else if (selectedSigningType === 'click_to_agree') {
+                  // Lógica para Click to Agree
+                  const clickwrapId = clickwrapIdInput.value;
+                  if (!clickwrapId) throw new Error("ID do Clickwrap é obrigatório.");
+                  
+                  let clientUserId = clickwrapClientUserIdInput.value;
+                  if (!clientUserId) {
+                    clientUserId = `fontara_clickwrap_${signerEmail.replace(/[^a-zA-Z0-9]/g, "")}_${Date.now()}`;
+                  }
+
+                  const clickwrapPayload = {
+                    clickwrapId: clickwrapId,
+                    clientUserId: clientUserId,
+                    // Adicione quaisquer outros metadados necessários para sua função de backend
+                    // por exemplo, documentData: { fullName: signerName, email: signerEmail, company: "N/A", title: "Cliente" }
+                    // A estrutura exata de `documentData` depende de como seu Clickwrap está configurado.
+                  };
+
+                  // Chamar a Netlify Function para obter a URL do Clickwrap
+                  // Esta é uma NOVA AÇÃO que você precisará implementar no backend.
+                  const response = await fetch('/.netlify/functions/docusign-actions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: "GET_CLICKWRAP_AGREEMENT_URL", payload: clickwrapPayload })
+                  });
+                  if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: `Erro HTTP ${response.status}: ${response.statusText}` }));
+                    throw new Error(errorData.error || `Falha ao obter URL do Clickwrap.`);
+                  }
+                  const clickwrapResult = await response.json();
+                  const agreementUrl = clickwrapResult.agreementUrl; // A função de backend deve retornar isso
+
+                  if (!agreementUrl) throw new Error("URL de concordância do Clickwrap não retornada.");
+                  
+                  window.removeEventListener('message', handleIframeMessage, false); // Remove listener de iframe se houver
+                  const docusign = window.docusign;
+                  if (!docusign) {
+                      throw new Error("DocuSign.js não foi carregado.");
+                  }
+                  docusign.clickToAgree({
+                      url: agreementUrl, // URL obtida da sua função Netlify
+                      host: DOCUSIGN_JS_HOST,
+                      // Mais opções de configuração podem ser adicionadas aqui
+                  }).mount("#embeddingContainer")
+                  .on("ready", (event) => {
+                      console.log("[Click to Agree] DocuSign.js pronto:", event);
+                  })
+                  .on("agreed", (event) => { // Usuário concordou
+                      console.log("[Click to Agree] Usuário concordou:", event);
+                      // O ID do envelope/acordo pode estar em event.data.agreementId ou similar
+                      handleSigningCompletion('done', clickwrapId); // 'done' é um evento genérico de conclusão
+                  })
+                  .on("declined", (event) => { // Usuário recusou
+                      console.log("[Click to Agree] Usuário recusou:", event);
+                      handleSigningCompletion('decline', clickwrapId);
+                  })
+                  .on("error", (error) => {
+                      console.error("[Click to Agree] Erro no DocuSign.js:", error);
+                      alert(`Erro no Click to Agree: ${error.message || 'Erro desconhecido.'}`);
+                      closeDocusignModal();
+                  });
+                }
+
+              } catch (error) {
+                console.error("Erro no processo Docusign:", error);
+                alert(`Ocorreu um erro: ${error.message}`);
+                closeDocusignModal(); // Fecha o modal em caso de erro
+              } finally {
+                submitSigningBtn.disabled = false;
+                submitSigningBtn.innerHTML = originalButtonInnerHTML; 
+              }
+            });
+        }
+      });
+    </script>
+    <script src="./scripts/index.js"></script>
+    <script src="./scripts/components.js"></script>
+  </body>
 </html>

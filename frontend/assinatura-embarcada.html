@@ -5,7 +5,7 @@
     <title>Assinatura Embarcada - Fontara Financial</title>
     <meta
       name="description"
-      content="Envie ou use nosso modelo padrão para assinar documentos digitalmente com Fontara Financial e Docusign."
+      content="Forneça os dados para assinatura digital do seu documento."
     />
     <link rel="shortcut icon" href="/assets/logo/logo.png" type="image/x-icon" />
     <link rel="stylesheet" href="/css/tailwind-build.css" />
@@ -19,15 +19,18 @@
         display: flex; 
         flex-direction: column; 
         min-height: 100vh; 
-        background-color: #f9fafb; /* Cor de fundo light padrão */
+        background-color: #f9fafb; /* Cor de fundo light padrão (Tailwind gray-50) */
       }
       html.tw-dark body { 
-        background-color: #1f2937; /* Cor de fundo dark padrão */
+        background-color: #1f2937; /* Cor de fundo dark padrão (Tailwind gray-800) */
       }
       main { 
-        flex-grow: 1; 
-        /* padding-top: 80px;  Adicionado via JS para acomodar header fixo dinamicamente se necessário, ou fixo aqui */
-        padding-bottom: 20px;
+        flex-grow: 1; /* Faz o main ocupar o espaço restante */
+        /* padding-top será ajustado pelo script abaixo para acomodar o header fixo */
+        display: flex; /* Habilita flexbox para centralização */
+        flex-direction: column; /* Empilha os filhos do main verticalmente */
+        align-items: center; /* Centraliza os filhos horizontalmente */
+        justify-content: center; /* Centraliza os filhos verticalmente */
       }
       .form-input-custom {
         @apply tw-block tw-w-full tw-px-4 tw-py-3 tw-border tw-border-black dark:tw-border-gray-500 tw-bg-gray-100 dark:tw-bg-gray-700 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-indigo-500 focus:tw-border-indigo-500 dark:tw-text-white tw-text-base;
@@ -41,19 +44,27 @@
   <body>
     <div id="header-placeholder"></div>
 
-    <main class="tw-container tw-mx-auto tw-p-4">
-        <script>
-          document.addEventListener('DOMContentLoaded', function() {
-            const header = document.getElementById('mainHeader'); // ID do header em _header.html
-            const mainContent = document.querySelector('main');
-            if (header && mainContent) {
-              const headerHeight = header.offsetHeight;
-              mainContent.style.paddingTop = headerHeight + 24 + 'px'; // 24px é o p-6 (p-4 + mb-6 do h1)
-            } else if (mainContent) { // Fallback se o header não for encontrado rapidamente
-                mainContent.style.paddingTop = '84px'; // 60px header + 24px
-            }
-          });
-        </script>
+    <script>
+      function adjustMainPadding() {
+        const header = document.getElementById('mainHeader'); // ID do elemento <header> em _header.html
+        const mainContent = document.querySelector('main');
+        if (header && mainContent) {
+          const headerHeight = header.offsetHeight;
+          mainContent.style.paddingTop = headerHeight + 'px';
+          // Adiciona um padding-bottom para não colar no footer, se o footer for de altura variável
+          // ou se o conteúdo do main for muito pequeno.
+          // mainContent.style.paddingBottom = '50px'; // Exemplo
+        } else if (mainContent) {
+          mainContent.style.paddingTop = '76px'; // Fallback: 60px header + 16px (p-4)
+        }
+      }
+      // Chama no DOMContentLoaded se o header for estático,
+      // mas como o header é dinâmico, chamaremos isso em initializePageSpecificScripts
+      // ou após a execução de initializePagePartials.
+      // Para simplificar, vamos chamar após o loadPartials garantir que o header existe.
+    </script>
+
+    <main class="tw-container tw-mx-auto tw-p-4"> <div class="tw-w-full"> 
         <h1 class="tw-text-3xl tw-font-bold tw-mb-6 tw-text-center dark:tw-text-white">
             Assinatura de Documentos
         </h1>
@@ -72,19 +83,20 @@
                 </button>
             </form>
         </div>
+      </div>
 
-        <div id="docusignSigningModal" class="tw-fixed tw-inset-0 tw-bg-gray-600 tw-bg-opacity-50 tw-hidden tw-items-center tw-justify-center tw-z-50">
-            <div class="tw-bg-white dark:tw-bg-gray-800 tw-p-2 tw-rounded-lg tw-shadow-xl tw-w-11/12 md:tw-w-3/4 lg:tw-w-2/3 tw-h-[90vh] tw-flex tw-flex-col">
-                <div class="tw-flex tw-justify-between tw-items-center tw-p-2 tw-border-b dark:tw-border-gray-700">
-                    <h3 class="tw-text-lg tw-font-semibold dark:tw-text-white">Assinatura do Documento</h3>
-                    <button id="closeDocusignModalBtn" type="button" class="tw-text-gray-400 hover:tw-text-gray-600 dark:hover:tw-text-white">
-                        <i class="bi bi-x-lg tw-text-xl"></i>
-                    </button>
-                </div>
-                <div id="docusign-recipient-view" class="tw-flex-grow tw-p-1 tw-overflow-auto">
-                </div>
-            </div>
-        </div>
+      <div id="docusignSigningModal" class="tw-fixed tw-inset-0 tw-bg-gray-600 tw-bg-opacity-50 tw-hidden tw-items-center tw-justify-center tw-z-50">
+          <div class="tw-bg-white dark:tw-bg-gray-800 tw-p-2 tw-rounded-lg tw-shadow-xl tw-w-11/12 md:tw-w-3/4 lg:tw-w-2/3 tw-h-[90vh] tw-flex tw-flex-col">
+              <div class="tw-flex tw-justify-between tw-items-center tw-p-2 tw-border-b dark:tw-border-gray-700">
+                  <h3 class="tw-text-lg tw-font-semibold dark:tw-text-white">Assinatura do Documento</h3>
+                  <button id="closeDocusignModalBtn" type="button" class="tw-text-gray-400 hover:tw-text-gray-600 dark:hover:tw-text-white">
+                      <i class="bi bi-x-lg tw-text-xl"></i>
+                  </button>
+              </div>
+              <div id="docusign-recipient-view" class="tw-flex-grow tw-p-1 tw-overflow-auto">
+                  </div>
+          </div>
+      </div>
     </main>
 
     <div id="footer-placeholder"></div>
@@ -95,6 +107,15 @@
     <script>
       function initializeAssinaturaPageScripts() {
         console.log("assinatura-embarcada.html: Scripts específicos da página inicializados.");
+        
+        // Chama o ajuste de padding após os parciais (e o header) terem sido carregados
+        if (typeof adjustMainPadding === 'function') {
+            adjustMainPadding();
+            // Se o header tiver altura variável devido ao conteúdo ou responsividade,
+            // pode ser necessário re-chamar adjustMainPadding em 'resize'
+            window.addEventListener('resize', adjustMainPadding);
+        }
+
         const form = document.getElementById('envelopeForm');
         const submitEnvelopeBtn = document.getElementById('submitEnvelopeBtn');
         const docusignModal = document.getElementById('docusignSigningModal');
@@ -139,6 +160,7 @@
                 };
 
                 try {
+                    // Ação para criar envelope (ajuste conforme sua Netlify Function)
                     let response = await fetch('/.netlify/functions/docusign-actions', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -147,47 +169,32 @@
                             payload: payload 
                         })
                     });
-
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({ error: `Erro HTTP ${response.status}` }));
-                        throw new Error(errorData.error || `Falha ao preparar envelope.`);
-                    }
+                    if (!response.ok) throw await response.json().catch(() => new Error(`Erro HTTP ${response.status}`));
                     const envelopeResult = await response.json();
-                    const envelopeId = envelopeResult.envelopeId;
+                    if (!envelopeResult.envelopeId) throw new Error("ID do Envelope não retornado.");
 
-                    if (!envelopeId) {
-                        throw new Error("ID do Envelope não retornado pela função.");
-                    }
-
+                    // Ação para obter URL de assinatura
                     const recipientViewPayload = {
-                        envelopeId: envelopeId,
+                        envelopeId: envelopeResult.envelopeId,
                         recipientEmail: payload.signerEmail,
                         recipientName: payload.signerName,
                         returnUrl: window.location.href + '?event=signing_complete', 
                         authenticationMethod: 'None' 
                     };
-
                     response = await fetch('/.netlify/functions/docusign-actions', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: "GET_EMBEDDED_SIGNING_URL", payload: recipientViewPayload })
                     });
-
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({ error: `Erro HTTP ${response.status}` }));
-                        throw new Error(errorData.error || `Falha ao obter URL de assinatura.`);
-                    }
+                    if (!response.ok) throw await response.json().catch(() => new Error(`Erro HTTP ${response.status}`));
                     const signingResult = await response.json();
-                    const signingUrl = signingResult.signingUrl;
+                    if (!signingResult.signingUrl) throw new Error("URL de assinatura não retornada.");
+                    
+                    openDocusignSigningModal(signingResult.signingUrl);
 
-                    if (signingUrl) {
-                        openDocusignSigningModal(signingUrl);
-                    } else {
-                        throw new Error("URL de assinatura não retornada.");
-                    }
                 } catch (error) {
                     console.error("Erro no processo Docusign:", error);
-                    alert(`Ocorreu um erro: ${error.message}`);
+                    alert(`Ocorreu um erro: ${error.error || error.message}`);
                 } finally {
                     if(submitEnvelopeBtn) {
                         submitEnvelopeBtn.disabled = false;

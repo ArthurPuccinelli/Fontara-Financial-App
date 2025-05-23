@@ -267,52 +267,59 @@ async function createDynamicEnvelope(apiClient, envelopeArgs) {
  * @returns {Promise<string>} URL para a cerimônia de assinatura embutida.
  * @throws {Error} Se a geração da URL falhar.
  */
-async function createRecipientViewUrl(apiClient, args) { // Renomeado para clareza
-    const { envelopeId, signerEmail, signerName, clientUserId, returnUrl, useFocusedView = false } = args;
+async function createRecipientViewUrl(apiClient, args) {
+    const { envelopeId, signerEmail, signerName, clientUserId, returnUrl, useFocusedView = false } = args; // 'useFocusedView' é chave
     const accountId = process.env.DOCUSIGN_ACCOUNT_ID;
     const envelopesApi = new docusign.EnvelopesApi(apiClient);
 
     const viewRequestOptions = {
         returnUrl: returnUrl,
-        authenticationMethod: 'none', // Essencial para embedded signing com clientUserId
+        authenticationMethod: 'none',
         email: signerEmail,
         userName: signerName,
         clientUserId: clientUserId,
-        // Configurações para controlar a UI da assinatura
-        // focusedView: https://www.docusign.com/blog/developers/deep-dive-the-embedded-signing-recipient-view
+        // Adicionando mais opções para limpar a interface na Visualização Focada
+        // Referência: https://developers.docusign.com/docs/esign-rest-api/reference/envelopes/envelopeviews/createrecipient/#schema__recipientviewrequest_settings
     };
 
     if (useFocusedView) {
-        // Para uma "Focused View", geralmente queremos esconder o chrome do DocuSign e controlar a experiência via API/eventos
-        viewRequestOptions.recipientSettings = { // Adicionado para mais controle sobre a focused view
-            showToolbar: 'false',
-            showFinishButton: 'false', // Você pode querer controlar o "finish" via eventos do DocuSign.js
-            showCancelButton: 'false', // Idem para o cancelamento
-        };
-        // A documentação sugere que para focused views, os controles abaixo podem ser mais diretos
-        // viewRequestOptions.chromeControls = 'hide'; // Mantido para compatibilidade se recipientSettings não for suficiente
-        // Ou usar configurações mais granulares se disponíveis no SDK/API para 'focused view'
-        // Ex: viewRequestOptions.defaultRecipient = "true"; // (Verificar se aplicável para sua versão do SDK)
-        // viewRequestOptions.showBackButton = "false";
-        // viewRequestOptions.showProgressIndicator = "false";
-        console.log("[docusign-actions] Configurando para Focused View.");
-    } else {
-        // Para a visualização clássica, mostrar os controles pode ser desejável
+        console.log("[docusign-actions] Configurando para Focused View. Aplicando recipientSettings...");
+        // Configurações para uma Visualização Focada mais limpa
+        // Os valores são strings 'true'/'false' conforme exemplos comuns, mas o SDK pode aceitar booleanos.
+        // Teste com booleanos se as strings não surtirem o efeito desejado.
         viewRequestOptions.recipientSettings = {
+            showHeader: 'false',         // Oculta o cabeçalho principal do DocuSign
+            showToolbar: 'false',        // Oculta a barra de ferramentas com opções de documento
+            showFinishButton: 'false',   // Oculta o botão "Concluir" padrão (você controlará pelo evento 'signing_complete')
+            showCancelButton: 'false',   // Oculta o botão "Cancelar" padrão
+            showDeclineButton: 'false',  // Oculta o botão "Recusar" padrão
+            showViewDocumentsButton: 'false', // Oculta o botão para visualizar/baixar documentos
+            showSaveButton: 'false',     // Oculta o botão "Salvar e Concluir Depois"
+            // Adicione/remova conforme necessário para o nível de "foco" desejado
+        };
+        // Outras opções de controle de interface que podem ser úteis, dependendo da API (algumas podem ser obsoletas ou específicas)
+        // viewRequestOptions.chromeControls = 'hide'; // Alternativa mais antiga, 'recipientSettings' é mais granular
+        // viewRequestOptions.showProgressIndicator = 'false';
+    } else {
+        console.log("[docusign-actions] Configurando para Classic View.");
+        // Para a visualização clássica, você pode explicitamente mostrar os controles ou deixar o padrão do DocuSign
+        viewRequestOptions.recipientSettings = {
+            showHeader: 'true',
             showToolbar: 'true',
             showFinishButton: 'true',
             showCancelButton: 'true',
+            showDeclineButton: 'true',
+            showViewDocumentsButton: 'true',
+            showSaveButton: 'true',
         };
-        // viewRequestOptions.chromeControls = 'show'; // Padrão
-        console.log("[docusign-actions] Configurando para Classic View.");
     }
 
-    // Segurança adicional para iFrames
-    if (args.frameAncestors) viewRequestOptions.frameAncestors = [args.frameAncestors];
-    if (args.messageOrigins) viewRequestOptions.messageOrigins = [args.messageOrigins];
-
+    // Segurança adicional para iFrames (opcional, mas recomendado)
+    // viewRequestOptions.frameAncestors = [window.location.origin]; // Exemplo, ajuste para sua necessidade
+    // viewRequestOptions.messageOrigins = [window.location.origin];
 
     const recipientViewRequest = docusign.RecipientViewRequest.constructFromObject(viewRequestOptions);
+    // ... (resto da função como antes) ...
     console.log(`[docusign-actions] Criando recipient view para envelope ${envelopeId}. Payload:`, JSON.stringify(recipientViewRequest, null, 2));
 
     try {

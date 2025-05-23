@@ -4,43 +4,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Assinatura Embarcada - Fontara Financial</title>
-    <meta
-      name="description"
-      content="Assine documentos ou aceite termos digitalmente com Fontara Financial e Docusign."
-    />
+    <meta name="description" content="Assine documentos ou aceite termos digitalmente com Fontara Financial e Docusign."/>
     <link rel="shortcut icon" href="./assets/logo/logo.png" type="image/x-icon" />
-    <link rel="stylesheet" href="./css/tailwind-build.css" />
+    <script src="https://js.docusign.com/bundle/docusign.js/"></script> <link rel="stylesheet" href="./css/tailwind-build.css" />
     <link rel="stylesheet" href="./css/index.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"
-    />
-    <script src="https://js.docusign.com/bundle/docusign.js/"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"/>
     <style>
-      .form-input-custom {
-        @apply tw-block tw-w-full tw-px-4 tw-py-3 tw-border tw-border-black dark:tw-border-gray-500 tw-bg-gray-100 dark:tw-bg-gray-700 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-indigo-500 focus:tw-border-indigo-500 dark:tw-text-white tw-text-base;
-        min-height: 50px; 
-      }
-      .form-label {
-        @apply tw-block tw-text-base tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2; 
-      }
-      .form-radio { /* Estilo para radio buttons */
-        @apply tw-h-5 tw-w-5 tw-text-indigo-600 tw-border-gray-400 dark:tw-border-gray-600 focus:tw-ring-indigo-500 dark:tw-bg-gray-700 dark:focus:tw-ring-offset-gray-800;
-      }
-      .form-radio-label {
-        @apply tw-ml-2 tw-block tw-text-base tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer;
-      }
-      .modal-embedding-container { flex-grow: 1; display: flex; min-height: 0; }
-      #embeddingContainer { width: 100%; height: 100%; border: none; }
+      .form-input-custom { @apply tw-block tw-w-full tw-px-4 tw-py-3 tw-border tw-border-black dark:tw-border-gray-500 tw-bg-gray-100 dark:tw-bg-gray-700 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-indigo-500 focus:tw-border-indigo-500 dark:tw-text-white tw-text-base; min-height: 50px; }
+      .form-label { @apply tw-block tw-text-base tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2; }
+      .form-checkbox { @apply tw-h-5 tw-w-5 tw-text-indigo-600 tw-border-gray-400 dark:tw-border-gray-600 focus:tw-ring-indigo-500 dark:tw-bg-gray-700 dark:focus:tw-ring-offset-gray-800; }
+      .form-checkbox-label { @apply tw-ml-2 tw-block tw-text-base tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer; }
+      .modal-iframe-container { flex-grow: 1; display: flex; min-height: 0; }
+      #embeddingContainer { width: 100%; height: 100%; border: none; } /* Container para DocuSign.js e iframe clássico */
       .modal-header { padding: 1rem; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
       .dark .modal-header { border-bottom: 1px solid rgb(55 65 81); }
       .spinner-small { border: 3px solid #f3f3f3; border-top: 3px solid white; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; margin-right: 0.5rem; }
       @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-      /* Para garantir que o conteúdo do modal não seja sobreposto pelo header fixo */
-      body.modal-open { overflow: hidden; }
-      #docusignSigningModalOverlay { z-index: 5000 !important; }
-      #docusignSigningModalContent { z-index: 5001 !important; }
-
     </style>
 </head>
 <body class="tw-flex tw-min-h-[100vh] tw-flex-col tw-bg-[#fcfcfc] tw-text-black dark:tw-bg-black dark:tw-text-white">
@@ -48,11 +27,11 @@
     
     <main class="tw-mt-20 tw-pt-10 tw-pb-10 tw-px-[5%] lg:tw-px-[10%]">
       <div class="tw-container tw-mx-auto lg:tw-max-w-5xl"> 
-        <h1 class="tw-text-3xl md:tw-text-4xl tw-font-semibold tw-text-center tw-mb-8">Assinatura Embarcada</h1>
+        <h1 class="tw-text-3xl md:tw-text-4xl tw-font-semibold tw-text-center tw-mb-8">Assinatura Embarcada Fontara</h1>
         
-        <form id="signingForm" class="tw-space-y-6 tw-bg-white dark:tw-bg-gray-800 tw-p-6 md:tw-p-8 tw-rounded-lg tw-shadow-md">
+        <form id="signatureForm" class="tw-space-y-6 tw-bg-white dark:tw-bg-gray-800 tw-p-6 md:tw-p-8 tw-rounded-lg tw-shadow-md">
           <div>
-            <label for="signerName" class="form-label">Seu Nome Completo:</label>
+            <label for="signerName" class="form-label">Nome Completo do Cliente:</label>
             <input type="text" name="signerName" id="signerName" required class="form-input-custom" placeholder="Ex: João da Silva">
           </div>
 
@@ -61,27 +40,28 @@
             <input type="email" name="signerEmail" id="signerEmail" required class="form-input-custom" placeholder="seuemail@email.com">
           </div>
           
-          <div id="emailSubjectContainer"> <label for="emailSubject" class="form-label">Assunto do Documento (para notificação Docusign):</label>
+          <div id="emailSubjectContainer">
+            <label for="emailSubject" class="form-label">Assunto do Documento (para notificação por email):</label>
             <input type="text" name="emailSubject" id="emailSubject" class="form-input-custom" value="Documento Fontara Financial para Assinatura">
           </div>
 
           <fieldset class="tw-pt-4">
-            <legend class="form-label tw-mb-3">Escolha o Tipo de Experiência Embarcada:</legend>
+            <legend class="form-label tw-mb-3">Escolha o Tipo de Assinatura Embarcada:</legend>
             <div class="tw-space-y-3">
               <div>
-                <input id="signingTypeClassic" name="signingType" type="radio" value="classic" checked class="form-radio">
-                <label for="signingTypeClassic" class="form-radio-label">Assinatura Clássica (Envelope)</label>
-                <p class="tw-mt-1 tw-ml-7 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">Interface padrão do DocuSign para assinar documentos, carregada em um iframe.</p>
+                <input id="signingTypeClassic" name="signingType" type="radio" value="classic" checked class="form-checkbox">
+                <label for="signingTypeClassic" class="form-checkbox-label">Assinatura Clássica (Iframe)</label>
+                <p class="tw-mt-1 tw-ml-7 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">Interface padrão do DocuSign dentro do portal.</p>
               </div>
               <div>
-                <input id="signingTypeFocused" name="signingType" type="radio" value="focused" class="form-radio">
-                <label for="signingTypeFocused" class="form-radio-label">Visualização Focada (Envelope com DocuSign.js)</label>
-                <p class="tw-mt-1 tw-ml-7 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">Interface simplificada para assinar documentos, renderizada via DocuSign.js.</p>
+                <input id="signingTypeFocused" name="signingType" type="radio" value="focused" class="form-checkbox">
+                <label for="signingTypeFocused" class="form-checkbox-label">Visualização Focada (DocuSign.js)</label>
+                <p class="tw-mt-1 tw-ml-7 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">Interface simplificada, renderizada via DocuSign.js.</p>
               </div>
               <div>
-                <input id="signingTypeClickToAgree" name="signingType" type="radio" value="click_to_agree" class="form-radio">
-                <label for="signingTypeClickToAgree" class="form-radio-label">Click to Agree (Termos e Condições com DocuSign.js)</label>
-                <p class="tw-mt-1 tw-ml-7 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">Para aceitar termos de serviço, políticas, etc., renderizado via DocuSign.js.</p>
+                <input id="signingTypeClickToAgree" name="signingType" type="radio" value="click_to_agree" class="form-checkbox">
+                <label for="signingTypeClickToAgree" class="form-checkbox-label">Click to Agree (DocuSign.js)</label>
+                <p class="tw-mt-1 tw-ml-7 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">Para aceitar termos de serviço, políticas, etc.</p>
               </div>
             </div>
           </fieldset>
@@ -90,38 +70,33 @@
             <fieldset class="tw-pt-4">
               <legend class="form-label tw-mb-3">Escolha o Documento para Assinatura:</legend>
               <div class="tw-flex tw-items-center tw-mb-3">
-                <input id="useDefaultDoc" name="documentChoice" type="radio" value="default" checked class="form-radio">
-                <label for="useDefaultDoc" class="form-radio-label">Usar Contrato Padrão Fontara</label>
+                <input id="useDefaultDoc" name="documentChoice" type="radio" value="default" checked class="form-checkbox">
+                <label for="useDefaultDoc" class="form-checkbox-label">Usar Contrato Padrão Fontara (Teste)</label>
               </div>
               <div class="tw-flex tw-items-center">
-                <input id="useUploadedDoc" name="documentChoice" type="radio" value="upload" class="form-radio">
-                <label for="useUploadedDoc" class="form-radio-label">Enviar meu próprio documento (PDF)</label>
+                <input id="useUploadedDoc" name="documentChoice" type="radio" value="upload" class="form-checkbox">
+                <label for="useUploadedDoc" class="form-checkbox-label">Enviar meu próprio documento (PDF)</label>
               </div>
             </fieldset>
             
-            <div id="fileUploadContainer" class="tw-hidden"> 
+            <div id="fileUploadContainer" class="tw-hidden">
               <label for="uploadedDoc" class="form-label">Selecione o arquivo PDF:</label>
               <input type="file" name="uploadedDoc" id="uploadedDoc" class="form-input-custom" accept=".pdf">
-              <p class="tw-mt-1 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">Apenas arquivos .pdf são permitidos. O documento deve conter a âncora de texto `\s1\` onde a assinatura será posicionada.</p>
+              <p class="tw-mt-1 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">Apenas arquivos .pdf. Lembre-se da âncora de texto DocuSign (ex: `\s1\`) para posicionar a assinatura.</p>
             </div>
           </div>
 
           <div id="clickToAgreeOptionsContainer" class="tw-hidden tw-pt-4">
             <div>
               <label for="clickwrapId" class="form-label">ID do Clickwrap:</label>
-              <input type="text" name="clickwrapId" id="clickwrapId" class="form-input-custom" placeholder="Insira o ID do Clickwrap (ex: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)">
-              <p class="tw-mt-1 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">Este ID é fornecido pela configuração do Clickwrap na sua conta DocuSign.</p>
-            </div>
-             <div>
-              <label for="clickwrapClientUserId" class="form-label tw-mt-4">ID de Usuário do Cliente para Clickwrap (Opcional):</label>
-              <input type="text" name="clickwrapClientUserId" id="clickwrapClientUserId" class="form-input-custom" placeholder="Ex: usuario123 ou deixe em branco para gerar">
-               <p class="tw-mt-1 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">Identificador único para este usuário no contexto do Clickwrap. Se em branco, um será gerado.</p>
+              <input type="text" name="clickwrapId" id="clickwrapId" class="form-input-custom" placeholder="Insira o ID do Clickwrap configurado">
+              <p class="tw-mt-1 tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">Este ID é da configuração do Clickwrap na sua conta DocuSign.</p>
             </div>
           </div>
           
           <div class="tw-pt-4">
-            <button type="submit" id="submitSigningBtn" class="btn tw-w-full tw-flex tw-justify-center tw-items-center tw-py-3 tw-px-4 tw-text-lg">
-              <i class="bi bi-pencil-square tw-mr-2"></i><span id="submitBtnText">Assinar/Aceitar</span>
+            <button type="submit" id="submitSignatureBtn" class="btn tw-w-full tw-flex tw-justify-center tw-items-center tw-py-3 tw-px-4 tw-text-lg">
+              <i class="bi bi-pencil-square tw-mr-2"></i><span id="submitBtnText">Assinar</span>
             </button>
           </div>
         </form>
@@ -130,26 +105,15 @@
 
     <div id="footer-placeholder"></div>
     
-    <div
-      class="tw-hidden tw-fixed tw-inset-0 tw-bg-black tw-bg-opacity-75 dark:tw-bg-opacity-80 tw-flex tw-items-center tw-justify-center tw-p-4" 
-      id="docusignSigningModalOverlay"
-    >
-      <div
-        class="tw-bg-white dark:tw-bg-gray-800 tw-rounded-lg tw-shadow-xl tw-flex tw-flex-col tw-overflow-hidden tw-w-full tw-max-w-4xl tw-h-[90vh]"
-        id="docusignSigningModalContent" 
-      >
+    <div class="tw-hidden tw-fixed tw-inset-0 tw-bg-black tw-bg-opacity-75 dark:tw-bg-opacity-80 tw-flex tw-items-center tw-justify-center tw-p-4 tw-z-[9999]" id="docusignSigningModalOverlay" style="z-index: 5000 !important;">
+      <div class="tw-bg-white dark:tw-bg-gray-800 tw-rounded-lg tw-shadow-xl tw-flex tw-flex-col tw-overflow-hidden tw-w-full tw-max-w-4xl tw-h-[90vh]" id="docusignSigningModalContent" style="position: relative; z-index: 5001 !important;">
         <div class="modal-header">
-          <h3 id="modalTitle" class="tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-white">Processando...</h3>
-          <button
-            type="button"
-            id="closeDocusignSigningModalBtn"
-            class="tw-text-gray-400 hover:tw-text-gray-600 dark:hover:tw-text-gray-200 tw-text-2xl"
-            title="Fechar"
-          >
+          <h3 class="tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-white" id="modalTitle">Assinatura Embarcada</h3>
+          <button type="button" id="closeDocusignSigningModalBtn" class="tw-text-gray-400 hover:tw-text-gray-600 dark:hover:tw-text-gray-200 tw-text-2xl" title="Fechar">
             <i class="bi bi-x-lg"></i>
           </button>
         </div>
-        <div class="modal-embedding-container tw-flex-grow">
+        <div class="modal-iframe-container tw-flex-grow">
             <div id="embeddingContainer" class="tw-w-full tw-h-full"></div>
         </div>
       </div>
@@ -157,19 +121,14 @@
 
     <script src="./scripts/loadPartials.js" defer></script>
     <script>
-      // PDF Padrão Leve (Base64)
-      const DEFAULT_DOC_BASE64 = "JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUiXSAvQ291bnQgMSA+PgplbmRvYmoKMyAwIG9iago8PCAvVHlwZSAvUGFnZSAvUGFyZW50IDIgMCBSIC9NZWRpYUJveCBbMCAwIDYxMiA3OTJdCi9Db250ZW50cyA0IDAgUgovUmVzb3VyY2VzIDw8IC9Gb250IDw8IC9GMSA1IDAgUiA+PiA+Pgp+PgplbmRvYmoKNCQwIG9iago8PCAvTGVuZ3RoIDU4ID4+CnN0cmVhbQpCVAgvRjEgMjQgVGYKMTAwIDcwMCBUZAooRG9jdW1lbnRvIGRlIFRlc3RlIEZvbnRhcmEpIFRqCkVUCmVuZHN0cmVhbQplbmRvYmoKNSAwIG9iago8PCAvVHlwZSAvRm9udCAvU3VidHlwZSAvVHlwZTEgL0Jhc2VGb250IC9IZWx2ZXRpY2EgPj4KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU2IDAwMDAwIG4gCjAwMDAwMDAxMTEgMDAwMDAgbiAKMDAwMDAwMDIxMCAwMDAwMCBuIAowMDAwMDAwMjkwIDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgNiAvUm9vdCAxIDAgUiA+PgpzdGFydHhyZWYKMzUzCiUlRU9GCg==";
-      const DEFAULT_DOC_NAME = "ContratoPadraoFontara.pdf";
-      const DEFAULT_DOC_ID = "1"; // Usado como documentId no envelope
-
-      // Defina a origem esperada do Docusign para o seu ambiente (demo ou produção)
-      // Para o ambiente de demonstração da DocuSign (sandbox)
-      const DOCUSIGN_JS_HOST = "https://js.docusign.com"; // Para docusign.js
-      const DOCUSIGN_IFRAME_ORIGIN_CLASSIC = "https://demo.docusign.net"; // Para iframe da Clássica
+      const DEFAULT_DOC_BASE64_NEW_LIGHTWEIGHT = "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PgplbmRvYjogMiAwIG9iago8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PgplbmRvYjagMyAwIG9iago8PC9UeXBlL1BhZ2UvUGFyZW50IDIgMCBSL1Jlc291cmNlczw8L0ZvbnQ8PC9GMSA2IDAgUj4+Pj4vTWVkaWFCb3hbMCAwIDYxMiA3OTJdL0NvbnRlbnRzIDQgMCBSPj4KZW5kb2JqCjQgMCBvYmoKPDwvTGVuZ3RoIDgwPj4Kc3RyZWFtCkJULzcxIDUwIDcwMCBUZCAvRjEgMTIgVGYgKFNpbXBsZSBQREYgRG9jdW1lbnQgZm9yIFRlc3RpbmcuKQpUSidUL0YxIDEyIFRmIChQbGVhc2Ugc2lnbiBiZWxvdycpIFRKKFRSZXN1bXRzKSBkagovRjEgMTIgVGYgKFxcczFcXCkgVEoKRVQ KZW5kc3RyZWFtCmVuZG9iago2IDAgb2JqCjw8L1R5cGUvRm9udC9TdWJ0eXBlL1R5cGUxL0Jhc2VGb250L0hlbHZldGljYT4+CmVuZG9iagp4cmVmCjAgNwowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMDA2MSAwMDAwMCBuIAowMDAwMDAwMTE4IDAwMDAwIG4gCjAwMDAwMDAyNDMgMDAwMDAgbiAKMDAwMDAwMDAwMCAwMDAwMCBuIAowMDAwMDAwMzQ0IDAwMDAwIG4gCnRyYWlsZXIKPDwvUm9vdCAxIDAgUi9TaXplIDc+PgpzdGFydHhyZWYKNDAxCiUlRU9GCg==";
+      const DEFAULT_DOC_NAME_NEW = "ContratoTesteLeveFontara.pdf";
+      const DEFAULT_DOC_ID_NEW = "1"; // Doc ID para o DocuSign
 
       document.addEventListener('DOMContentLoaded', function() {
-        // Elementos do formulário
-        const signingForm = document.getElementById('signingForm');
+        const signatureForm = document.getElementById('signatureForm');
+        const submitSignatureBtn = document.getElementById('submitSignatureBtn');
+        
         const signerNameInput = document.getElementById('signerName');
         const signerEmailInput = document.getElementById('signerEmail');
         const emailSubjectInput = document.getElementById('emailSubject');
@@ -177,362 +136,173 @@
         
         const signingTypeRadios = document.querySelectorAll('input[name="signingType"]');
         const documentOptionsContainer = document.getElementById('documentOptionsContainer');
+        const clickToAgreeOptionsContainer = document.getElementById('clickToAgreeOptionsContainer');
+        const clickwrapIdInput = document.getElementById('clickwrapId');
+        
         const useDefaultDocRadio = document.getElementById('useDefaultDoc');
         const useUploadedDocRadio = document.getElementById('useUploadedDoc');
         const fileUploadContainer = document.getElementById('fileUploadContainer');
         const uploadedDocInput = document.getElementById('uploadedDoc');
-        
-        const clickToAgreeOptionsContainer = document.getElementById('clickToAgreeOptionsContainer');
-        const clickwrapIdInput = document.getElementById('clickwrapId');
-        const clickwrapClientUserIdInput = document.getElementById('clickwrapClientUserId');
 
-        const submitSigningBtn = document.getElementById('submitSigningBtn');
-        const submitBtnText = document.getElementById('submitBtnText');
-
-        // Elementos do Modal
         const docusignModalOverlay = document.getElementById('docusignSigningModalOverlay');
-        const docusignModalContent = document.getElementById('docusignSigningModalContent');
         const closeDocusignSigningModalBtn = document.getElementById('closeDocusignSigningModalBtn');
-        const embeddingContainer = document.getElementById('embeddingContainer'); // Onde o iframe ou docusign.js renderiza
+        const embeddingContainer = document.getElementById('embeddingContainer');
         const modalTitle = document.getElementById('modalTitle');
-        
-        let mainHeader = null; // Será definido após o carregamento dos parciais
-        let originalHeaderZIndex = '';
+        const mainHeader = document.getElementById('mainHeader');
+        let originalHeaderZIndex;
 
-        // Função para mostrar/ocultar campos com base no tipo de assinatura
-        function toggleFormFields() {
-          const selectedType = document.querySelector('input[name="signingType"]:checked').value;
-          
-          if (selectedType === 'click_to_agree') {
-            documentOptionsContainer.classList.add('tw-hidden');
-            emailSubjectContainer.classList.add('tw-hidden');
+        function showFileUpload(show) {
+            if (fileUploadContainer && uploadedDocInput) {
+                if (show) {
+                    fileUploadContainer.classList.remove('tw-hidden');
+                } else {
+                    fileUploadContainer.classList.add('tw-hidden');
+                    uploadedDocInput.value = ''; // Limpa o input se escondido
+                }
+            }
+        }
+
+        function toggleSigningTypeOptions() {
+            const selectedType = document.querySelector('input[name="signingType"]:checked').value;
+            
+            // Resetar required status
             emailSubjectInput.required = false;
             uploadedDocInput.required = false;
-            clickToAgreeOptionsContainer.classList.remove('tw-hidden');
-            clickwrapIdInput.required = true;
-            submitBtnText.textContent = "Aceitar Termos";
-            modalTitle.textContent = "Aceitar Termos e Condições";
-          } else { // classic ou focused
-            documentOptionsContainer.classList.remove('tw-hidden');
-            emailSubjectContainer.classList.remove('tw-hidden');
-            emailSubjectInput.required = true;
-            clickToAgreeOptionsContainer.classList.add('tw-hidden');
             clickwrapIdInput.required = false;
-            showFileUpload(useUploadedDocRadio.checked); // Atualiza visibilidade do upload de arquivo
-            submitBtnText.textContent = "Assinar Documento";
-             modalTitle.textContent = "Assinatura de Documento";
-          }
+            useDefaultDocRadio.required = false; // Não é um campo de input direto, mas controla lógica
+
+            if (selectedType === 'classic' || selectedType === 'focused') {
+                documentOptionsContainer.classList.remove('tw-hidden');
+                emailSubjectContainer.classList.remove('tw-hidden');
+                emailSubjectInput.required = true;
+
+                clickToAgreeOptionsContainer.classList.add('tw-hidden');
+                
+                showFileUpload(useUploadedDocRadio.checked);
+                if (useUploadedDocRadio.checked) {
+                    uploadedDocInput.required = true;
+                }
+
+            } else if (selectedType === 'click_to_agree') {
+                documentOptionsContainer.classList.add('tw-hidden');
+                emailSubjectContainer.classList.add('tw-hidden');
+                showFileUpload(false); 
+
+                clickToAgreeOptionsContainer.classList.remove('tw-hidden');
+                clickwrapIdInput.required = true;
+            }
         }
 
-        // Função para mostrar/ocultar upload de arquivo
-        function showFileUpload(show) {
-          if (fileUploadContainer && uploadedDocInput) {
-            const selectedType = document.querySelector('input[name="signingType"]:checked').value;
-            if (selectedType === 'click_to_agree') { // Nunca mostrar para click to agree
-                fileUploadContainer.classList.add('tw-hidden');
-                uploadedDocInput.required = false;
-                return;
-            }
-
-            if (show) {
-              fileUploadContainer.classList.remove('tw-hidden');
-              uploadedDocInput.required = true;
-            } else {
-              fileUploadContainer.classList.add('tw-hidden');
-              uploadedDocInput.required = false;
-              uploadedDocInput.value = ''; // Limpa o campo se escondido
-            }
-          }
-        }
-
-        // Listeners para os radio buttons de tipo de assinatura
-        signingTypeRadios.forEach(radio => radio.addEventListener('change', toggleFormFields));
+        signingTypeRadios.forEach(radio => radio.addEventListener('change', toggleSigningTypeOptions));
+        useDefaultDocRadio.addEventListener('change', () => { if(document.querySelector('input[name="signingType"]:checked').value !== 'click_to_agree') showFileUpload(false); });
+        useUploadedDocRadio.addEventListener('change', () => { if(document.querySelector('input[name="signingType"]:checked').value !== 'click_to_agree') showFileUpload(true); });
         
-        // Listeners para os radio buttons de escolha de documento
-        if(useDefaultDocRadio) useDefaultDocRadio.addEventListener('change', () => showFileUpload(false));
-        if(useUploadedDocRadio) useUploadedDocRadio.addEventListener('change', () => showFileUpload(true));
+        toggleSigningTypeOptions(); // Chamada inicial para configurar a UI
 
-        // Estado inicial dos campos
-        toggleFormFields();
-
-
-        function openDocusignModal(title = "Processando...") {
-          modalTitle.textContent = title;
-          embeddingContainer.innerHTML = ''; // Limpa o container
-          docusignModalOverlay.classList.remove('tw-hidden');
-          document.body.classList.add('modal-open');
-          
-          // Tenta pegar o header após parciais carregados
-          if (!mainHeader) mainHeader = document.getElementById('mainHeader');
-          if (mainHeader) {
-            originalHeaderZIndex = mainHeader.style.zIndex; 
-            mainHeader.style.zIndex = '10'; // Abaixa o z-index do header
-          }
+        function openDocusignModal(title = "Processando...", contentMessage = "Por favor, aguarde...") {
+            if (docusignModalOverlay && modalTitle) {
+                modalTitle.textContent = title;
+                embeddingContainer.innerHTML = `<div class="tw-p-4 tw-text-center">${contentMessage}</div>`;
+                docusignModalOverlay.classList.remove('tw-hidden');
+                document.body.style.overflow = 'hidden';
+                if (mainHeader) {
+                    originalHeaderZIndex = mainHeader.style.zIndex;
+                    mainHeader.style.zIndex = '10';
+                }
+            }
         }
 
         function closeDocusignModal() {
-          embeddingContainer.innerHTML = ''; // Limpa o container
-          docusignModalOverlay.classList.add('tw-hidden');
-          document.body.classList.remove('modal-open');
-          if (mainHeader) {
-            mainHeader.style.zIndex = originalHeaderZIndex || ''; 
-          }
-        }
-        
-        if(closeDocusignSigningModalBtn) closeDocusignSigningModalBtn.addEventListener('click', closeDocusignModal);
-        if (docusignModalOverlay) {
-            docusignModalOverlay.addEventListener('click', function(event) {
-                if (event.target === docusignModalOverlay) closeDocusignModal();
-            });
-        }
-
-        // Manipulador de eventos para iframe (Visualização Clássica)
-        function handleIframeMessage(event) {
-            if (event.origin !== DOCUSIGN_IFRAME_ORIGIN_CLASSIC) {
-                // console.warn("Mensagem recebida de origem inesperada (iframe):", event.origin);
-                return;
-            }
-            if (typeof event.data === 'string') {
-                const params = new URLSearchParams(event.data.startsWith('?') ? event.data.substring(1) : event.data);
-                const docusignEvent = params.get('event');
-                const envelopeIdFromEvent = params.get('envelopeId'); 
-                console.log(`[Assinatura Clássica IFRAME] Evento Docusign: ${docusignEvent}, EnvelopeID: ${envelopeIdFromEvent || 'N/A'}`);
-                
-                handleSigningCompletion(docusignEvent, envelopeIdFromEvent);
-            }
-        }
-        
-        // Função unificada para lidar com a conclusão da assinatura (de iframe ou docusign.js)
-        function handleSigningCompletion(docusignEvent, envelopeId) {
-            const signerNameFromForm = signerNameInput.value || 'Cliente';
-            // Ajustar a URL de retorno para incluir o envelopeId corretamente
-            const returnUrlBase = `${window.location.origin}/agradecimento/obrigado.html?recipientName=${encodeURIComponent(signerNameFromForm)}&envelopeId=${envelopeId || ''}`;
-
-            if (docusignEvent === 'signing_complete' || docusignEvent === 'done') { // 'done' é comum para Clickwrap
-                closeDocusignModal();
-                window.location.href = `${returnUrlBase}&event=${docusignEvent}`;
-            } else if (['decline', 'cancel', 'session_timeout', 'ttl_expired', 'exception', 'error'].includes(docusignEvent)) {
-                closeDocusignModal();
-                window.location.href = `${returnUrlBase}&event=${docusignEvent}`;
-            }
-        }
-
-
-        // Submissão do formulário
-        if(signingForm) {
-            signingForm.addEventListener('submit', async function(event) {
-              event.preventDefault();
-              const originalButtonInnerHTML = submitSigningBtn.innerHTML;
-              
-              submitSigningBtn.disabled = true;
-              submitSigningBtn.innerHTML = '<div class="spinner-small"></div> Processando...';
-
-              const signerName = signerNameInput.value;
-              const signerEmail = signerEmailInput.value;
-              const emailSubject = emailSubjectInput.value;
-              const selectedSigningType = document.querySelector('input[name="signingType"]:checked').value;
-
-              try {
-                openDocusignModal(selectedSigningType === 'click_to_agree' ? "Aceitar Termos e Condições" : "Assinatura de Documento");
-
-                if (selectedSigningType === 'classic' || selectedSigningType === 'focused') {
-                  // Lógica para Assinatura Clássica ou Focada (Envelope)
-                  const useDefault = useDefaultDocRadio.checked;
-                  let documentBase64 = '';
-                  let documentName = '';
-                  const documentFileExtension = 'pdf'; 
-                  const documentId = DEFAULT_DOC_ID;
-
-                  if (useDefault) {
-                    documentBase64 = DEFAULT_DOC_BASE64;
-                    documentName = DEFAULT_DOC_NAME;
-                  } else {
-                    const file = uploadedDocInput.files[0];
-                    if (!file) throw new Error("Por favor, selecione um arquivo PDF.");
-                    if (file.type !== "application/pdf") throw new Error("Apenas arquivos PDF são permitidos.");
-                    documentName = file.name;
-                    documentBase64 = await new Promise((resolve, reject) => {
-                      const reader = new FileReader();
-                      reader.onload = () => resolve(reader.result.split(',')[1]);
-                      reader.onerror = error => reject(error);
-                      reader.readAsDataURL(file);
-                    });
-                  }
-
-                  const clientUserId = `fontara_${signerEmail.replace(/[^a-zA-Z0-9]/g, "")}_${Date.now()}`; 
-
-                  const envelopePayload = {
-                    emailSubject: emailSubject,
-                    documents: [{ name: documentName, fileExtension: documentFileExtension, documentId: documentId, documentBase64: documentBase64 }],
-                    recipients: {
-                      signers: [{
-                        email: signerEmail, name: signerName, recipientId: "1", 
-                        clientUserId: clientUserId, routingOrder: "1",
-                        tabs: { signHereTabs: [{ anchorString: "\\s1\\", anchorXOffset: "0", anchorYOffset: "10", anchorUnits: "pixels" }] }
-                      }]
-                    },
-                    status: "sent"
-                  };
-                  
-                  // 1. Criar o envelope (comum para Classic e Focused)
-                  let response = await fetch('/.netlify/functions/docusign-actions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: "CREATE_DYNAMIC_EMBEDDED_ENVELOPE", payload: envelopePayload })
-                  });
-                  if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ error: `Erro HTTP ${response.status}: ${response.statusText}` }));
-                    throw new Error(errorData.error || `Falha ao criar envelope.`);
-                  }
-                  const envelopeResult = await response.json();
-                  const envelopeId = envelopeResult.envelopeId;
-                  if (!envelopeId) throw new Error("ID do envelope não retornado.");
-                  
-                  // 2. Obter a URL de visualização do destinatário
-                  const recipientViewPayload = {
-                    envelopeId: envelopeId, signerEmail: signerEmail, signerName: signerName,
-                    clientUserId: clientUserId,
-                    // A URL de retorno é importante para docusign.js e como fallback para iframe
-                    returnUrl: `${window.location.origin}/agradecimento/obrigado.html?event=FALLBACK_IFRAME_REDIRECT&envelopeId=${envelopeId}&recipientName=${encodeURIComponent(signerName)}`,
-                    // Para 'focused', a API pode otimizar a URL se souber que docusign.js será usado.
-                    // No entanto, docusign.js também funciona com URLs de visualização de destinatário padrão.
-                    // Vamos manter simples por enquanto e deixar docusign.js lidar com a renderização.
-                  };
-
-                  response = await fetch('/.netlify/functions/docusign-actions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: "GET_EMBEDDED_SIGNING_URL", payload: recipientViewPayload })
-                  });
-                  if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ error: `Erro HTTP ${response.status}: ${response.statusText}` }));
-                    throw new Error(errorData.error || `Falha ao obter URL de assinatura.`);
-                  }
-                  const signingResult = await response.json();
-                  const signingUrl = signingResult.signingUrl;
-                  if (!signingUrl) throw new Error("URL de assinatura não retornada.");
-
-                  if (selectedSigningType === 'classic') {
-                    // Montar Iframe para Visualização Clássica
-                    window.addEventListener('message', handleIframeMessage, false); // Adiciona listener para iframe
-                    const iframe = document.createElement('iframe');
-                    iframe.src = signingUrl;
-                    iframe.id = "docusignSigningIframe"; // Para consistência, se necessário
-                    iframe.title = "Assinatura Docusign";
-                    iframe.classList.add("tw-w-full", "tw-h-full");
-                    embeddingContainer.appendChild(iframe);
-                  } else { // 'focused'
-                    // Montar com DocuSign.js para Visualização Focada
-                    window.removeEventListener('message', handleIframeMessage, false); // Remove listener de iframe se houver
-                    const docusign = window.docusign; // Acessa o objeto docusign.js global
-                    if (!docusign) {
-                        throw new Error("DocuSign.js não foi carregado.");
-                    }
-                    docusign.signing({
-                        url: signingUrl,
-                        host: DOCUSIGN_JS_HOST, // Necessário para docusign.js
-                        // Configurações adicionais para focused view podem ser adicionadas aqui
-                        // Ex: chrome: "false" para remover a barra superior do DocuSign
-                        style: {
-                            /** Aplica estilos ao iframe do docusign.js. Veja a documentação para mais opções.
-                             * signingNavigation: {
-                             * // Cor do botão primário (ex: "Assinar", "Concluir")
-                             * "buttonPrimary": { "backgroundColor": "#3f51b5", "color": "#ffffff" }
-                             * }
-                             */
-                        }
-                    }).mount("#embeddingContainer")
-                    .on("ready", (event) => {
-                        console.log("[Focused View] DocuSign.js pronto:", event);
-                    })
-                    .on("sessionEnd", (event) => { // Evento mais genérico para fim da sessão
-                        console.log("[Focused View] Fim da sessão DocuSign.js:", event);
-                        // O 'event.data.type' pode ser 'signing_complete', 'decline', 'cancel', etc.
-                        handleSigningCompletion(event.data.type, envelopeId);
-                    })
-                    .on("error", (error) => { // Adicionado para capturar erros do docusign.js
-                        console.error("[Focused View] Erro no DocuSign.js:", error);
-                        alert(`Erro na Visualização Focada: ${error.message || 'Erro desconhecido.'}`);
-                        closeDocusignModal();
-                    });
-                  }
-
-                } else if (selectedSigningType === 'click_to_agree') {
-                  // Lógica para Click to Agree
-                  const clickwrapId = clickwrapIdInput.value;
-                  if (!clickwrapId) throw new Error("ID do Clickwrap é obrigatório.");
-                  
-                  let clientUserId = clickwrapClientUserIdInput.value;
-                  if (!clientUserId) {
-                    clientUserId = `fontara_clickwrap_${signerEmail.replace(/[^a-zA-Z0-9]/g, "")}_${Date.now()}`;
-                  }
-
-                  const clickwrapPayload = {
-                    clickwrapId: clickwrapId,
-                    clientUserId: clientUserId,
-                    // Adicione quaisquer outros metadados necessários para sua função de backend
-                    // por exemplo, documentData: { fullName: signerName, email: signerEmail, company: "N/A", title: "Cliente" }
-                    // A estrutura exata de `documentData` depende de como seu Clickwrap está configurado.
-                  };
-
-                  // Chamar a Netlify Function para obter a URL do Clickwrap
-                  // Esta é uma NOVA AÇÃO que você precisará implementar no backend.
-                  const response = await fetch('/.netlify/functions/docusign-actions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: "GET_CLICKWRAP_AGREEMENT_URL", payload: clickwrapPayload })
-                  });
-                  if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ error: `Erro HTTP ${response.status}: ${response.statusText}` }));
-                    throw new Error(errorData.error || `Falha ao obter URL do Clickwrap.`);
-                  }
-                  const clickwrapResult = await response.json();
-                  const agreementUrl = clickwrapResult.agreementUrl; // A função de backend deve retornar isso
-
-                  if (!agreementUrl) throw new Error("URL de concordância do Clickwrap não retornada.");
-                  
-                  window.removeEventListener('message', handleIframeMessage, false); // Remove listener de iframe se houver
-                  const docusign = window.docusign;
-                  if (!docusign) {
-                      throw new Error("DocuSign.js não foi carregado.");
-                  }
-                  docusign.clickToAgree({
-                      url: agreementUrl, // URL obtida da sua função Netlify
-                      host: DOCUSIGN_JS_HOST,
-                      // Mais opções de configuração podem ser adicionadas aqui
-                  }).mount("#embeddingContainer")
-                  .on("ready", (event) => {
-                      console.log("[Click to Agree] DocuSign.js pronto:", event);
-                  })
-                  .on("agreed", (event) => { // Usuário concordou
-                      console.log("[Click to Agree] Usuário concordou:", event);
-                      // O ID do envelope/acordo pode estar em event.data.agreementId ou similar
-                      handleSigningCompletion('done', clickwrapId); // 'done' é um evento genérico de conclusão
-                  })
-                  .on("declined", (event) => { // Usuário recusou
-                      console.log("[Click to Agree] Usuário recusou:", event);
-                      handleSigningCompletion('decline', clickwrapId);
-                  })
-                  .on("error", (error) => {
-                      console.error("[Click to Agree] Erro no DocuSign.js:", error);
-                      alert(`Erro no Click to Agree: ${error.message || 'Erro desconhecido.'}`);
-                      closeDocusignModal();
-                  });
+            if (docusignModalOverlay) {
+                embeddingContainer.innerHTML = '';
+                docusignModalOverlay.classList.add('tw-hidden');
+                document.body.style.overflow = '';
+                if (mainHeader && originalHeaderZIndex !== undefined) {
+                    mainHeader.style.zIndex = originalHeaderZIndex;
                 }
-
-              } catch (error) {
-                console.error("Erro no processo Docusign:", error);
-                alert(`Ocorreu um erro: ${error.message}`);
-                closeDocusignModal(); // Fecha o modal em caso de erro
-              } finally {
-                submitSigningBtn.disabled = false;
-                submitSigningBtn.innerHTML = originalButtonInnerHTML; 
-              }
-            });
+            }
         }
-      });
-    </script>
-    <script src="./scripts/index.js"></script>
-    <script src="./scripts/components.js"></script>
-  </body>
-</html>
+        
+        closeDocusignSigningModalBtn.addEventListener('click', closeDocusignModal);
+        docusignModalOverlay.addEventListener('click', function(event) {
+            if (event.target === docusignModalOverlay) closeDocusignModal();
+        });
+        
+        const docusignReturnUrlBase = `${window.location.origin}/agradecimento/obrigado.html`;
+
+        function buildReturnUrl(status, envelopeId = null, agreementId = null, clientUserId = null, errorMsg = null) {
+            const signerName = signerNameInput.value || 'Cliente';
+            let params = new URLSearchParams({
+                recipientName: signerName,
+                event: status
+            });
+            if (envelopeId) params.append('envelopeId', envelopeId);
+            if (agreementId) params.append('agreementId', agreementId);
+            if (clientUserId) params.append('clientUserId', clientUserId); // Pode ser útil para rastreamento
+            if (errorMsg) params.append('error', errorMsg);
+            return `<span class="math-inline">\{docusignReturnUrlBase\}?</span>{params.toString()}`;
+        }
+        
+        signatureForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const originalButtonSpan = submitSignatureBtn.querySelector('span');
+            const originalButtonText = originalButtonSpan.textContent;
+            submitSignatureBtn.disabled = true;
+            originalButtonSpan.innerHTML = '<div class="spinner-small"></div> Processando...';
+
+            const signerName = signerNameInput.value;
+            const signerEmail = signerEmailInput.value;
+            const selectedSigningType = document.querySelector('input[name="signingType"]:checked').value;
+            const clientUserId = `fontara_${signerEmail.replace(/[^a-zA-Z0-9]/g, "")}_${Date.now()}`;
+
+            openDocusignModal(`Processando sua ${selectedSigningType === 'click_to_agree' ? 'Concordância' : 'Assinatura'}...`);
+
+            try {
+                if (selectedSigningType === 'classic' || selectedSigningType === 'focused') {
+                    modalTitle.textContent = "Assinatura de Documento";
+                    const emailSubj = emailSubjectInput.value;
+                    const useDefault = useDefaultDocRadio.checked;
+                    let docBase64 = '', docName = '', docId = DEFAULT_DOC_ID_NEW;
+
+                    if (useDefault) {
+                        docBase64 = DEFAULT_DOC_BASE64_NEW_LIGHTWEIGHT;
+                        docName = DEFAULT_DOC_NAME_NEW;
+                    } else {
+                        const file = uploadedDocInput.files[0];
+                        if (!file) throw new Error("Por favor, selecione um arquivo PDF para upload.");
+                        if (file.type !== "application/pdf") throw new Error("Apenas arquivos PDF são permitidos.");
+                        docName = file.name;
+                        docBase64 = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result.split(',')[1]);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(file);
+                        });
+                    }
+
+                    const envelopePayload = {
+                        emailSubject: emailSubj,
+                        documents: [{ name: docName, fileExtension: 'pdf', documentId: docId, documentBase64: docBase64 }],
+                        recipients: {
+                            signers: [{
+                                email: signerEmail, name: signerName, recipientId: "1",
+                                clientUserId: clientUserId, routingOrder: "1",
+                                tabs: { signHereTabs: [{ anchorString: "\\s1\\", anchorXOffset: "0", anchorYOffset: "10", anchorUnits: "pixels" }] }
+                            }]
+                        }, status: "sent"
+                    };
+                    
+                    let response = await fetch('/.netlify/functions/docusign-actions', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: "CREATE_AND_GET_SIGNING_URL", payload: { envelopeDefinition: envelopePayload, clientUserId: clientUserId } })
+                    });
+                    
+                    let result = await response.json();
+                    if (!response.ok) throw new Error(result.error || `Falha na API: ${response.statusText}`);
+                    const { signingUrl, envelopeId } = result;
+                    if (!signingUrl || !envelopeId) throw new Error("URL de assinatura ou ID do envelope não retornado.");
+
+                    embeddingContainer.innerHTML = ''; // Limpa mensagem de "Carregando"
+
+                    if (selectedSigningType === 'classic') {
+                        embeddingContainer.innerHTML = `<iframe src="${signingUrl}" title="Assinatura Docusign Clássica" class="

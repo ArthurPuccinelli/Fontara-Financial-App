@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', function() {
-  console.log("assinatura-embarcada.js: Script carregado.");
+  console.log("assinatura-embarcada.js (v2): Script carregado.");
 
   // --- CONSTANTES ---
   const DEFAULT_DOC_PATH = "/assets/documentos/ContratoPadraoFontara.pdf";
-  const CLICK_TO_AGREE_DOC_PATH = "/assets/documentos/TermoAcordoRapido.pdf"; // Pode ser o mesmo que DEFAULT_DOC_PATH
+  const CLICK_TO_AGREE_DOC_PATH = "/assets/documentos/TermoAcordoRapido.pdf";
   const DEFAULT_DOC_NAME = "ContratoPadraoFontara.pdf";
   const CLICK_TO_AGREE_DOC_NAME = "TermoDeAcordoFontara.pdf";
   const DEFAULT_DOC_ID = "1";
-  const CLICK_TO_AGREE_DOC_ID = "2"; // Usado se for um documento diferente para o "click to agree"
+  const CLICK_TO_AGREE_DOC_ID = "2";
   const UPLOADED_DOC_ID_PREFIX = "user_uploaded_";
 
   // --- SELEÇÃO DE ELEMENTOS DOM ---
@@ -27,32 +27,26 @@ document.addEventListener('DOMContentLoaded', function() {
   const uploadedDocInput = document.getElementById('uploadedDoc');
   
   const submitEnvelopeBtn = document.getElementById('submitEnvelopeBtn');
-  const submitBtnText = document.getElementById('submitBtnText'); // Span dentro do botão
+  const submitBtnTextSpan = document.getElementById('submitBtnText'); // Span dentro do botão
 
   const docusignModalOverlay = document.getElementById('docusignSigningModalOverlay');
   const closeDocusignSigningModalBtn = document.getElementById('closeDocusignSigningModalBtn');
   const docusignIframe = document.getElementById('docusignSigningIframe');
-  const mainHeader = document.getElementById('mainHeader'); // Referência ao header para z-index
-  let originalHeaderZIndex = '';
-
-  // Defina a origem esperada do Docusign para o seu ambiente (demo ou produção)
-  // ATENÇÃO: Ajuste esta URL para o ambiente correto do Docusign (ex: https://na*.docusign.net para produção)
+  
+  // ATENÇÃO: Ajuste esta URL para o ambiente correto do Docusign
   const docusignExpectedOrigin = "https://demo.docusign.net"; 
+  let originalHeaderZIndex = ''; // Para gerenciar z-index do header
 
   // --- FUNÇÕES AUXILIARES ---
 
   function showElement(element, show) {
     if (element) {
-      if (show) {
-        element.classList.remove('tw-hidden');
-      } else {
-        element.classList.add('tw-hidden');
-      }
+      element.classList.toggle('tw-hidden', !show);
     }
   }
 
   function updateDocumentFieldsVisibility() {
-    const signingMode = document.querySelector('input[name="signingMode"]:checked').value;
+    const signingMode = document.querySelector('input[name="signingMode"]:checked')?.value;
 
     if (signingMode === 'clicktoagree') {
       showElement(documentChoiceContainer, false);
@@ -62,15 +56,11 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
       showElement(documentChoiceContainer, true);
       if (emailSubjectInput && emailSubjectInput.value === "Confirmação de Acordo Fontara Financial") {
-         emailSubjectInput.value = "Documento Fontara Financial para Assinatura"; // Reset para o padrão
+         emailSubjectInput.value = "Documento Fontara Financial para Assinatura";
       }
-      if (docUploadRadio && docUploadRadio.checked) {
-        showElement(fileUploadContainer, true);
-        if (uploadedDocInput) uploadedDocInput.required = true;
-      } else {
-        showElement(fileUploadContainer, false);
-        if (uploadedDocInput) uploadedDocInput.required = false;
-      }
+      const isUploadSelected = docUploadRadio && docUploadRadio.checked;
+      showElement(fileUploadContainer, isUploadSelected);
+      if (uploadedDocInput) uploadedDocInput.required = isUploadSelected;
     }
   }
 
@@ -95,8 +85,8 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     } catch (error) {
       console.error(`[assinatura-embarcada.js] Erro em fetchDocumentAsBase64 para ${filePath}:`, error);
-      alert(`Não foi possível carregar o documento padrão (${filePath.split('/').pop()}). Verifique o console para mais detalhes.`);
-      throw error; // Re-throw para parar o processo
+      alert(`Não foi possível carregar o documento padrão (${filePath.split('/').pop()}). Verifique o console.`);
+      throw error;
     }
   }
 
@@ -104,8 +94,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (docusignIframe && docusignModalOverlay) {
       docusignIframe.src = url;
       docusignModalOverlay.classList.remove('tw-hidden');
-      document.body.style.overflow = 'hidden'; // Evitar scroll do body
-      const headerActual = document.querySelector('#header-placeholder header'); // Pega o header carregado
+      document.body.style.overflow = 'hidden';
+      const headerActual = document.querySelector('#header-placeholder header');
       if (headerActual) {
         originalHeaderZIndex = headerActual.style.zIndex; 
         headerActual.style.zIndex = '10'; 
@@ -117,8 +107,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (docusignIframe && docusignModalOverlay) {
       docusignIframe.src = 'about:blank';
       docusignModalOverlay.classList.add('tw-hidden');
-      document.body.style.overflow = ''; // Restaurar scroll do body
-      const headerActual = document.querySelector('#header-placeholder header'); // Pega o header carregado
+      document.body.style.overflow = '';
+      const headerActual = document.querySelector('#header-placeholder header');
       if (headerActual) {
         headerActual.style.zIndex = originalHeaderZIndex || ''; 
       }
@@ -149,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   if (docusignModalOverlay) {
       docusignModalOverlay.addEventListener('click', function(event) {
-          if (event.target === docusignModalOverlay) { // Fechar só se clicar no overlay
+          if (event.target === docusignModalOverlay) {
               closeDocusignSigningModal();
           }
       });
@@ -157,7 +147,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   window.addEventListener('message', function(event) {
     if (event.origin !== docusignExpectedOrigin) {
-      // console.warn("[Assinatura Embarcada] Mensagem de origem inesperada:", event.origin);
       return;
     }
     if (typeof event.data === 'string') {
@@ -167,15 +156,12 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log(`[Assinatura Embarcada] Evento Docusign recebido: ${docusignEvent}, EnvelopeID: ${envelopeIdFromEvent || 'N/A'}`);
 
       const signerNameFromForm = signerNameInput ? signerNameInput.value : 'Cliente';
-      // ATENÇÃO: A URL de agradecimento pode precisar ser ajustada para o seu Netlify Deploy Preview ou produção
       const returnUrlBase = `${window.location.origin}/agradecimento/obrigado.html?recipientName=${encodeURIComponent(signerNameFromForm)}&envelopeId=${envelopeIdFromEvent || ''}`;
 
       if (docusignEvent === 'signing_complete') {
         closeDocusignSigningModal();
         window.location.href = `${returnUrlBase}&event=signing_complete`;
       } else if (['decline', 'cancel', 'session_timeout', 'ttl_expired', 'exception', 'viewing_complete'].includes(docusignEvent)) {
-        // 'viewing_complete' é comum se o último evento antes do redirecionamento manual for apenas visualização.
-        // Se o seu returnUrl for o mesmo para todos os fins, pode ser simplificado.
         closeDocusignSigningModal();
         window.location.href = `${returnUrlBase}&event=${docusignEvent}`;
       }
@@ -185,22 +171,23 @@ document.addEventListener('DOMContentLoaded', function() {
   if (envelopeForm) {
     envelopeForm.addEventListener('submit', async function(event) {
       event.preventDefault();
-      const originalButtonText = submitBtnText.textContent;
+      const originalButtonInnerHTML = submitEnvelopeBtn.innerHTML; // Salva o HTML interno original
       
-      if (submitEnvelopeBtn && submitBtnText) {
+      if (submitEnvelopeBtn && submitBtnTextSpan) {
         submitEnvelopeBtn.disabled = true;
-        submitBtnText.innerHTML = '<div class="spinner-small"></div> Processando...';
+        // Mantém o ícone e muda o texto para "Processando..."
+        submitBtnTextSpan.innerHTML = '<div class="spinner-small" role="status" aria-hidden="true"></div> Processando...';
       }
 
       try {
         const signerName = signerNameInput.value;
         const signerEmail = signerEmailInput.value;
-        const emailSubject = emailSubjectInput.value;
+        const emailSubjectVal = emailSubjectInput.value; // Renomeado para evitar conflito
         
         const signingMode = document.querySelector('input[name="signingMode"]:checked').value;
         const documentChoice = (signingMode !== 'clicktoagree' && docDefaultRadio) ? 
                                document.querySelector('input[name="documentChoice"]:checked').value : 
-                               'default'; // Para clicktoagree, sempre usa um "default" específico
+                               'default';
 
         let documentBase64 = '';
         let documentName = '';
@@ -220,7 +207,7 @@ document.addEventListener('DOMContentLoaded', function() {
           if (!file) throw new Error("Por favor, selecione um arquivo PDF.");
           if (file.type !== "application/pdf") throw new Error("Apenas arquivos PDF são permitidos.");
           documentName = file.name;
-          currentDocumentId = UPLOADED_DOC_ID_PREFIX + Date.now(); // ID único para uploads
+          currentDocumentId = UPLOADED_DOC_ID_PREFIX + Date.now();
           documentBase64 = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result.split(',')[1]);
@@ -236,23 +223,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const clientUserId = `fontara_${signerEmail.replace(/[^a-zA-Z0-9]/g, "")}_${Date.now()}`; 
 
         const envelopePayload = {
-          emailSubject: emailSubject,
+          emailSubject: emailSubjectVal, // Usando a variável renomeada
           documents: [{ 
             name: documentName, 
             fileExtension: documentFileExtension, 
-            documentId: String(currentDocumentId), // Garante que é string
+            documentId: String(currentDocumentId),
             documentBase64: documentBase64 
           }],
           recipients: {
             signers: [{
               email: signerEmail, name: signerName, recipientId: "1", 
               clientUserId: clientUserId, routingOrder: "1",
-              // A âncora \s1\ deve existir no PDF padrão, no PDF de acordo rápido e no PDF do usuário
               tabs: { signHereTabs: [{ anchorString: "\\s1\\", anchorXOffset: "0", anchorYOffset: "0", anchorUnits: "pixels" }] }
             }]
           },
-          status: "sent" // Envia o envelope para assinatura imediatamente
+          status: "sent"
         };
+        
+        console.log("[assinatura-embarcada.js] Payload para CREATE_DYNAMIC_ENVELOPE:", JSON.stringify({...envelopePayload, documents: [{...envelopePayload.documents[0], documentBase64: "REMOVIDO_DO_LOG"}]}));
+
 
         let response = await fetch('/.netlify/functions/docusign-actions', {
           method: 'POST',
@@ -262,23 +251,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({error: `Erro HTTP ${response.status}`, details: response.statusText }));
+          console.error("[assinatura-embarcada.js] Erro ao criar envelope:", errorData);
           throw new Error(errorData.details || errorData.error || `Falha ao criar envelope.`);
         }
         const envelopeResult = await response.json();
         const envelopeId = envelopeResult.envelopeId;
         if (!envelopeId) throw new Error("ID do envelope não retornado pela API.");
         
-        const useFocusedView = (signingMode === 'focused' || signingMode === 'clicktoagree');
-        // A URL de retorno será tratada pelo event listener 'message' do iframe Docusign
-        // O returnUrl no payload da recipientView é um fallback caso o iframe não envie a mensagem corretamente.
+        // CORREÇÃO PRINCIPAL: Define useFocusedView explicitamente
+        let useFocusedViewParam = false; // Padrão para 'classic'
+        if (signingMode === 'focused' || signingMode === 'clicktoagree') {
+            useFocusedViewParam = true;
+        }
+        
         const recipientViewPayload = {
           envelopeId: envelopeId, 
           signerEmail: signerEmail, 
           signerName: signerName,
           clientUserId: clientUserId,
           returnUrl: `${window.location.origin}/agradecimento/obrigado.html?event=FALLBACK_REDIRECT&envelopeId=${envelopeId}&recipientName=${encodeURIComponent(signerName)}`,
-          useFocusedView: useFocused
+          useFocusedView: useFocusedViewParam // Passa o parâmetro CORRETO
         };
+
+        console.log("[assinatura-embarcada.js] Payload para GET_EMBEDDED_SIGNING_URL:", recipientViewPayload);
 
         response = await fetch('/.netlify/functions/docusign-actions', {
           method: 'POST',
@@ -288,6 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({error: `Erro HTTP ${response.status}`, details: response.statusText }));
+          console.error("[assinatura-embarcada.js] Erro ao obter URL de assinatura:", errorData);
           throw new Error(errorData.details || errorData.error || `Falha ao obter URL de assinatura.`);
         }
         const signingResult = await response.json();
@@ -300,22 +296,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
       } catch (error) {
-        console.error("[assinatura-embarcada.js] Erro no processo Docusign:", error);
+        console.error("[assinatura-embarcada.js] Erro no processo Docusign:", error.message, error.stack);
         alert(`Ocorreu um erro: ${error.message}`);
       } finally {
-        if(submitEnvelopeBtn && submitBtnText) {
+        if(submitEnvelopeBtn) {
             submitEnvelopeBtn.disabled = false;
-            if (submitBtnText) submitBtnText.textContent = originalButtonText;
-            // Caso o spinner tenha sido injetado diretamente no innerHTML, restaurar o ícone:
-            if (!submitBtnText.querySelector('i')) { // Se não tem mais o ícone, recoloca
-                 submitBtnText.innerHTML = `<i class="bi bi-pencil-square tw-mr-2"></i> ${originalButtonText}`;
-            }
+            // Restaura o HTML interno original do botão, que inclui o ícone e o texto
+            submitEnvelopeBtn.innerHTML = originalButtonInnerHTML;
         }
       }
     });
   }
 
   // --- INICIALIZAÇÃO ---
-  updateDocumentFieldsVisibility(); // Define o estado inicial dos campos de documento
+  updateDocumentFieldsVisibility();
 
 });

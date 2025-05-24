@@ -1,6 +1,6 @@
 // frontend/scripts/assinatura-embarcada.js
 document.addEventListener('DOMContentLoaded', async function() {
-  console.log("assinatura-embarcada.js (vFinal-Rev2 - Debugging .on() + SDK Init): Script carregado.");
+  console.log("assinatura-embarcada.js (vFinal-Rev3 - Ordem On/Mount Corrigida): Script carregado.");
 
   // --- CONSTANTES ---
   const DEFAULT_DOC_PATH = "/assets/documentos/ContratoPadraoFontara.pdf";
@@ -67,27 +67,24 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.log("[assinatura-embarcada.js] Tentando inicializar SDK DocuSign...");
 
     try {
-      if (typeof window.DocuSign === 'undefined' || typeof window.DocuSign.loadDocuSign !== 'function') {
+      if (typeof window.DocuSign === 'undefined' || typeof window.DocuSign.loadDocuSign !== 'function') { //
         console.error("[assinatura-embarcada.js] FALHA CRÍTICA: Objeto global window.DocuSign ou window.DocuSign.loadDocuSign não encontrado.");
-        sdkInitializationSuccessful = false; // Adicionado para clareza
+        sdkInitializationSuccessful = false;
         return;
       }
       
-      DOCUSIGN_APP_CLIENT_ID = await fetchDocusignAppClientId();
+      DOCUSIGN_APP_CLIENT_ID = await fetchDocusignAppClientId(); //
       
       if (DOCUSIGN_APP_CLIENT_ID) {
         console.log(`[assinatura-embarcada.js] Chamando window.DocuSign.loadDocuSign com App Client ID (IK): ${DOCUSIGN_APP_CLIENT_ID.substring(0,5)}...`);
-        // Tentativa de capturar qualquer erro síncrono de loadDocuSign
         try {
-            const loadedInstance = await window.DocuSign.loadDocuSign(DOCUSIGN_APP_CLIENT_ID);
+            const loadedInstance = await window.DocuSign.loadDocuSign(DOCUSIGN_APP_CLIENT_ID); //
             console.log("[assinatura-embarcada.js] window.DocuSign.loadDocuSign completado. Retorno (loadedInstance):", loadedInstance);
             
-            // Verifica se loadedInstance é realmente um objeto e tem o método .signing
-            if (loadedInstance && typeof loadedInstance === 'object' && typeof loadedInstance.signing === 'function') {
+            if (loadedInstance && typeof loadedInstance === 'object' && typeof loadedInstance.signing === 'function') { //
               docusignApi = loadedInstance;
               sdkInitializationSuccessful = true;
               console.log("[assinatura-embarcada.js] SDK DocuSign (retornado por loadDocuSign) PARECE pronto. Objeto docusignApi:", docusignApi);
-              // Log extra para verificar a estrutura de docusignApi
               for (const key in docusignApi) {
                 if (Object.hasOwnProperty.call(docusignApi, key)) {
                   console.log(`[assinatura-embarcada.js] docusignApi.${key} (tipo: ${typeof docusignApi[key]})`);
@@ -173,32 +170,45 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
   
   function handleDocusignCompletionEvents(docusignEventData) {
-    const eventName = docusignEventData.event;
-    let finalStatus = eventName; 
+    const eventType = (docusignEventData.data && docusignEventData.data.type) ? 
+                      docusignEventData.data.type : 
+                      docusignEventData.event; // Fallback para o nome do evento se data.type não existir
+                      
+    let finalStatus = eventType;
 
-    if (eventName === 'sessionEnd' && docusignEventData.data) {
-        finalStatus = docusignEventData.data.type || docusignEventData.data.sessionEndType || 'unknown_session_end';
-    } else if (docusignEventData.type) { 
-        finalStatus = docusignEventData.type;
+    // Normalizar os status baseados nos possíveis valores de event.sessionEndType
+    // ou o 'type' dentro do objeto 'data' para o evento sessionEnd
+    if (typeof finalStatus === 'string') {
+        const lowerStatus = finalStatus.toLowerCase();
+        if (lowerStatus.includes('signing_complete')) finalStatus = 'signing_complete';
+        else if (lowerStatus.includes('cancel')) finalStatus = 'cancel';
+        else if (lowerStatus.includes('decline')) finalStatus = 'decline';
+        else if (lowerStatus.includes('exception')) finalStatus = 'exception';
+        else if (lowerStatus.includes('fax_pending')) finalStatus = 'fax_pending';
+        else if (lowerStatus.includes('session_timeout')) finalStatus = 'session_timeout';
+        else if (lowerStatus.includes('ttl_expired')) finalStatus = 'ttl_expired';
+        else if (lowerStatus.includes('viewing_complete')) finalStatus = 'viewing_complete';
+    } else {
+        console.warn("[handleDocusignCompletionEvents] Status final não é uma string:", finalStatus)
     }
-    
-    if (finalStatus.toLowerCase().includes('signing_complete')) finalStatus = 'signing_complete';
-    else if (finalStatus.toLowerCase().includes('cancel')) finalStatus = 'cancel';
-    else if (finalStatus.toLowerCase().includes('decline')) finalStatus = 'decline';
+
 
     const envelopeId = (docusignEventData.data && docusignEventData.data.envelopeId) || lastRecipientViewContext.envelopeId;
     const signerName = lastRecipientViewContext.signerName || 'Cliente';
 
-    console.log(`[handleDocusignCompletionEvents] Status Final: ${finalStatus}, EnvelopeID: ${envelopeId}`);
+    console.log(`[handleDocusignCompletionEvents] Status Final Normalizado: ${finalStatus}, EnvelopeID: ${envelopeId}`);
 
     const returnUrlBase = `${window.location.origin}/agradecimento/obrigado.html?recipientName=${encodeURIComponent(signerName)}&envelopeId=${envelopeId || ''}`;
 
     if (finalStatus === 'signing_complete') {
         closeDocusignSigningModal();
         window.location.href = `${returnUrlBase}&event=signing_complete`;
-    } else if (['decline', 'cancel', 'session_timeout', 'ttl_expired', 'exception', 'viewing_complete', 'unknown_session_end'].includes(finalStatus)) {
+    } else if (['cancel', 'decline', 'exception', 'fax_pending', 'session_timeout', 'ttl_expired', 'viewing_complete'].includes(finalStatus)) {
         closeDocusignSigningModal();
         window.location.href = `${returnUrlBase}&event=${finalStatus}`;
+    } else {
+        console.warn(`[handleDocusignCompletionEvents] Evento DocuSign não tratado para redirecionamento: ${finalStatus}`);
+        // closeDocusignSigningModal(); // Decide if you want to close modal on unhandled events
     }
   }
 
@@ -225,19 +235,21 @@ document.addEventListener('DOMContentLoaded', async function() {
                 throw new Error(errorMsg);
             }
             
-            console.log("[assinatura-embarcada.js] Chamando docusignApi.signing() com url:", url);
-            currentSigningInstance = docusignApi.signing({
-                url: url,
-                displayFormat: 'focused',
-                // theme: 'modern' // Você pode experimentar adicionar temas, se suportado e relevante.
-            });
+            const signingConfiguration = { //
+                url: url, //
+                displayFormat: 'focused', // Ou 'default'
+                // style: { /* Opcional, veja documentação para exemplos */ }
+            };
+            console.log("[assinatura-embarcada.js] Configuração da assinatura (SigningConfiguration):", signingConfiguration);
+
+            currentSigningInstance = docusignApi.signing(signingConfiguration); //
             
             console.log("[assinatura-embarcada.js] Detalhes da currentSigningInstance IMEDIATAMENTE APÓS docusignApi.signing():", currentSigningInstance);
             if (currentSigningInstance) {
                 console.log(`[assinatura-embarcada.js] currentSigningInstance.mount é do tipo: ${typeof currentSigningInstance.mount}`);
                 console.log(`[assinatura-embarcada.js] currentSigningInstance.on é do tipo: ${typeof currentSigningInstance.on}`);
                 console.log(`[assinatura-embarcada.js] currentSigningInstance.off é do tipo: ${typeof currentSigningInstance.off}`);
-                console.log(`[assinatura-embarcada.js] currentSigningInstance.destroy é do tipo: ${typeof currentSigningInstance.destroy}`); // Continuar verificando isso
+                console.log(`[assinatura-embarcada.js] currentSigningInstance.destroy é do tipo: ${typeof currentSigningInstance.destroy}`);
             }
 
             if (!currentSigningInstance || typeof currentSigningInstance.mount !== 'function' || typeof currentSigningInstance.on !== 'function') { 
@@ -245,34 +257,26 @@ document.addEventListener('DOMContentLoaded', async function() {
                 throw new Error("Falha ao criar instância de assinatura DocuSign com métodos mount/on válidos.");
             }
             
+            // **NOVA ORDEM: Anexar listeners ANTES de .mount()**
+            console.log("[assinatura-embarcada.js] Anexando listeners ANTES de .mount()");
+            currentSigningInstance.on('ready', (event) => { //
+                console.log('[DocuSign.js SDK Event] ready:', event);
+            });
+
+            currentSigningInstance.on('sessionEnd', (eventData) => { //
+                console.log('[DocuSign.js SDK Event] sessionEnd:', eventData);
+                // O objeto eventData aqui é o que a documentação descreve como "event" no callback,
+                // e ele pode conter event.sessionEndType ou, conforme a prática, o objeto data pode ter a propriedade 'type'.
+                handleDocusignCompletionEvents({ 
+                    event: 'sessionEnd', // Nome do evento que estamos tratando
+                    data: eventData     // O payload do evento do SDK
+                });
+            });
+            console.log("[assinatura-embarcada.js] Listeners anexados.");
+
             console.log("[assinatura-embarcada.js] Montando em #docusignFocusedViewContainer...");
-            currentSigningInstance.mount('#docusignFocusedViewContainer');
+            currentSigningInstance.mount('#docusignFocusedViewContainer'); //
             console.log("[assinatura-embarcada.js] DocuSign Focused View montada (ou tentativa de montagem feita).");
-
-            // EXPERIMENTO: Adicionar um pequeno delay antes de anexar listeners
-            // Isso é apenas para diagnóstico, não uma solução ideal.
-            setTimeout(() => {
-                console.log("[assinatura-embarcada.js] Tentando anexar listeners APÓS TIMEOUT.");
-                if (currentSigningInstance && typeof currentSigningInstance.on === 'function') {
-                    console.log("[assinatura-embarcada.js] currentSigningInstance (timeout) AINDA É VÁLIDO e .on é uma função.");
-                    
-                    currentSigningInstance.on('ready', (event) => {
-                        console.log('[DocuSign.js SDK Event - TIMEOUT] ready:', event);
-                    });
-
-                    currentSigningInstance.on('sessionEnd', (eventData) => {
-                        console.log('[DocuSign.js SDK Event - TIMEOUT] sessionEnd:', eventData);
-                        handleDocusignCompletionEvents({ 
-                            event: 'sessionEnd',
-                            data: eventData,
-                            envelopeId: lastRecipientViewContext.envelopeId 
-                        });
-                    });
-                    console.log("[assinatura-embarcada.js] Listeners (timeout) anexados.");
-                } else {
-                     console.error("[assinatura-embarcada.js] currentSigningInstance (timeout) INVÁLIDO ou .on não é função. CurrentSigningInstance:", currentSigningInstance);
-                }
-            }, 100); // Delay de 100ms
 
         } catch (error) {
             console.error("[assinatura-embarcada.js] Erro ao montar DocuSign Focused View:", error);
@@ -297,12 +301,11 @@ document.addEventListener('DOMContentLoaded', async function() {
   function closeDocusignSigningModal() {
     if (currentSigningInstance) {
         try {
-            // Verificar se destroy é uma função antes de chamar
             if (typeof currentSigningInstance.destroy === 'function') {
                 console.log("[assinatura-embarcada.js] Chamando currentSigningInstance.destroy()");
                 currentSigningInstance.destroy();
             } else {
-                console.warn("[assinatura-embarcada.js] currentSigningInstance.destroy não é uma função. Não foi possível destruir explicitamente.");
+                console.warn("[assinatura-embarcada.js] currentSigningInstance.destroy não é uma função. Não foi possível destruir explicitamente. currentSigningInstance:", currentSigningInstance);
             }
         } catch (e) {
             console.warn("[assinatura-embarcada.js] Erro ao tentar destruir instância docusign.js:", e);
@@ -334,14 +337,27 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (document.querySelector('input[name="signingMode"]:checked')?.value !== 'classic') {
         return;
     }
-    if (event.origin !== docusignExpectedOrigin) return;
+    // Para Classic View, a origem esperada é a do iframe do DocuSign
+    if (event.origin !== docusignExpectedOrigin) { // docusignExpectedOrigin deve ser https://demo.docusign.net ou prod
+        // console.warn(`[PostMessage Event - Classic] Origem ignorada: ${event.origin}. Esperada: ${docusignExpectedOrigin}`);
+        return;
+    }
+
 
     if (typeof event.data === 'string') {
+      // Exemplo de evento do iframe clássico após redirecionamento para returnUrl: "?event=signing_complete"
       const params = new URLSearchParams(event.data.startsWith('?') ? event.data.substring(1) : event.data);
       const docusignEventName = params.get('event');
-      const envelopeIdFromEvent = params.get('envelopeId');
-      console.log(`[PostMessage Event - Classic] Evento: ${docusignEventName}, EnvelopeID: ${envelopeIdFromEvent}`);
-      handleDocusignCompletionEvents({ event: docusignEventName, envelopeId: envelopeIdFromEvent });
+      // const envelopeIdFromEvent = params.get('envelopeId'); // Se você adicionou na returnUrl
+      console.log(`[PostMessage Event - Classic IFRAME] Evento recebido: ${docusignEventName}, Dados: ${event.data}`);
+      
+      if (docusignEventName) {
+          handleDocusignCompletionEvents({ event: docusignEventName, data: { type: docusignEventName } });
+      } else {
+          console.warn("[PostMessage Event - Classic IFRAME] 'event' não encontrado nos dados da mensagem:", event.data);
+      }
+    } else {
+        // console.log("[PostMessage Event - Classic IFRAME] Dados não são string:", event.data);
     }
   }, false);
   
@@ -356,17 +372,15 @@ document.addEventListener('DOMContentLoaded', async function() {
       }
 
       try {
-        if (!sdkInitializationAttempted) { // Embora já chamemos no DOMContentLoaded, uma verificação extra aqui.
+        if (!sdkInitializationAttempted) {
             console.warn("[assinatura-embarcada.js] SDK não parecia inicializado no submit, tentando novamente...");
             await initializeDocuSignSdk();
         }
-        // Adicionada verificação crucial aqui
-        if (!sdkInitializationSuccessful) {
+        if (!sdkInitializationSuccessful) { // Verificação crucial
              throw new Error("Falha crítica na inicialização do SDK DocuSign. Não é possível prosseguir com a assinatura focada/click-to-agree.");
         }
 
         const currentSigningMode = document.querySelector('input[name="signingMode"]:checked').value;
-        // A verificação de sdkInitializationSuccessful já cobre isso para modos não clássicos.
 
         const signerName = signerNameInput.value;
         const signerEmail = signerEmailInput.value;
@@ -428,12 +442,14 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         let useFocusedViewParam = (currentSigningMode === 'focused' || currentSigningMode === 'clicktoagree');
         
+        // A returnUrl para GET_EMBEDDED_SIGNING_URL não será usada pelo docusign.js
+        // mas é obrigatória pela API. Usamos uma URL de fallback para o caso de algo dar muito errado.
         const recipientViewPayload = {
             envelopeId: envelopeId, 
             signerEmail: signerEmail, 
             signerName: signerName,
             clientUserId: clientUserId,
-            returnUrl: `${window.location.origin}/agradecimento/obrigado.html?event=FALLBACK_REDIRECT&envelopeId=${envelopeId}&recipientName=${encodeURIComponent(signerName)}`,
+            returnUrl: `${window.location.origin}/agradecimento/obrigado.html?event=FALLBACK_REDIRECT&envelopeId=${envelopeId}&recipientName=${encodeURIComponent(signerName)}&source=recipientViewReturnUrl`,
             useFocusedView: useFocusedViewParam
         };
         
@@ -447,7 +463,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             throw new Error(errorData.details || errorData.error || `Falha ao obter URL de assinatura.`);
         }
         const signingResult = await response.json();
-        const signingUrl = signingResult.signingUrl;
+        const signingUrl = signingResult.signingUrl; // Esta é a URL que vai para o signingConfiguration
 
         if (signingUrl) {
           openDocusignSigningModal(signingUrl, currentSigningMode);

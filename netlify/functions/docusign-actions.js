@@ -1,22 +1,17 @@
 // netlify/functions/docusign-actions.js
 const docusign = require('docusign-esign');
-const { Buffer } = require('buffer'); // Explicit import for Buffer
+const { Buffer } = require('buffer');
 
-// Variáveis de ambiente esperadas
 const EXPECTED_ENV_VARS = [
     'DOCUSIGN_IK',
     'DOCUSIGN_USER_ID',
     'DOCUSIGN_ACCOUNT_ID',
     'DOCUSIGN_RSA_PEM_AS_BASE64',
     'DOCUSIGN_AUTH_SERVER',
-    'DOCUSIGN_BASE_PATH'
+    'DOCUSIGN_BASE_PATH',
+    'APP_ORIGIN' // Adicionada para frameAncestors
 ];
 
-/**
- * @summary Obtém um cliente de API DocuSign autenticado usando JWT Grant.
- * @returns {Promise<docusign.ApiClient>} Cliente da API DocuSign autenticado.
- * @throws {Error} Se as variáveis de ambiente estiverem ausentes, a chave PEM for inválida ou a autenticação falhar.
- */
 async function getAuthenticatedApiClient() {
     const missingVars = EXPECTED_ENV_VARS.filter(v => !process.env[v]);
     if (missingVars.length > 0) {
@@ -76,12 +71,6 @@ async function getAuthenticatedApiClient() {
     }
 }
 
-/**
- * @summary Formata e loga detalhes de erros da API DocuSign.
- * @param {string} actionName Nome da ação onde o erro ocorreu.
- * @param {Error} errorObject Objeto de erro capturado.
- * @returns {string} Mensagem de erro específica do DocuSign.
- */
 function logErrorDetails(actionName, errorObject) {
     console.error(`--------------------------------------------------------------------`);
     console.error(`[docusign-actions] ERRO NA AÇÃO: ${actionName}`);
@@ -121,19 +110,6 @@ function logErrorDetails(actionName, errorObject) {
     return docusignSpecificError;
 }
 
-/**
- * @summary Cria um envelope a partir de um template para assinatura embutida.
- * @param {docusign.ApiClient} apiClient Cliente da API DocuSign autenticado.
- * @param {object} envelopeArgs Argumentos para criação do envelope.
- * @param {string} envelopeArgs.templateId ID do template DocuSign.
- * @param {string} envelopeArgs.signerEmail Email do signatário.
- * @param {string} envelopeArgs.signerName Nome do signatário.
- * @param {string} envelopeArgs.signerClientUserId ID de cliente único para o signatário.
- * @param {string} [envelopeArgs.roleName='signer'] Nome do papel do template para o signatário.
- * @param {string} [envelopeArgs.status='sent'] Status do envelope (e.g., 'sent', 'created').
- * @returns {Promise<string>} ID do envelope criado.
- * @throws {Error} Se a criação do envelope falhar.
- */
 async function createEnvelopeFromTemplate(apiClient, envelopeArgs) {
     const { templateId, signerEmail, signerName, signerClientUserId, roleName = 'signer', status = 'sent' } = envelopeArgs;
     const accountId = process.env.DOCUSIGN_ACCOUNT_ID;
@@ -146,8 +122,8 @@ async function createEnvelopeFromTemplate(apiClient, envelopeArgs) {
         email: signerEmail,
         name: signerName,
         roleName: roleName,
-        clientUserId: signerClientUserId, // Essencial para assinatura embutida
-        // routingOrder: '1' // Se necessário, pode ser adicionado
+        clientUserId: signerClientUserId, 
+        // routingOrder: '1' 
     });
     envDefinition.templateRoles = [signer];
     envDefinition.status = status;
@@ -163,27 +139,6 @@ async function createEnvelopeFromTemplate(apiClient, envelopeArgs) {
     }
 }
 
-/**
- * @summary Cria um envelope dinâmico com documentos e signatários especificados.
- * @param {docusign.ApiClient} apiClient Cliente da API DocuSign autenticado.
- * @param {object} envelopeArgs Argumentos para criação do envelope.
- * @param {string} [envelopeArgs.emailSubject='Por favor, assine este documento'] Assunto do email.
- * @param {Array<object>} envelopeArgs.documents Array de documentos.
- * @param {string} envelopeArgs.documents[].documentBase64 Conteúdo do documento em Base64.
- * @param {string} envelopeArgs.documents[].name Nome do documento.
- * @param {string} envelopeArgs.documents[].fileExtension Extensão do arquivo (e.g., 'pdf', 'docx').
- * @param {string} envelopeArgs.documents[].documentId ID único para o documento.
- * @param {object} envelopeArgs.recipients Objeto com informações dos destinatários.
- * @param {Array<object>} envelopeArgs.recipients.signers Array de signatários.
- * @param {string} envelopeArgs.recipients.signers[].email Email do signatário.
- * @param {string} envelopeArgs.recipients.signers[].name Nome do signatário.
- * @param {string} envelopeArgs.recipients.signers[].recipientId ID único para o destinatário.
- * @param {string} envelopeArgs.recipients.signers[].clientUserId ID de cliente para assinatura embutida.
- * @param {object} envelopeArgs.recipients.signers[].tabs Objeto de tabs para o signatário.
- * @param {string} [envelopeArgs.status='sent'] Status do envelope.
- * @returns {Promise<string>} ID do envelope criado.
- * @throws {Error} Se a criação do envelope falhar ou dados estiverem incompletos.
- */
 async function createDynamicEnvelope(apiClient, envelopeArgs) {
     const accountId = process.env.DOCUSIGN_ACCOUNT_ID;
     const envelopesApi = new docusign.EnvelopesApi(apiClient);
@@ -205,7 +160,7 @@ async function createDynamicEnvelope(apiClient, envelopeArgs) {
             name: doc.name || `Documento ${index + 1}`,
             fileExtension: doc.fileExtension || 'pdf',
             documentId: String(doc.documentId || (index + 1)),
-            transformPdfFields: String(doc.transformPdfFields || "false") === "true" // Garante que seja string "true" ou "false"
+            transformPdfFields: String(doc.transformPdfFields || "false") === "true"
         })
     );
 
@@ -219,8 +174,8 @@ async function createDynamicEnvelope(apiClient, envelopeArgs) {
                 name: s.name,
                 recipientId: String(s.recipientId),
                 routingOrder: String(s.routingOrder || "1"),
-                clientUserId: s.clientUserId, // Essencial para assinatura embutida
-                tabs: docusign.Tabs.constructFromObject(s.tabs) // Assume que s.tabs já está no formato do SDK
+                clientUserId: s.clientUserId,
+                tabs: docusign.Tabs.constructFromObject(s.tabs)
             });
             return signerObj;
         }),
@@ -233,7 +188,7 @@ async function createDynamicEnvelope(apiClient, envelopeArgs) {
             })
         )
     });
-    envDefinition.status = envelopeArgs.status || "sent"; // 'sent' para enviar imediatamente, 'created' para rascunho
+    envDefinition.status = envelopeArgs.status || "sent"; 
 
     const envDefinitionForLog = { ...envDefinition, documents: envDefinition.documents.map(d => ({...d, documentBase64: "REMOVIDO_DO_LOG"})) };
     console.log("[docusign-actions] Criando envelope dinâmico. Definição (sem base64):", JSON.stringify(envDefinitionForLog, null, 2));
@@ -248,92 +203,74 @@ async function createDynamicEnvelope(apiClient, envelopeArgs) {
     }
 }
 
-
-/**
- * @summary Gera a URL de visualização do destinatário para assinatura embutida.
- * @description Esta função prepara a URL que será usada no frontend com DocuSign.js ou em um iframe.
- * Consulte: https://developers.docusign.com/docs/esign-rest-api/esign101/concepts/embedding/embedded-signing/
- * E para "Focused View": https://www.docusign.com/blog/developers/deep-dive-the-embedded-signing-recipient-view
- * @param {docusign.ApiClient} apiClient Cliente da API DocuSign autenticado.
- * @param {object} args Argumentos para a visualização do destinatário.
- * @param {string} args.envelopeId ID do envelope.
- * @param {string} args.signerEmail Email do signatário.
- * @param {string} args.signerName Nome do signatário.
- * @param {string} args.clientUserId ID de cliente único do signatário.
- * @param {string} args.returnUrl URL de retorno após a assinatura.
- * @param {boolean} [args.useFocusedView=false] Se true, tenta configurar uma "Focused View" (sem chrome do DocuSign).
- * @param {string} [args.frameAncestors] Para controle de onde o iframe pode ser renderizado (segurança). Ex: "https://example.com"
- * @param {string} [args.messageOrigins] Para controle de mensagens postMessage (segurança). Ex: "https://example.com"
- * @returns {Promise<string>} URL para a cerimônia de assinatura embutida.
- * @throws {Error} Se a geração da URL falhar.
- */
 async function createRecipientViewUrl(apiClient, args) {
-    const { envelopeId, signerEmail, signerName, clientUserId, returnUrl, useFocusedView = false } = args; // 'useFocusedView' é chave
+    const { envelopeId, signerEmail, signerName, clientUserId, returnUrl, useFocusedView = false } = args;
     const accountId = process.env.DOCUSIGN_ACCOUNT_ID;
+    const appOrigin = process.env.APP_ORIGIN; // Ex: https://fontarafinancial.netlify.app ou http://localhost:8888
+    const docusignAppUrl = process.env.DOCUSIGN_BASE_PATH && process.env.DOCUSIGN_BASE_PATH.includes("demo.docusign.net") ?
+                           "https://apps-d.docusign.com" : "https://apps.docusign.com";
+
     const envelopesApi = new docusign.EnvelopesApi(apiClient);
 
     const viewRequestOptions = {
-        returnUrl: returnUrl,
-        authenticationMethod: 'none',
+        returnUrl: returnUrl, // Obrigatório, mas não usado pelo docusign.js
+        authenticationMethod: 'none', // Ou 'email', 'sms', etc., conforme sua configuração de segurança
         email: signerEmail,
         userName: signerName,
         clientUserId: clientUserId,
-        // Adicionando mais opções para limpar a interface na Visualização Focada
-        // Referência: https://developers.docusign.com/docs/esign-rest-api/reference/envelopes/envelopeviews/createrecipient/#schema__recipientviewrequest_settings
     };
 
     if (useFocusedView) {
-        console.log("[docusign-actions] Configurando para Focused View. Aplicando recipientSettings...");
-        // Configurações para uma Visualização Focada mais limpa
-        // Os valores são strings 'true'/'false' conforme exemplos comuns, mas o SDK pode aceitar booleanos.
-        // Teste com booleanos se as strings não surtirem o efeito desejado.
-        viewRequestOptions.recipientSettings = {
-            showHeader: 'false',         // Oculta o cabeçalho principal do DocuSign
-            showToolbar: 'false',        // Oculta a barra de ferramentas com opções de documento
-            showFinishButton: 'false',   // Oculta o botão "Concluir" padrão (você controlará pelo evento 'signing_complete')
-            showCancelButton: 'false',   // Oculta o botão "Cancelar" padrão
-            showDeclineButton: 'false',  // Oculta o botão "Recusar" padrão
-            showViewDocumentsButton: 'false', // Oculta o botão para visualizar/baixar documentos
-            showSaveButton: 'false',     // Oculta o botão "Salvar e Concluir Depois"
-            // Adicione/remova conforme necessário para o nível de "foco" desejado
+        console.log("[docusign-actions] Configurando para Focused View. Aplicando recipientSettings, frameAncestors e messageOrigins...");
+        viewRequestOptions.recipientSettings = { // (implícito, pois StyleObject é parte da config do docusign.js)
+            showHeader: 'false',        
+            showToolbar: 'false',       
+            showFinishButton: 'false',  
+            showCancelButton: 'false',  
+            showDeclineButton: 'false', 
+            showViewDocumentsButton: 'false',
+            showSaveButton: 'false',    
         };
-        // Outras opções de controle de interface que podem ser úteis, dependendo da API (algumas podem ser obsoletas ou específicas)
-        // viewRequestOptions.chromeControls = 'hide'; // Alternativa mais antiga, 'recipientSettings' é mais granular
-        // viewRequestOptions.showProgressIndicator = 'false';
+        
+        // Configurações de segurança para docusign.js
+        viewRequestOptions.frameAncestors = [docusignAppUrl];
+        if (appOrigin) { // Adiciona a origem da sua aplicação
+            viewRequestOptions.frameAncestors.push(appOrigin);
+            // Se tiver um deploy preview específico e quiser testar diretamente, pode adicionar essa URL aqui também
+            // Ex: viewRequestOptions.frameAncestors.push("URL_DO_DEPLOY_PREVIEW_NETLIFY");
+             if (process.env.CONTEXT === 'deploy-preview' && process.env.DEPLOY_PRIME_URL) {
+                viewRequestOptions.frameAncestors.push(process.env.DEPLOY_PRIME_URL);
+             }
+             // Para desenvolvimento local, se APP_ORIGIN for localhost
+             if (appOrigin.startsWith("http://localhost")) {
+                // Não precisa adicionar nada extra normalmente, mas se tiver um alias
+             }
+        } else {
+            console.warn("[docusign-actions] APP_ORIGIN não definido. frameAncestors pode estar incompleto para Focused View.");
+        }
+        
+        viewRequestOptions.messageOrigins = [docusignAppUrl]; //
+
     } else {
-        console.log("[docusign-actions] Configurando para Classic View.");
-        // Para a visualização clássica, você pode explicitamente mostrar os controles ou deixar o padrão do DocuSign
-        viewRequestOptions.recipientSettings = {
-            showHeader: 'true',
-            showToolbar: 'true',
-            showFinishButton: 'true',
-            showCancelButton: 'true',
-            showDeclineButton: 'true',
-            showViewDocumentsButton: 'true',
-            showSaveButton: 'true',
-        };
+        console.log("[docusign-actions] Configurando para Classic View (iframe).");
+        // Para Classic View, frameAncestors e messageOrigins não são tipicamente usados da mesma forma que com docusign.js,
+        // mas podem ser configurados para segurança adicional do iframe se necessário.
+        // Se você for usar iframe, o returnUrl é crucial.
     }
-
-    // Segurança adicional para iFrames (opcional, mas recomendado)
-    // viewRequestOptions.frameAncestors = [window.location.origin]; // Exemplo, ajuste para sua necessidade
-    // viewRequestOptions.messageOrigins = [window.location.origin];
-
+    
     const recipientViewRequest = docusign.RecipientViewRequest.constructFromObject(viewRequestOptions);
-    // ... (resto da função como antes) ...
     console.log(`[docusign-actions] Criando recipient view para envelope ${envelopeId}. Payload:`, JSON.stringify(recipientViewRequest, null, 2));
 
     try {
         const results = await envelopesApi.createRecipientView(accountId, envelopeId, { recipientViewRequest: recipientViewRequest });
         console.log("[docusign-actions] URL de assinatura embutida gerada com sucesso.");
-        return results.url;
+        return results.url; // Esta URL é usada pelo docusign.js no frontend
     } catch (err) {
         const docusignErrorMessage = logErrorDetails("createRecipientViewUrl", err);
         throw new Error(`Erro ao gerar URL de assinatura. Detalhe Docusign: ${docusignErrorMessage}`);
     }
 }
-/**
- * @summary Netlify Function handler para ações DocuSign.
- */
+
 exports.handler = async (event, context) => {
     if (event.httpMethod !== "POST") {
         return { statusCode: 405, body: JSON.stringify({ error: "Método não permitido." }), headers: { 'Content-Type': 'application/json' } };
@@ -347,12 +284,9 @@ exports.handler = async (event, context) => {
         action = requestBody.action;
         payload = requestBody.payload;
 
-        if (!action) {
-            throw new Error("'action' não especificada no corpo da requisição.");
-        }
-        if (!payload) {
-            throw new Error("'payload' não especificado no corpo da requisição.");
-        }
+        if (!action) throw new Error("'action' não especificada no corpo da requisição.");
+        if (!payload) throw new Error("'payload' não especificado no corpo da requisição.");
+        
     } catch (e) {
         console.error("[docusign-actions] Erro ao fazer parse do corpo da requisição:", e.message);
         return { statusCode: 400, body: JSON.stringify({ error: "Requisição mal formatada ou corpo JSON inválido.", details: e.message }), headers: { 'Content-Type': 'application/json' } };
@@ -365,7 +299,7 @@ exports.handler = async (event, context) => {
         let resultData;
 
         switch (action) {
-            case "CREATE_ENVELOPE_FROM_TEMPLATE": // Renomeado para consistência
+            case "CREATE_ENVELOPE_FROM_TEMPLATE":
                 if (!payload.templateId || !payload.signerEmail || !payload.signerName || !payload.signerClientUserId) {
                     throw new Error("Dados insuficientes para 'CREATE_ENVELOPE_FROM_TEMPLATE': templateId, signerEmail, signerName, signerClientUserId são obrigatórios.");
                 }
@@ -373,17 +307,16 @@ exports.handler = async (event, context) => {
                 resultData = { envelopeId: templateEnvelopeId };
                 break;
 
-            case "CREATE_DYNAMIC_ENVELOPE": // Renomeado para consistência
+            case "CREATE_DYNAMIC_ENVELOPE":
                  if (!payload.documents || !payload.recipients || !payload.recipients.signers || payload.recipients.signers.length === 0) {
                     throw new Error("Dados insuficientes para 'CREATE_DYNAMIC_ENVELOPE': documents e recipients.signers são obrigatórios.");
                 }
-                // Validação mais detalhada dos signers dentro da função createDynamicEnvelope
                 const dynamicEnvelopeId = await createDynamicEnvelope(apiClient, payload);
                 resultData = { envelopeId: dynamicEnvelopeId };
                 break;
 
             case "GET_EMBEDDED_SIGNING_URL":
-                if (!payload.envelopeId || !payload.signerEmail || !payload.signerName || !payload.clientUserId || !payload.returnUrl) {
+                if (!payload.envelopeId || !payload.signerEmail || !payload.signerName || !payload.clientUserId || !payload.returnUrl) { // returnUrl continua obrigatório pela API DocuSign eSignature
                     throw new Error("Dados insuficientes para 'GET_EMBEDDED_SIGNING_URL': envelopeId, signerEmail, signerName, clientUserId, returnUrl são obrigatórios.");
                 }
                 const signingUrl = await createRecipientViewUrl(apiClient, payload);
@@ -399,13 +332,12 @@ exports.handler = async (event, context) => {
         return { statusCode: 200, body: JSON.stringify(resultData), headers: { 'Content-Type': 'application/json' } };
 
     } catch (error) {
-        console.error(`[docusign-actions] ERRO FINAL NO HANDLER para ação '${action}':`, error.message);
-        // A função logErrorDetails já foi chamada dentro das funções específicas, então aqui podemos retornar o erro.message
+        console.error(`[docusign-actions] ERRO FINAL NO HANDLER para ação '${action}':`, error.message, error.stack);
         return {
             statusCode: error.message.includes("Variáveis de ambiente Docusign incompletas") || error.message.includes("Falha ao decodificar") ? 400 : 500,
             body: JSON.stringify({
                 error: "Erro ao processar requisição Docusign.",
-                details: error.message // error.message já deve conter o detalhe Docusign formatado
+                details: error.message 
             }),
             headers: { 'Content-Type': 'application/json' }
         };

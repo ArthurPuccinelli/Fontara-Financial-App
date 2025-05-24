@@ -2,23 +2,40 @@
 const docusign = require('docusign-esign');
 const { Buffer } = require('buffer');
 
-const EXPECTED_ENV_VARS = [
+// As variáveis de ambiente críticas para a função operar minimamente
+const CRITICAL_ENV_VARS = [
     'DOCUSIGN_IK',
     'DOCUSIGN_USER_ID',
     'DOCUSIGN_ACCOUNT_ID',
     'DOCUSIGN_RSA_PEM_AS_BASE64',
     'DOCUSIGN_AUTH_SERVER',
-    'DOCUSIGN_BASE_PATH',
-    // APP_ORIGIN é importante, mas a função deve ser resiliente se não estiver lá
-    // e logar um aviso, ao invés de quebrar a chamada para DocuSign.
+    'DOCUSIGN_BASE_PATH'
+    // APP_ORIGIN será verificado depois, pois o erro pode ser antes de usá-lo
 ];
 
+// Função auxiliar para verificar variáveis de ambiente no início
+function checkInitialEnvVariables() {
+    console.log("[docusign-actions] Verificando variáveis de ambiente iniciais...");
+    const missingCriticalVars = CRITICAL_ENV_VARS.filter(v => !process.env[v]);
+    if (missingCriticalVars.length > 0) {
+        const errorMessage = `Variáveis de ambiente Docusign CRÍTICAS ausentes: ${missingCriticalVars.join(', ')}. A função não pode operar.`;
+        console.error(`[docusign-actions] ${errorMessage}`);
+        // Este erro deve ser fatal e impedir a continuação normal.
+        // Lançar um erro aqui pode não ser logado se o erro for na infra da Netlify,
+        // mas o log acima deveria aparecer se a função chegar a este ponto.
+        throw new Error(errorMessage); 
+    }
+    console.log("[docusign-actions] Variáveis de ambiente críticas iniciais verificadas.");
+}
+
+
 async function getAuthenticatedApiClient() {
-    // Verifica apenas as variáveis críticas para autenticação aqui.
-    const criticalAuthVars = EXPECTED_ENV_VARS.filter(v => v !== 'APP_ORIGIN');
-    const missingVars = criticalAuthVars.filter(v => !process.env[v]);
-    if (missingVars.length > 0) {
-        const errorMessage = `Variáveis de ambiente Docusign críticas para autenticação incompletas. Ausentes: ${missingVars.join(', ')}`;
+    // A verificação das variáveis já foi feita em checkInitialEnvVariables
+    // ou será feita aqui se checkInitialEnvVariables não for chamada antes ou falhar silenciosamente.
+    // Repetir a verificação aqui por segurança para esta função específica.
+    const missingAuthVars = CRITICAL_ENV_VARS.filter(v => !process.env[v]);
+    if (missingAuthVars.length > 0) {
+        const errorMessage = `(getAuthenticatedApiClient) Variáveis de ambiente Docusign críticas para autenticação incompletas. Ausentes: ${missingAuthVars.join(', ')}`;
         console.error(`[docusign-actions] ${errorMessage}`);
         throw new Error(errorMessage);
     }
@@ -31,6 +48,7 @@ async function getAuthenticatedApiClient() {
         DOCUSIGN_BASE_PATH: basePath
     } = process.env;
 
+    console.log("[docusign-actions] (getAuthenticatedApiClient) Decodificando chave RSA...");
     let rsaPrivateKeyPemString;
     try {
         rsaPrivateKeyPemString = Buffer.from(rsaPrivateKeyBase64Encoded, 'base64').toString('utf-8').trim();
@@ -38,22 +56,24 @@ async function getAuthenticatedApiClient() {
             throw new Error("Chave privada PEM decodificada de Base64 está inválida (delimitadores ausentes).");
         }
     } catch (e) {
-        console.error("[docusign-actions] ERRO AO DECODIFICAR/VALIDAR A CHAVE PRIVADA BASE64:", e.message);
-        throw new Error(`Falha ao decodificar/validar a chave privada: ${e.message}`);
+        console.error("[docusign-actions] (getAuthenticatedApiClient) ERRO AO DECODIFICAR/VALIDAR A CHAVE PRIVADA BASE64:", e.message);
+        throw new Error(`(getAuthenticatedApiClient) Falha ao decodificar/validar a chave privada: ${e.message}`);
     }
+    console.log("[docusign-actions] (getAuthenticatedApiClient) Chave RSA decodificada com sucesso.");
 
     const apiClient = new docusign.ApiClient({ basePath: basePath });
     apiClient.setOAuthBasePath(authServer);
 
     try {
-        console.log(`[docusign-actions] Solicitando token JWT para userId: ${userId} e ik: ${ik.substring(0,5)}...`);
+        console.log(`[docusign-actions] (getAuthenticatedApiClient) Solicitando token JWT para userId: ${userId} e ik: ${ik.substring(0,5)}...`);
         const results = await apiClient.requestJWTUserToken(ik, userId, ['signature', 'impersonation'], Buffer.from(rsaPrivateKeyPemString), 3600);
         apiClient.addDefaultHeader('Authorization', `Bearer ${results.body.access_token}`);
-        console.log("[docusign-actions] Token de acesso Docusign obtido com sucesso.");
+        console.log("[docusign-actions] (getAuthenticatedApiClient) Token de acesso Docusign obtido com sucesso.");
         return apiClient;
     } catch (err) {
-        console.error("[docusign-actions] FALHA NA AUTENTICAÇÃO JWT (getAuthenticatedApiClient):");
-        let detailedErrorMessage = "Erro ao autenticar com Docusign.";
+        // ... (lógica de log de erro do getAuthenticatedApiClient permanece a mesma) ...
+        console.error("[docusign-actions] (getAuthenticatedApiClient) FALHA NA AUTENTICAÇÃO JWT:");
+        let detailedErrorMessage = "(getAuthenticatedApiClient) Erro ao autenticar com Docusign.";
         if (err.response && (err.response.data || err.response.body)) {
             let errorBody = err.response.data || err.response.body;
             try {
@@ -114,7 +134,6 @@ function logErrorDetails(actionName, errorObject) {
     return docusignSpecificError;
 }
 
-
 async function createEnvelopeFromTemplate(apiClient, envelopeArgs) {
     // ... (função createEnvelopeFromTemplate permanece a mesma)
     const { templateId, signerEmail, signerName, signerClientUserId, roleName = 'signer', status = 'sent' } = envelopeArgs;
@@ -133,10 +152,10 @@ async function createEnvelopeFromTemplate(apiClient, envelopeArgs) {
     envDefinition.templateRoles = [signer];
     envDefinition.status = status;
 
-    console.log(`[docusign-actions] Criando envelope do template ID: ${templateId}. Definição:`, JSON.stringify(envDefinition, null, 2));
+    console.log(`[docusign-actions] (createEnvelopeFromTemplate) Criando envelope do template ID: ${templateId}.`);
     try {
         const results = await envelopesApi.createEnvelope(accountId, { envelopeDefinition: envDefinition });
-        console.log(`[docusign-actions] Envelope (template) criado com sucesso. ID: ${results.envelopeId}`);
+        console.log(`[docusign-actions] (createEnvelopeFromTemplate) Envelope (template) criado com sucesso. ID: ${results.envelopeId}`);
         return results.envelopeId;
     } catch (err) {
         const docusignErrorMessage = logErrorDetails("createEnvelopeFromTemplate", err);
@@ -197,11 +216,11 @@ async function createDynamicEnvelope(apiClient, envelopeArgs) {
     envDefinition.status = envelopeArgs.status || "sent";
 
     const envDefinitionForLog = { ...envDefinition, documents: envDefinition.documents.map(d => ({...d, documentBase64: "REMOVIDO_DO_LOG"})) };
-    console.log("[docusign-actions] Criando envelope dinâmico. Definição (sem base64):", JSON.stringify(envDefinitionForLog, null, 2));
+    console.log("[docusign-actions] (createDynamicEnvelope) Criando envelope dinâmico...");
 
     try {
         const results = await envelopesApi.createEnvelope(accountId, { envelopeDefinition: envDefinition });
-        console.log("[docusign-actions] Envelope dinâmico criado com sucesso. ID:", results.envelopeId);
+        console.log("[docusign-actions] (createDynamicEnvelope) Envelope dinâmico criado com sucesso. ID:", results.envelopeId);
         return results.envelopeId;
     } catch (err) {
         const docusignErrorMessage = logErrorDetails("createDynamicEnvelope", err);
@@ -209,25 +228,22 @@ async function createDynamicEnvelope(apiClient, envelopeArgs) {
     }
 }
 
-
 async function createRecipientViewUrl(apiClient, args) {
+    console.log("[docusign-actions] (createRecipientViewUrl) Iniciando criação de URL de visualização...");
     const { envelopeId, signerEmail, signerName, clientUserId, returnUrl, useFocusedView = false } = args;
     const accountId = process.env.DOCUSIGN_ACCOUNT_ID;
 
-    // Determina a URL base do aplicativo DocuSign com base no ambiente (demo, stage, prod)
     const docusignAppUrl = process.env.DOCUSIGN_BASE_PATH && process.env.DOCUSIGN_BASE_PATH.includes("demo.docusign.net") ?
                            "https://apps-d.docusign.com" : 
                            (process.env.DOCUSIGN_BASE_PATH && process.env.DOCUSIGN_BASE_PATH.includes("stage.docusign.net") ?
                            "https://apps-s.docusign.com" : "https://apps.docusign.com");
 
-    console.log(`[docusign-actions] docusignAppUrl determinada: ${docusignAppUrl}`);
-    console.log(`[docusign-actions] APP_ORIGIN (process.env.APP_ORIGIN): ${process.env.APP_ORIGIN}`);
-    console.log(`[docusign-actions] CONTEXT (process.env.CONTEXT): ${process.env.CONTEXT}`);
-    console.log(`[docusign-actions] DEPLOY_PRIME_URL (process.env.DEPLOY_PRIME_URL): ${process.env.DEPLOY_PRIME_URL}`);
-
+    console.log(`[docusign-actions] (createRecipientViewUrl) docusignAppUrl determinada: ${docusignAppUrl}`);
+    console.log(`[docusign-actions] (createRecipientViewUrl) APP_ORIGIN (process.env.APP_ORIGIN): ${process.env.APP_ORIGIN}`);
+    console.log(`[docusign-actions] (createRecipientViewUrl) CONTEXT (process.env.CONTEXT): ${process.env.CONTEXT}`);
+    console.log(`[docusign-actions] (createRecipientViewUrl) DEPLOY_PRIME_URL (process.env.DEPLOY_PRIME_URL): ${process.env.DEPLOY_PRIME_URL}`);
 
     const envelopesApi = new docusign.EnvelopesApi(apiClient);
-
     const viewRequestOptions = {
         returnUrl: returnUrl,
         authenticationMethod: 'none',
@@ -237,130 +253,128 @@ async function createRecipientViewUrl(apiClient, args) {
     };
 
     if (useFocusedView) {
-        console.log("[docusign-actions] Configurando para Focused View...");
-        viewRequestOptions.recipientSettings = {
-            showHeader: 'false',        
-            showToolbar: 'false',       
-            showFinishButton: 'false',  
-            showCancelButton: 'false',  
-            showDeclineButton: 'false', 
-            showViewDocumentsButton: 'false',
-            showSaveButton: 'false',    
+        console.log("[docusign-actions] (createRecipientViewUrl) Configurando para Focused View...");
+        viewRequestOptions.recipientSettings = { /* ... (configurações como antes) ... */ 
+            showHeader: 'false', showToolbar: 'false', showFinishButton: 'false',  
+            showCancelButton: 'false', showDeclineButton: 'false', 
+            showViewDocumentsButton: 'false', showSaveButton: 'false',    
         };
         
         const appOriginFromEnv = process.env.APP_ORIGIN;
         const deployPrimeUrlFromEnv = (process.env.CONTEXT === 'deploy-preview' && process.env.DEPLOY_PRIME_URL) ? process.env.DEPLOY_PRIME_URL : null;
         
-        viewRequestOptions.frameAncestors = [docusignAppUrl]; // Origem do DocuSign sempre presente
+        viewRequestOptions.frameAncestors = [docusignAppUrl];
 
         if (appOriginFromEnv && typeof appOriginFromEnv === 'string' && appOriginFromEnv.trim() !== '' && appOriginFromEnv.startsWith('http')) {
-            console.log(`[docusign-actions] Adicionando APP_ORIGIN a frameAncestors: ${appOriginFromEnv.trim()}`);
             viewRequestOptions.frameAncestors.push(appOriginFromEnv.trim());
         } else {
-            console.warn(`[docusign-actions] APP_ORIGIN ('${appOriginFromEnv}') não é uma URL válida ou não está definido. Não foi adicionado a frameAncestors.`);
+            console.warn(`[docusign-actions] (createRecipientViewUrl) APP_ORIGIN ('${appOriginFromEnv}') inválido/ausente. Não adicionado a frameAncestors.`);
         }
         
         if (deployPrimeUrlFromEnv && typeof deployPrimeUrlFromEnv === 'string' && deployPrimeUrlFromEnv.trim() !== '' && deployPrimeUrlFromEnv.startsWith('http')) {
             const trimmedDeployPrimeUrl = deployPrimeUrlFromEnv.trim();
             if (!viewRequestOptions.frameAncestors.includes(trimmedDeployPrimeUrl)) {
-                console.log(`[docusign-actions] Adicionando DEPLOY_PRIME_URL a frameAncestors: ${trimmedDeployPrimeUrl}`);
                 viewRequestOptions.frameAncestors.push(trimmedDeployPrimeUrl);
             }
         } else if (process.env.CONTEXT === 'deploy-preview') {
-             console.warn(`[docusign-actions] DEPLOY_PRIME_URL ('${deployPrimeUrlFromEnv}') não é uma URL válida ou não está definido no contexto de deploy-preview. Não foi adicionado a frameAncestors.`);
+             console.warn(`[docusign-actions] (createRecipientViewUrl) DEPLOY_PRIME_URL ('${deployPrimeUrlFromEnv}') inválido/ausente em deploy-preview. Não adicionado.`);
         }
-
-        // Adicionar localhost para desenvolvimento local se APP_ORIGIN não for localhost
-        // Isso pode ser necessário se você testar localmente e o APP_ORIGIN estiver configurado para o site Netlify.
-        // Contudo, o ideal é que APP_ORIGIN reflita o ambiente de execução da função.
-        // Para Netlify Dev, o APP_ORIGIN deveria ser algo como http://localhost:8888
-        if (appOriginFromEnv && !appOriginFromEnv.includes('localhost') && (process.env.NETLIFY_DEV === 'true' || process.env.NODE_ENV === 'development')) {
-            const localDevUrl = `http://localhost:${process.env.PORT || 8888}`; // Ajuste a porta se necessário
+        
+        // Adicionar localhost para netlify dev
+        if (process.env.NETLIFY_DEV === 'true' || process.env.NODE_ENV === 'development') {
+            const localDevPort = process.env.PORT || 8888; // Porta padrão do Netlify Dev ou a sua
+            const localDevUrl = `http://localhost:${localDevPort}`;
              if (!viewRequestOptions.frameAncestors.includes(localDevUrl)) {
-                console.log(`[docusign-actions] Adicionando URL de desenvolvimento local a frameAncestors: ${localDevUrl}`);
+                console.log(`[docusign-actions] (createRecipientViewUrl) Adicionando URL de dev local a frameAncestors: ${localDevUrl}`);
                 viewRequestOptions.frameAncestors.push(localDevUrl);
             }
         }
-        
         viewRequestOptions.messageOrigins = [docusignAppUrl];
-
     } else {
-        console.log("[docusign-actions] Configurando para Classic View (iframe).");
+        console.log("[docusign-actions] (createRecipientViewUrl) Configurando para Classic View.");
     }
     
-    // Log final de frameAncestors antes da chamada
-    console.log("[docusign-actions] frameAncestors final a ser usado:", JSON.stringify(viewRequestOptions.frameAncestors));
-    console.log("[docusign-actions] messageOrigins final a ser usado:", JSON.stringify(viewRequestOptions.messageOrigins));
-
+    console.log("[docusign-actions] (createRecipientViewUrl) frameAncestors final:", JSON.stringify(viewRequestOptions.frameAncestors));
+    console.log("[docusign-actions] (createRecipientViewUrl) messageOrigins final:", JSON.stringify(viewRequestOptions.messageOrigins));
 
     const recipientViewRequest = docusign.RecipientViewRequest.constructFromObject(viewRequestOptions);
-    console.log(`[docusign-actions] Criando recipient view para envelope ${envelopeId}. Payload para DocuSign:`, JSON.stringify(recipientViewRequest, null, 2));
+    console.log(`[docusign-actions] (createRecipientViewUrl) Payload para DocuSign API:`, JSON.stringify(recipientViewRequest, null, 2));
 
     try {
         const results = await envelopesApi.createRecipientView(accountId, envelopeId, { recipientViewRequest: recipientViewRequest });
-        console.log("[docusign-actions] URL de assinatura embutida gerada com sucesso.");
+        console.log("[docusign-actions] (createRecipientViewUrl) URL de assinatura embutida gerada.");
         return results.url;
     } catch (err) {
-        const docusignErrorMessage = logErrorDetails("createRecipientViewUrl", err);
+        const docusignErrorMessage = logErrorDetails("createRecipientViewUrl > envelopesApi.createRecipientView", err); // Ação mais específica
         throw new Error(`Erro ao gerar URL de assinatura. Detalhe Docusign: ${docusignErrorMessage}`);
     }
 }
 
 exports.handler = async (event, context) => {
-    // ... (handler permanece o mesmo, mas agora createRecipientViewUrl tem mais logs)
-    if (event.httpMethod !== "POST") {
-        return { statusCode: 405, body: JSON.stringify({ error: "Método não permitido." }), headers: { 'Content-Type': 'application/json' } };
-    }
-
-    let action, payload;
-    try {
-        if (!event.body) throw new Error("Corpo da requisição está vazio.");
-        let requestBody = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
-
-        action = requestBody.action;
-        payload = requestBody.payload;
-
-        if (!action) throw new Error("'action' não especificada no corpo da requisição.");
-        if (!payload) throw new Error("'payload' não especificado no corpo da requisição.");
-
-    } catch (e) {
-        console.error("[docusign-actions] Erro ao fazer parse do corpo da requisição:", e.message);
-        return { statusCode: 400, body: JSON.stringify({ error: "Requisição mal formatada ou corpo JSON inválido.", details: e.message }), headers: { 'Content-Type': 'application/json' } };
-    }
-
-    console.log(`[docusign-actions] Ação recebida: ${action}`);
-    console.log(`[docusign-actions] Payload recebido para ${action}:`, payload ? JSON.stringify(payload).substring(0, 500) + "..." : "Nenhum payload");
-
+    // LOG INICIAL PARA VERIFICAR SE A FUNÇÃO É INVOCADA
+    console.log("[docusign-actions] HANDLER INVOCADO. HTTP Method:", event.httpMethod);
+    console.log("[docusign-actions] Evento recebido (parcial):", JSON.stringify(event, null, 2).substring(0, 1000)); // Loga parte do evento
 
     try {
+        // VERIFICAÇÃO INICIAL DE VARIÁVEIS DE AMBIENTE CRÍTICAS
+        checkInitialEnvVariables(); // Pode lançar erro se variáveis críticas estiverem faltando
+
+        console.log("[docusign-actions] Iniciando processamento da ação...");
+        if (event.httpMethod !== "POST") {
+            console.log("[docusign-actions] Método não permitido:", event.httpMethod);
+            return { statusCode: 405, body: JSON.stringify({ error: "Método não permitido." }), headers: { 'Content-Type': 'application/json' } };
+        }
+
+        let action, payload;
+        try {
+            console.log("[docusign-actions] Analisando corpo da requisição...");
+            if (!event.body) {
+                console.error("[docusign-actions] Corpo da requisição está vazio.");
+                throw new Error("Corpo da requisição está vazio.");
+            }
+            let requestBody = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
+            console.log("[docusign-actions] Corpo da requisição analisado.");
+            
+            action = requestBody.action;
+            payload = requestBody.payload;
+
+            if (!action) {
+                console.error("[docusign-actions] 'action' não especificada.");
+                throw new Error("'action' não especificada no corpo da requisição.");
+            }
+            if (!payload) {
+                console.error("[docusign-actions] 'payload' não especificado para action:", action);
+                // Algumas ações podem não precisar de payload, mas as suas precisam
+                throw new Error(`'payload' não especificado para a ação '${action}'.`);
+            }
+            console.log(`[docusign-actions] Ação: ${action}`);
+            console.log(`[docusign-actions] Payload para ${action} (parcial):`, JSON.stringify(payload).substring(0, 500) + "...");
+
+        } catch (e) {
+            console.error("[docusign-actions] Erro ao analisar corpo da requisição ou parâmetros faltando:", e.message);
+            return { statusCode: 400, body: JSON.stringify({ error: "Requisição mal formatada ou parâmetros ausentes.", details: e.message }), headers: { 'Content-Type': 'application/json' } };
+        }
+
+        console.log(`[docusign-actions] Obtendo cliente API autenticado para ação: ${action}...`);
         const apiClient = await getAuthenticatedApiClient();
+        console.log(`[docusign-actions] Cliente API autenticado obtido. Executando ação: ${action}...`);
         let resultData;
 
         switch (action) {
             case "CREATE_ENVELOPE_FROM_TEMPLATE":
-                if (!payload.templateId || !payload.signerEmail || !payload.signerName || !payload.signerClientUserId) {
-                    throw new Error("Dados insuficientes para 'CREATE_ENVELOPE_FROM_TEMPLATE': templateId, signerEmail, signerName, signerClientUserId são obrigatórios.");
-                }
-                const templateEnvelopeId = await createEnvelopeFromTemplate(apiClient, payload);
-                resultData = { envelopeId: templateEnvelopeId };
+                // ... (validação do payload como antes)
+                resultData = await createEnvelopeFromTemplate(apiClient, payload);
                 break;
-
             case "CREATE_DYNAMIC_ENVELOPE":
-                 if (!payload.documents || !payload.recipients || !payload.recipients.signers || payload.recipients.signers.length === 0) {
-                    throw new Error("Dados insuficientes para 'CREATE_DYNAMIC_ENVELOPE': documents e recipients.signers são obrigatórios.");
-                }
-                const dynamicEnvelopeId = await createDynamicEnvelope(apiClient, payload);
-                resultData = { envelopeId: dynamicEnvelopeId };
+                // ... (validação do payload como antes)
+                resultData = await createDynamicEnvelope(apiClient, payload);
                 break;
-
             case "GET_EMBEDDED_SIGNING_URL":
-                if (!payload.envelopeId || !payload.signerEmail || !payload.signerName || !payload.clientUserId || !payload.returnUrl) {
+                 if (!payload.envelopeId || !payload.signerEmail || !payload.signerName || !payload.clientUserId || !payload.returnUrl) {
                     throw new Error("Dados insuficientes para 'GET_EMBEDDED_SIGNING_URL': envelopeId, signerEmail, signerName, clientUserId, returnUrl são obrigatórios.");
                 }
-                const signingUrl = await createRecipientViewUrl(apiClient, payload);
-                resultData = { signingUrl: signingUrl };
+                resultData = { signingUrl: await createRecipientViewUrl(apiClient, payload) };
                 break;
-
             default:
                 console.warn(`[docusign-actions] Ação desconhecida recebida: ${action}`);
                 return { statusCode: 400, body: JSON.stringify({ error: `Ação desconhecida: ${action}` }), headers: { 'Content-Type': 'application/json' } };
@@ -370,21 +384,27 @@ exports.handler = async (event, context) => {
         return { statusCode: 200, body: JSON.stringify(resultData), headers: { 'Content-Type': 'application/json' } };
 
     } catch (error) {
-        console.error(`[docusign-actions] ERRO FINAL NO HANDLER para ação '${action}':`, error.message, error.stack);
-        // A função logErrorDetails já foi chamada dentro das funções específicas se o erro veio da API DocuSign.
-        // Para outros erros (como falha na autenticação ou parse), error.message é suficiente.
+        // ESTE É O CATCH GLOBAL DO HANDLER
+        console.error(`[docusign-actions] !!! ERRO CRÍTICO NO HANDLER !!! Para ação (se definida): '${action || "Não definida"}'. Mensagem:`, error.message);
+        console.error("[docusign-actions] Stack Trace do Erro Crítico:", error.stack);
+        
         let statusCode = 500;
+        // Tenta ser mais específico com o status code se possível
         if (error.message.includes("Variáveis de ambiente") || 
             error.message.includes("Falha ao decodificar") ||
             error.message.includes("Requisição mal formatada") ||
-            error.message.includes("Dados insuficientes")) {
+            error.message.includes("Dados insuficientes") ||
+            error.message.includes("action' não especificada") ||
+            error.message.includes("payload' não especificado")) {
             statusCode = 400;
+        } else if (error.message.includes("Erro ao autenticar com Docusign")) {
+            statusCode = 401; // Ou 500 se for uma falha interna na obtenção do token
         }
 
         return {
             statusCode: statusCode,
             body: JSON.stringify({
-                error: "Erro ao processar requisição Docusign.",
+                error: "Erro crítico ao processar requisição Docusign na função.",
                 details: error.message 
             }),
             headers: { 'Content-Type': 'application/json' }

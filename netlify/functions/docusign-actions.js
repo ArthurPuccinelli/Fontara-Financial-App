@@ -331,7 +331,6 @@ async function createRecipientViewUrl(apiClient, args) {
         throw new Error(`Erro ao gerar URL de assinatura. Detalhe Docusign: ${docusignErrorMessage}`);
     }
 }
-
 /**
  * @summary Netlify Function handler para ações DocuSign.
  */

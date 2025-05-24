@@ -1,5 +1,6 @@
+// frontend/scripts/assinatura-embarcada.js
 document.addEventListener('DOMContentLoaded', async function() {
-  console.log("assinatura-embarcada.js (v3.3 - Validação IK e SDK): Script carregado.");
+  console.log("assinatura-embarcada.js (vFinal): Script carregado.");
 
   // --- CONSTANTES ---
   const DEFAULT_DOC_PATH = "/assets/documentos/ContratoPadraoFontara.pdf";
@@ -29,22 +30,22 @@ document.addEventListener('DOMContentLoaded', async function() {
   const docusignSigningIframe = document.getElementById('docusignSigningIframe');
   const docusignFocusedViewContainer = document.getElementById('docusignFocusedViewContainer');
   
-  const docusignExpectedOrigin = "https://demo.docusign.net"; // Ambiente de desenvolvimento DocuSign
+  const docusignExpectedOrigin = "https://demo.docusign.net"; 
   let originalHeaderZIndex = '';
   let currentSigningInstance = null;
   let lastRecipientViewContext = { envelopeId: null, signerName: null };
-  let docusignApi = null; // Para armazenar a referência ao SDK DocuSign (window.docusign)
-  let DOCUSIGN_APP_CLIENT_ID = null; // Renomeado para clareza (Chave de Integração)
+  let docusignApi = null; // <<<<<< Esta variável armazenará a instância do SDK retornada por loadDocuSign
+  let DOCUSIGN_APP_CLIENT_ID = null; 
 
   // --- FUNÇÃO PARA BUSCAR O DOCUSIGN APP CLIENT ID (IK) ---
   async function fetchDocusignAppClientId() {
     try {
-      const response = await fetch('/.netlify/functions/get-docusign-client-id'); // Esta função deve retornar o IK
+      const response = await fetch('/.netlify/functions/get-docusign-client-id');
       if (!response.ok) {
         throw new Error(`Erro ao buscar App Client ID DocuSign: ${response.statusText} (status: ${response.status})`);
       }
       const data = await response.json();
-      if (!data.clientId) { // Espera-se que a função retorne { clientId: "SEU_IK" }
+      if (!data.clientId) {
         throw new Error("App Client ID DocuSign (IK) não retornado pela função get-docusign-client-id.");
       }
       console.log("[assinatura-embarcada.js] DOCUSIGN_APP_CLIENT_ID (IK) obtido com sucesso.");
@@ -60,43 +61,62 @@ document.addEventListener('DOMContentLoaded', async function() {
   let sdkInitializationSuccessful = false;
 
   async function initializeDocuSignSdk() {
-    if (sdkInitializationAttempted) return;
+    if (sdkInitializationAttempted) {
+        console.log("[assinatura-embarcada.js] Tentativa de inicialização do SDK já ocorreu.");
+        return;
+    }
     sdkInitializationAttempted = true;
+    console.log("[assinatura-embarcada.js] Tentando inicializar SDK DocuSign...");
 
     try {
-      DOCUSIGN_APP_CLIENT_ID = await fetchDocusignAppClientId();
-
       if (typeof window.DocuSign === 'undefined' || typeof window.DocuSign.loadDocuSign !== 'function') {
-        console.error("[assinatura-embarcada.js] Objeto global window.DocuSign ou window.DocuSign.loadDocuSign não encontrado. Verifique se https://js-d.docusign.com/bundle.js foi carregado.");
-        return;
+        console.error("[assinatura-embarcada.js] FALHA CRÍTICA: Objeto global window.DocuSign ou window.DocuSign.loadDocuSign não encontrado. Verifique se o script https://js-d.docusign.com/bundle.js foi carregado ANTES deste script e sem erros.");
+        return; 
       }
+      
+      DOCUSIGN_APP_CLIENT_ID = await fetchDocusignAppClientId();
       
       if (DOCUSIGN_APP_CLIENT_ID) {
         console.log(`[assinatura-embarcada.js] Chamando window.DocuSign.loadDocuSign com App Client ID (IK): ${DOCUSIGN_APP_CLIENT_ID.substring(0,5)}...`);
-        await window.DocuSign.loadDocuSign(DOCUSIGN_APP_CLIENT_ID); 
+        // CAPTURA O RETORNO DE loadDocuSign
+        const loadedInstance = await window.DocuSign.loadDocuSign(DOCUSIGN_APP_CLIENT_ID); 
         console.log("[assinatura-embarcada.js] window.DocuSign.loadDocuSign completado.");
+        
+        if (loadedInstance && typeof loadedInstance.signing === 'function') {
+          docusignApi = loadedInstance; // <<< ATRIBUI A INSTÂNCIA RETORNADA A docusignApi
+          sdkInitializationSuccessful = true;
+          console.log("[assinatura-embarcada.js] SDK DocuSign (retornado por loadDocuSign) está pronto. Objeto:", docusignApi);
+        } else {
+          console.error("[assinatura-embarcada.js] FALHA CRÍTICA: window.DocuSign.loadDocuSign não retornou um SDK válido ou o objeto retornado não tem o método .signing(). Retorno:", loadedInstance);
+          // Tenta como fallback usar o window.docusign global, se existir (menos provável de funcionar corretamente)
+          if (typeof window.docusign !== 'undefined' && window.docusign !== null && typeof window.docusign.signing === 'function') {
+            console.warn("[assinatura-embarcada.js] Usando window.docusign (minúsculo) como fallback.");
+            docusignApi = window.docusign; // Atribui o global como fallback
+            sdkInitializationSuccessful = true; 
+          } else {
+            console.error("[assinatura-embarcada.js] Fallback para window.docusign (minúsculo) também falhou ou é inválido.");
+          }
+        }
       } else {
-        console.warn("[assinatura-embarcada.js] DOCUSIGN_APP_CLIENT_ID (IK) não foi obtido. Tentando prosseguir sem loadDocuSign explícito com IK. O objeto window.docusign pode já estar disponível.");
-      }
-      
-      // Após loadDocuSign (ou se não foi chamado por falta de IK), window.docusign (minúsculo 'd') deve estar pronto.
-      if (typeof window.docusign !== 'undefined' && window.docusign !== null) {
-        docusignApi = window.docusign; 
-        sdkInitializationSuccessful = true;
-        console.log("[assinatura-embarcada.js] SDK DocuSign (window.docusign) está pronto. Objeto:", docusignApi);
-      } else {
-        console.error("[assinatura-embarcada.js] window.docusign (minúsculo) não está definido ou é nulo APÓS tentativa de inicialização.");
+        console.warn("[assinatura-embarcada.js] DOCUSIGN_APP_CLIENT_ID (IK) não foi obtido. Não foi possível chamar loadDocuSign. Tentando usar window.docusign (minúsculo) diretamente se disponível.");
+         if (typeof window.docusign !== 'undefined' && window.docusign !== null && typeof window.docusign.signing === 'function') {
+            docusignApi = window.docusign; 
+            sdkInitializationSuccessful = true;
+            console.log("[assinatura-embarcada.js] Usando window.docusign (minúsculo) diretamente pois IK não foi obtido.");
+        } else {
+             console.error("[assinatura-embarcada.js] window.docusign (minúsculo) não disponível e IK não obtido.");
+        }
       }
     } catch (error) {
-      console.error("[assinatura-embarcada.js] Erro durante a inicialização do SDK DocuSign:", error.message, error.stack);
+      console.error("[assinatura-embarcada.js] Erro EXCEPCIONAL durante a inicialização do SDK DocuSign:", error.message, error.stack);
     }
 
     if (!sdkInitializationSuccessful) {
-      console.warn("[assinatura-embarcada.js] SDK DocuSign não foi inicializado com sucesso. A Visualização Focada pode falhar.");
+      console.warn("[assinatura-embarcada.js] SDK DocuSign não foi inicializado com sucesso. A Visualização Focada provavelmente falhará ou usará fallback para iframe.");
     }
   }
   
-  await initializeDocuSignSdk(); // Chama a inicialização aqui
+  await initializeDocuSignSdk(); 
 
   // --- FUNÇÕES AUXILIARES ---
   function showElement(element, show) {
@@ -185,9 +205,16 @@ document.addEventListener('DOMContentLoaded', async function() {
         if(docusignFocusedViewContainer) docusignFocusedViewContainer.innerHTML = '';
 
         try {
+            // Usa a referência 'docusignApi' que foi definida na inicialização
             if (!sdkInitializationSuccessful || typeof docusignApi === 'undefined' || docusignApi === null) {
-                console.error("[assinatura-embarcada.js] SDK DocuSign (docusignApi) não está inicializado ou disponível.");
-                throw new Error("SDK DocuSign não está pronto.");
+                let errorMsg = "SDK DocuSign (docusignApi) não está inicializado ou disponível. ";
+                if (typeof window.DocuSign === 'undefined') {
+                    errorMsg += "Causa provável: O script 'bundle.js' do DocuSign não carregou ou falhou em definir 'window.DocuSign'.";
+                } else if (!docusignApi) { 
+                    errorMsg += "Causa provável: 'window.DocuSign.loadDocuSign()' pode não ter sido chamado corretamente, falhou, ou não retornou uma instância válida.";
+                }
+                console.error("[assinatura-embarcada.js]", errorMsg);
+                throw new Error(errorMsg);
             }
             if (typeof docusignApi.signing !== 'function') {
                 console.error("[assinatura-embarcada.js] docusignApi.signing não é uma função. Objeto docusignApi:", docusignApi);
@@ -198,7 +225,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             currentSigningInstance = docusignApi.signing({
                 url: url,
                 displayFormat: 'focused',
-                // style: {} // Adicione opções de estilo aqui se necessário
             });
             
             console.log("[assinatura-embarcada.js] Resultado de docusignApi.signing():", currentSigningInstance);
@@ -229,9 +255,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             console.error("[assinatura-embarcada.js] Erro ao montar DocuSign Focused View:", error);
             if (error.message) console.error("Detalhe do erro (message):", error.message);
             if (error.stack) console.error("Stack trace:", error.stack);
-            // console.error("Objeto de erro completo:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
 
-            alert("Erro ao carregar a visualização focada do documento. Tentando fallback para modo clássico. Verifique o console para detalhes.");
+            alert(`Erro ao carregar a visualização focada: ${error.message}. Tentando fallback para modo clássico. Verifique o console.`);
             showElement(docusignIframeContainer, true);
             showElement(docusignFocusedViewContainer, false);
             if(docusignSigningIframe) docusignSigningIframe.src = url;
@@ -249,7 +274,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   function closeDocusignSigningModal() {
     if (currentSigningInstance) {
         try {
-            if (typeof currentSigningInstance.destroy === 'function') { // Verifica se o método destroy existe
+            if (typeof currentSigningInstance.destroy === 'function') {
                 console.log("[assinatura-embarcada.js] Chamando currentSigningInstance.destroy()");
                 currentSigningInstance.destroy();
             }
@@ -294,7 +319,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       handleDocusignCompletionEvents({ event: docusignEventName, envelopeId: envelopeIdFromEvent });
     }
   }, false);
-
+  
   if (envelopeForm) {
     envelopeForm.addEventListener('submit', async function(event) {
       event.preventDefault();
@@ -306,28 +331,26 @@ document.addEventListener('DOMContentLoaded', async function() {
       }
 
       try {
-        // Garante que a inicialização do SDK foi tentada antes de prosseguir para modos focados
         if (!sdkInitializationAttempted) {
-            console.log("[assinatura-embarcada.js] SDK não foi inicializado, tentando agora antes do submit...");
+            console.log("[assinatura-embarcada.js] SDK não foi inicializado na carga da página, tentando agora antes do submit...");
             await initializeDocuSignSdk();
         }
-        if (document.querySelector('input[name="signingMode"]:checked').value !== 'classic' && !sdkInitializationSuccessful) {
-            throw new Error("SDK DocuSign não pôde ser inicializado. A Visualização Focada não está disponível.");
+        const currentSigningMode = document.querySelector('input[name="signingMode"]:checked').value;
+        if (currentSigningMode !== 'classic' && !sdkInitializationSuccessful) {
+            throw new Error("Falha na inicialização do SDK DocuSign. Verifique o console para detalhes sobre o carregamento do 'bundle.js' ou a configuração do Client ID (IK). A Visualização Focada não está disponível.");
         }
-
 
         const signerName = signerNameInput.value;
         const signerEmail = signerEmailInput.value;
         const emailSubjectVal = emailSubjectInput.value;
-        const signingMode = document.querySelector('input[name="signingMode"]:checked').value;
-        const documentChoice = (signingMode !== 'clicktoagree' && docDefaultRadio) ? 
+        const documentChoice = (currentSigningMode !== 'clicktoagree' && docDefaultRadio) ? 
                                document.querySelector('input[name="documentChoice"]:checked').value : 
                                'default';
 
         let documentBase64 = '', documentName = '', currentDocumentId = DEFAULT_DOC_ID;
         const documentFileExtension = 'pdf'; 
 
-        if (signingMode === 'clicktoagree') {
+        if (currentSigningMode === 'clicktoagree') {
           documentBase64 = await fetchDocumentAsBase64(CLICK_TO_AGREE_DOC_PATH);
           documentName = CLICK_TO_AGREE_DOC_NAME;
           currentDocumentId = CLICK_TO_AGREE_DOC_ID;
@@ -377,7 +400,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         lastRecipientViewContext.envelopeId = envelopeId;
 
-        let useFocusedViewParam = (signingMode === 'focused' || signingMode === 'clicktoagree');
+        let useFocusedViewParam = (currentSigningMode === 'focused' || currentSigningMode === 'clicktoagree');
         
         const recipientViewPayload = {
             envelopeId: envelopeId, 
@@ -403,7 +426,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const signingUrl = signingResult.signingUrl;
 
         if (signingUrl) {
-          openDocusignSigningModal(signingUrl, signingMode);
+          openDocusignSigningModal(signingUrl, currentSigningMode);
         } else {
           throw new Error("URL de assinatura não retornada pela API.");
         }

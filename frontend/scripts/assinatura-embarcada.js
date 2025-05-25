@@ -1,17 +1,18 @@
 // frontend/scripts/assinatura-embarcada.js
 document.addEventListener('DOMContentLoaded', async function() {
-  console.log("assinatura-embarcada.js (vFinal-Rev5 - Revisão Comunicação): Script carregado.");
+  console.log("assinatura-embarcada.js (vFinal-Rev6 - C2A Upload + No Tabs): Script carregado.");
 
   // --- CONSTANTES ---
   const DEFAULT_DOC_PATH = "/assets/documentos/ContratoPadraoFontara.pdf";
-  const CLICK_TO_AGREE_DOC_PATH = "/assets/documentos/TermoAcordoRapido.pdf";
+  const CLICK_TO_AGREE_DOC_PATH = "/assets/documentos/TermoAcordoRapido.pdf"; // Mantido como padrão para C2A
+  const CLICK_TO_AGREE_DOC_NAME_DEFAULT = "TermoDeAcordoFontara.pdf"; // Nome do arquivo padrão C2A
   const DEFAULT_DOC_NAME = "ContratoPadraoFontara.pdf";
-  const CLICK_TO_AGREE_DOC_NAME = "TermoDeAcordoFontara.pdf";
   const DEFAULT_DOC_ID = "1";
-  const CLICK_TO_AGREE_DOC_ID = "2";
+  const CLICK_TO_AGREE_DOC_ID_DEFAULT = "c2a_default"; // ID para o doc padrão C2A
   const UPLOADED_DOC_ID_PREFIX = "user_uploaded_";
 
   // --- SELEÇÃO DE ELEMENTOS DOM ---
+  // ... (outros seletores permanecem os mesmos) ...
   const envelopeForm = document.getElementById('envelopeForm');
   const signerNameInput = document.getElementById('signerName');
   const signerEmailInput = document.getElementById('signerEmail');
@@ -52,7 +53,6 @@ document.addEventListener('DOMContentLoaded', async function() {
       return data.clientId;
     } catch (error) {
       console.error("[assinatura-embarcada.js] Falha ao obter DOCUSIGN_APP_CLIENT_ID (IK):", error.message);
-      // Poderia mostrar um alerta para o usuário aqui se isso for crítico para o funcionamento.
       return null;
     }
   }
@@ -110,9 +110,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     if (!sdkInitializationSuccessful) {
-      console.error("[assinatura-embarcada.js] SDK DocuSign NÃO FOI INICIALIZADO COM SUCESSO. Visualização Focada irá falhar.");
-      // Considerar mostrar um alerta para o usuário aqui, pois funcionalidades chave não operarão.
-      // alert("Houve um problema ao inicializar o serviço de assinatura. Algumas funcionalidades podem não estar disponíveis.");
+      console.error("[assinatura-embarcada.js] SDK DocuSign NÃO FOI INICIALIZADO COM SUCESSO. Visualização Focada/C2A irá falhar.");
     }
   }
   
@@ -122,7 +120,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (element) {
       element.style.display = show ? (element.tagName === 'IFRAME' || element.classList.contains('modal-iframe-container') ? 'flex' : 'block') : 'none';
       if (element.tagName === 'INPUT' && element.type === 'file') {
-         element.closest('.tw-hidden')?.classList.toggle('tw-hidden', !show);
+         // Ajuste para garantir que o contêiner do input de arquivo seja exibido corretamente
+         const parentContainer = element.closest('div[id="fileUploadContainer"]'); // Procura pelo ID específico
+         if (parentContainer) {
+            parentContainer.style.display = show ? 'block' : 'none';
+         } else { // Fallback para a lógica anterior se o ID não for encontrado
+            element.closest('.tw-hidden')?.classList.toggle('tw-hidden', !show);
+         }
       }
     }
   }
@@ -131,23 +135,26 @@ document.addEventListener('DOMContentLoaded', async function() {
     const signingMode = document.querySelector('input[name="signingMode"]:checked')?.value;
     if (!documentChoiceContainer) return;
 
+    // Para C2A, agora mostramos a escolha de documento
     if (signingMode === 'clicktoagree') {
-      showElement(documentChoiceContainer, false);
-      showElement(fileUploadContainer, false);
-      if (uploadedDocInput) uploadedDocInput.required = false;
-      if (emailSubjectInput) emailSubjectInput.value = "Confirmação de Acordo Fontara Financial";
-    } else {
+      showElement(documentChoiceContainer, true); 
+      if (emailSubjectInput) emailSubjectInput.value = "Confirmação de Acordo Fontara Financial"; // Assunto específico para C2A
+      // A lógica de upload/default será tratada abaixo
+    } else { // Para classic e focused (não C2A)
       showElement(documentChoiceContainer, true);
       if (emailSubjectInput && emailSubjectInput.value === "Confirmação de Acordo Fontara Financial") {
-         emailSubjectInput.value = "Documento Fontara Financial para Assinatura";
+         emailSubjectInput.value = "Documento Fontara Financial para Assinatura"; // Assunto padrão
       }
-      const isUploadSelected = docUploadRadio && docUploadRadio.checked;
-      showElement(fileUploadContainer, isUploadSelected);
-      if (uploadedDocInput) uploadedDocInput.required = isUploadSelected;
     }
+
+    // Visibilidade do campo de upload baseado na seleção do radio button
+    const isUploadSelected = docUploadRadio && docUploadRadio.checked;
+    showElement(fileUploadContainer, isUploadSelected);
+    if (uploadedDocInput) uploadedDocInput.required = isUploadSelected;
   }
 
   async function fetchDocumentAsBase64(filePath) {
+    // ... (função fetchDocumentAsBase64 permanece a mesma)
     try {
       const response = await fetch(filePath);
       if (!response.ok) {
@@ -174,6 +181,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
   
   function handleDocusignCompletionEvents(docusignEventData) {
+    // ... (função handleDocusignCompletionEvents permanece a mesma)
     const eventType = (docusignEventData.data && docusignEventData.data.type) ? 
                       docusignEventData.data.type : 
                       docusignEventData.event; 
@@ -209,12 +217,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         window.location.href = `${returnUrlBase}&event=${finalStatus}`;
     } else {
         console.warn(`[handleDocusignCompletionEvents] Evento DocuSign não tratado para redirecionamento: ${finalStatus}`);
-        // Considerar fechar o modal mesmo para eventos não explicitamente tratados para evitar que fique aberto indefinidamente
-        // closeDocusignSigningModal(); 
     }
   }
 
   function openDocusignSigningModal(url, signingMode) {
+    // ... (lógica de openDocusignSigningModal com style object, etc., permanece a mesma)
     if(docusignModalTitle) docusignModalTitle.textContent = signingMode === 'classic' ? "Assinatura do Documento (Clássica)" : "Assinatura do Documento";
 
     if (signingMode === 'classic') {
@@ -255,7 +262,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             };
             
             if (signingMode === 'clicktoagree') {
-                // Ajustes específicos para C2A podem ser feitos aqui se necessário
+                // Ajustes específicos para C2A
             }
 
             console.log("[assinatura-embarcada.js] Configuração da assinatura (SigningConfiguration):", JSON.stringify(signingConfiguration, null, 2));
@@ -323,6 +330,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
 
   function closeDocusignSigningModal() {
+    // ... (função closeDocusignSigningModal permanece a mesma)
     if (currentSigningInstance) {
         try {
             if (typeof currentSigningInstance.destroy === 'function') {
@@ -346,11 +354,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
   }
 
+  // ANEXAR LISTENERS DE EVENTO
   document.querySelectorAll('input[name="signingMode"]').forEach(radio => {
     radio.addEventListener('change', updateDocumentFieldsVisibility);
   });
-  if (docDefaultRadio) docDefaultRadio.addEventListener('change', () => { updateDocumentFieldsVisibility(); });
-  if (docUploadRadio) docUploadRadio.addEventListener('change', () => { updateDocumentFieldsVisibility(); });
+  if (docDefaultRadio) docDefaultRadio.addEventListener('change', updateDocumentFieldsVisibility); // Garante que a visibilidade é atualizada
+  if (docUploadRadio) docUploadRadio.addEventListener('change', updateDocumentFieldsVisibility); // Garante que a visibilidade é atualizada
+  
   if (closeDocusignSigningModalBtn) closeDocusignSigningModalBtn.addEventListener('click', closeDocusignSigningModal);
   if (docusignModalOverlay) {
       docusignModalOverlay.addEventListener('click', function(event) {
@@ -359,6 +369,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
   
   window.addEventListener('message', function(event) {
+    // ... (lógica do window.addEventListener('message') permanece a mesma)
     const classicModeSelected = document.querySelector('input[name="signingMode"]:checked')?.value === 'classic';
     if (!classicModeSelected) {
         return;
@@ -404,27 +415,28 @@ document.addEventListener('DOMContentLoaded', async function() {
         const signerName = signerNameInput.value;
         const signerEmail = signerEmailInput.value;
         const emailSubjectVal = emailSubjectInput.value;
-        const documentChoice = (currentSigningMode !== 'clicktoagree' && docDefaultRadio) ? 
-                               document.querySelector('input[name="documentChoice"]:checked').value : 
-                               'default';
-
-        let documentBase64 = '', documentName = '', currentDocumentId = DEFAULT_DOC_ID;
+        
+        // Lógica de escolha do documento, agora aplicável a todos os modos
+        const documentChoice = docDefaultRadio.checked ? 'default' : 'upload';
+        let documentBase64 = '', documentName = '', currentDocumentId = '';
         const documentFileExtension = 'pdf'; 
 
-        if (currentSigningMode === 'clicktoagree') {
-          documentBase64 = await fetchDocumentAsBase64(CLICK_TO_AGREE_DOC_PATH);
-          documentName = CLICK_TO_AGREE_DOC_NAME;
-          currentDocumentId = CLICK_TO_AGREE_DOC_ID;
-        } else if (documentChoice === 'default') {
-          documentBase64 = await fetchDocumentAsBase64(DEFAULT_DOC_PATH);
-          documentName = DEFAULT_DOC_NAME;
-          currentDocumentId = DEFAULT_DOC_ID;
-        } else {
+        if (documentChoice === 'default') {
+          if (currentSigningMode === 'clicktoagree') {
+            documentBase64 = await fetchDocumentAsBase64(CLICK_TO_AGREE_DOC_PATH);
+            documentName = CLICK_TO_AGREE_DOC_NAME_DEFAULT;
+            currentDocumentId = CLICK_TO_AGREE_DOC_ID_DEFAULT;
+          } else { // Para classic e focused, usa o Contrato Padrão Fontara
+            documentBase64 = await fetchDocumentAsBase64(DEFAULT_DOC_PATH);
+            documentName = DEFAULT_DOC_NAME;
+            currentDocumentId = DEFAULT_DOC_ID;
+          }
+        } else { // Upload de arquivo
           const file = uploadedDocInput.files[0];
           if (!file) throw new Error("Por favor, selecione um arquivo PDF.");
           if (file.type !== "application/pdf") throw new Error("Apenas arquivos PDF são permitidos.");
           documentName = file.name;
-          currentDocumentId = UPLOADED_DOC_ID_PREFIX + Date.now();
+          currentDocumentId = UPLOADED_DOC_ID_PREFIX + Date.now(); // ID único para o doc upado
           documentBase64 = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result.split(',')[1]);
@@ -432,19 +444,41 @@ document.addEventListener('DOMContentLoaded', async function() {
             reader.readAsDataURL(file);
           });
         }
+
         if (!documentBase64) throw new Error("Falha ao carregar o conteúdo do documento.");
         
         const clientUserId = `fontara_${signerEmail.replace(/[^a-zA-Z0-9]/g, "")}_${Date.now()}`; 
         lastRecipientViewContext = { envelopeId: null, signerName: signerName }; 
 
+        const signerInfo = { 
+            email: signerEmail, 
+            name: signerName, 
+            recipientId: "1", 
+            clientUserId: clientUserId, 
+            routingOrder: "1" 
+        };
+
+        // MODIFICAÇÃO CRÍTICA: Omitir 'tabs' para Click to Agree
+        if (currentSigningMode !== 'clicktoagree') {
+            signerInfo.tabs = { 
+                signHereTabs: [{ 
+                    anchorString: "\\s1\\", // Usar apenas se não for C2A
+                    anchorXOffset: "0", 
+                    anchorYOffset: "0", 
+                    anchorUnits: "pixels" 
+                }] 
+            };
+        }
+        // Se for C2A, signerInfo.tabs permanecerá undefined, e o backend deve lidar com isso.
+
         const envelopePayload = {
             emailSubject: emailSubjectVal,
             documents: [{ name: documentName, fileExtension: documentFileExtension, documentId: String(currentDocumentId), documentBase64: documentBase64 }],
-            recipients: { signers: [{ email: signerEmail, name: signerName, recipientId: "1", clientUserId: clientUserId, routingOrder: "1", tabs: { signHereTabs: [{ anchorString: "\\s1\\", anchorXOffset: "0", anchorYOffset: "0", anchorUnits: "pixels" }] } }] },
+            recipients: { signers: [signerInfo] },
             status: "sent"
         };
         
-        console.log("[assinatura-embarcada.js] Enviando para CREATE_DYNAMIC_ENVELOPE...");
+        console.log("[assinatura-embarcada.js] Enviando para CREATE_DYNAMIC_ENVELOPE com payload (tabs podem estar ausentes para C2A):", JSON.stringify(envelopePayload).substring(0,500) + "...");
         let response = await fetch('/.netlify/functions/docusign-actions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -522,5 +556,6 @@ document.addEventListener('DOMContentLoaded', async function() {
       }
     });
   }
-  updateDocumentFieldsVisibility();
+  // Chamar para definir a visibilidade inicial correta
+  updateDocumentFieldsVisibility(); 
 });

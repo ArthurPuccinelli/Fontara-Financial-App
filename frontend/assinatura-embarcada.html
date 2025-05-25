@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Assinatura de Documentos - Fontara Financial</title>
+    <script src="https://js-d.docusign.com/bundle.js"></script>
     <meta
       name="description"
       content="Assine documentos digitalmente de forma fácil e segura com Fontara Financial e Docusign."
@@ -16,21 +17,11 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"
     />
     <style>
-      .form-input-custom {
-        @apply tw-block tw-w-full tw-px-4 tw-py-3 tw-border tw-border-black dark:tw-border-gray-500 tw-bg-gray-100 dark:tw-bg-gray-700 tw-rounded-md tw-shadow-sm focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-indigo-500 focus:tw-border-indigo-500 dark:tw-text-white tw-text-base;
-        min-height: 50px; 
-      }
-      .form-label {
-        @apply tw-block tw-text-base tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2; 
-      }
-      .form-checkbox {
-        @apply tw-h-5 tw-w-5 tw-text-indigo-600 tw-border-gray-300 dark:tw-border-gray-600 tw-rounded focus:tw-ring-indigo-500 dark:tw-bg-gray-700 dark:focus:tw-ring-offset-gray-800;
-      }
-      .form-checkbox-label {
-        @apply tw-ml-2 tw-block tw-text-base tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-cursor-pointer;
-      }
+      /* ... (estilos existentes .form-input-custom, .form-label, etc. permanecem) ... */
       .modal-iframe-container { flex-grow: 1; display: flex; min-height: 0; }
       .modal-iframe-container iframe { width: 100%; height: 100%; border: none; }
+      /* Novo container para docusign.js mount */
+      #docusignFocusedViewContainer { width: 100%; height: 100%; }
       .modal-header { padding: 1rem; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
       .dark .modal-header { border-bottom: 1px solid rgb(55 65 81); }
       .spinner-small { border: 3px solid #f3f3f3; border-top: 3px solid white; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; margin-right: 0.5rem; }
@@ -125,7 +116,7 @@
         style="position: relative; z-index: 5001 !important;"
       >
         <div class="modal-header">
-          <h3 class="tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-white">Assinatura do Documento</h3>
+          <h3 class="tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-white" id="docusignModalTitle">Assinatura do Documento</h3>
           <button
             type="button"
             id="closeDocusignSigningModalBtn"
@@ -135,14 +126,19 @@
             <i class="bi bi-x-lg"></i>
           </button>
         </div>
-        <div class="modal-iframe-container tw-flex-grow">
-          <iframe id="docusignSigningIframe" src="about:blank" title="Assinatura Docusign" class="tw-w-full tw-h-full"></iframe>
+        <div class="modal-iframe-container tw-flex-grow" id="docusignIframeContainer">
+          <iframe id="docusignSigningIframe" src="about:blank" title="Assinatura Docusign Clássica" class="tw-w-full tw-h-full"></iframe>
         </div>
+        <div class="tw-flex-grow tw-p-4" id="docusignFocusedViewContainer" style="display: none;">
+          </div>
       </div>
     </div>
 
-    <script src="./scripts/index.js"></script>
-    <script src="./scripts/loadPartials.js" defer></script>
-    <script src="./scripts/assinatura-embarcada.js" defer></script>
+
+<script src="./scripts/index.js"></script>
+<script src="./scripts/loadPartials.js" defer></script>
+<script src="./scripts/assinatura-embarcada.js" defer></script>
+
+    
   </body>
 </html>

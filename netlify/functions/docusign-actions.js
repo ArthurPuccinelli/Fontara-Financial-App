@@ -2,6 +2,7 @@
 const docusign = require('docusign-esign');
 const { Buffer } = require('buffer');
 
+// ... (CRITICAL_ENV_VARS, checkInitialEnvVariables, getAuthenticatedApiClient, logErrorDetails permanecem os mesmos da última versão) ...
 const CRITICAL_ENV_VARS = [
     'DOCUSIGN_IK', 'DOCUSIGN_USER_ID', 'DOCUSIGN_ACCOUNT_ID',
     'DOCUSIGN_RSA_PEM_AS_BASE64', 'DOCUSIGN_AUTH_SERVER', 'DOCUSIGN_BASE_PATH'
@@ -19,7 +20,6 @@ function checkInitialEnvVariables() {
 }
 
 async function getAuthenticatedApiClient() {
-    // A verificação já foi feita em checkInitialEnvVariables, mas uma dupla checagem aqui não faz mal.
     const missingAuthVars = CRITICAL_ENV_VARS.filter(v => !process.env[v]);
     if (missingAuthVars.length > 0) {
         const errorMessage = `(getAuthenticatedApiClient) Variáveis de ambiente Docusign críticas para autenticação incompletas. Ausentes: ${missingAuthVars.join(', ')}`;
@@ -57,6 +57,7 @@ async function getAuthenticatedApiClient() {
     } catch (err) {
         console.error("[docusign-actions] (getAuthenticatedApiClient) FALHA NA AUTENTICAÇÃO JWT:");
         let detailedErrorMessage = "(getAuthenticatedApiClient) Erro ao autenticar com Docusign.";
+        // ... (lógica de tratamento de erro detalhado)
         if (err.response && (err.response.data || err.response.body)) {
             let errorBody = err.response.data || err.response.body;
             try {
@@ -78,6 +79,7 @@ async function getAuthenticatedApiClient() {
 }
 
 function logErrorDetails(actionName, errorObject) {
+    // ... (função logErrorDetails permanece a mesma)
     console.error(`--------------------------------------------------------------------`);
     console.error(`[docusign-actions] ERRO NA AÇÃO: ${actionName}`);
     console.error(`--------------------------------------------------------------------`);
@@ -111,17 +113,17 @@ function logErrorDetails(actionName, errorObject) {
         }
     } else {
         console.log("[docusign-actions] Objeto de erro não contém 'response'. Logando erro completo:");
-        console.error(JSON.stringify(errorObject, Object.getOwnPropertyNames(errorObject).filter(key => key !== 'response'), 2)); // Evita logar 'response' que já sabemos que não está
+        console.error(JSON.stringify(errorObject, Object.getOwnPropertyNames(errorObject).filter(key => key !== 'response'), 2));
     }
     return docusignSpecificError;
 }
+
 
 async function createDynamicEnvelope(apiClient, envelopeArgs) {
     console.log("[docusign-actions] (createDynamicEnvelope) Iniciando criação de envelope dinâmico...");
     const accountId = process.env.DOCUSIGN_ACCOUNT_ID;
     const envelopesApi = new docusign.EnvelopesApi(apiClient);
 
-    // Validações do payload
     if (!envelopeArgs.documents || !Array.isArray(envelopeArgs.documents) || envelopeArgs.documents.length === 0) {
         console.error("[docusign-actions] (createDynamicEnvelope) Erro: Nenhum documento fornecido.");
         throw new Error("Nenhum documento fornecido para o envelope dinâmico.");
@@ -130,12 +132,11 @@ async function createDynamicEnvelope(apiClient, envelopeArgs) {
         console.error("[docusign-actions] (createDynamicEnvelope) Erro: Nenhum signatário fornecido.");
         throw new Error("Nenhum signatário fornecido para o envelope dinâmico.");
     }
-    // ... (outras validações se necessárias)
 
     const envDefinition = docusign.EnvelopeDefinition.constructFromObject({
         emailSubject: envelopeArgs.emailSubject || "Por favor, assine este documento via Fontara Financial",
         emailBlurb: envelopeArgs.emailBlurb || "Obrigado por sua colaboração.",
-        status: envelopeArgs.status || "sent", // 'sent' para enviar imediatamente, 'created' para rascunho
+        status: envelopeArgs.status || "sent",
         documents: envelopeArgs.documents.map((doc, index) =>
             docusign.Document.constructFromObject({
                 documentBase64: doc.documentBase64,
@@ -147,15 +148,30 @@ async function createDynamicEnvelope(apiClient, envelopeArgs) {
         ),
         recipients: docusign.Recipients.constructFromObject({
             signers: envelopeArgs.recipients.signers.map((s, index) => {
-                if (!s.email || !s.name || !s.recipientId || !s.clientUserId || !s.tabs) {
-                    console.error(`[docusign-actions] (createDynamicEnvelope) Erro: Signatário ${s.recipientId || `(índice ${index})`} com dados incompletos.`);
-                    throw new Error(`Signatário ${s.recipientId || `(índice ${index})`} está com dados incompletos (email, name, recipientId, clientUserId, tabs).`);
+                // **MODIFICAÇÃO AQUI: Tabs agora são opcionais**
+                if (!s.email || !s.name || !s.recipientId || !s.clientUserId) { // s.tabs removido da validação obrigatória
+                    console.error(`[docusign-actions] (createDynamicEnvelope) Erro: Signatário ${s.recipientId || `(índice ${index})`} com dados básicos incompletos.`);
+                    throw new Error(`Signatário ${s.recipientId || `(índice ${index})`} está com dados básicos incompletos (email, name, recipientId, clientUserId).`);
                 }
-                return docusign.Signer.constructFromObject({
-                    email: s.email, name: s.name, recipientId: String(s.recipientId),
-                    routingOrder: String(s.routingOrder || "1"), clientUserId: s.clientUserId,
-                    tabs: docusign.Tabs.constructFromObject(s.tabs)
-                });
+                
+                const signerDetails = {
+                    email: s.email,
+                    name: s.name,
+                    recipientId: String(s.recipientId),
+                    routingOrder: String(s.routingOrder || "1"),
+                    clientUserId: s.clientUserId,
+                };
+
+                // Apenas adiciona tabs se elas forem fornecidas e não forem um objeto vazio
+                if (s.tabs && typeof s.tabs === 'object' && Object.keys(s.tabs).length > 0) {
+                    console.log(`[docusign-actions] (createDynamicEnvelope) Adicionando tabs para signatário ${s.recipientId}:`, s.tabs);
+                    signerDetails.tabs = docusign.Tabs.constructFromObject(s.tabs);
+                } else {
+                    console.log(`[docusign-actions] (createDynamicEnvelope) Signatário ${s.recipientId} não terá tabs explícitas (C2A/free-form).`);
+                    // Para Click-to-Agree/free-form, não definir tabs faz com que o DocuSign
+                    // apresente um botão "Finish" para aceitar o documento como um todo.
+                }
+                return docusign.Signer.constructFromObject(signerDetails);
             }),
             carbonCopies: (envelopeArgs.recipients.carbonCopies || []).map(cc =>
                 docusign.CarbonCopy.constructFromObject({
@@ -184,8 +200,8 @@ async function createDynamicEnvelope(apiClient, envelopeArgs) {
     }
 }
 
-
 async function createRecipientViewUrl(apiClient, args) {
+    // ... (função createRecipientViewUrl permanece a mesma da última versão, com logs para frameAncestors) ...
     console.log("[docusign-actions] (createRecipientViewUrl) Iniciando criação de URL de visualização...");
     const { envelopeId, signerEmail, signerName, clientUserId, returnUrl, useFocusedView = false } = args;
     const accountId = process.env.DOCUSIGN_ACCOUNT_ID;
@@ -265,13 +281,13 @@ async function createRecipientViewUrl(apiClient, args) {
 }
 
 exports.handler = async (event, context) => {
+    // ... (handler como na última versão, com logs e try-catch global) ...
     console.log("[docusign-actions] HANDLER INVOCADO. Timestamp:", new Date().toISOString());
     console.log("[docusign-actions] HTTP Method:", event.httpMethod);
-    // Cuidado ao logar o evento inteiro se contiver dados sensíveis. Logue apenas o necessário.
     console.log("[docusign-actions] Path:", event.path);
     console.log("[docusign-actions] Headers (parcial):", JSON.stringify(event.headers).substring(0, 200) + "...");
     
-    let action = "Não definida"; // Definir um valor padrão para action
+    let action = "Não definida"; 
     let payloadForLog = "Não definido";
 
     try {
@@ -290,8 +306,6 @@ exports.handler = async (event, context) => {
                 console.error("[docusign-actions] Corpo da requisição está vazio.");
                 throw new Error("Corpo da requisição está vazio.");
             }
-            // Netlify Functions podem receber o corpo já como objeto se o content-type for application/json e vier de certos clientes/proxies.
-            // Ou pode ser uma string que precisa de parse.
             const requestBody = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
             console.log("[docusign-actions] Corpo da requisição analisado.");
             
@@ -299,12 +313,10 @@ exports.handler = async (event, context) => {
             payload = requestBody.payload;
             payloadForLog = payload ? JSON.stringify(payload).substring(0, 500) + "..." : "Payload vazio ou ausente";
 
-
             if (!action) {
                 console.error("[docusign-actions] 'action' não especificada no corpo da requisição.");
                 throw new Error("'action' não especificada no corpo da requisição.");
             }
-            // Não lançar erro se payload estiver ausente, algumas ações podem não precisar. Validar dentro do case.
             console.log(`[docusign-actions] Ação recebida: ${action}`);
             console.log(`[docusign-actions] Payload para ${action} (parcial): ${payloadForLog}`);
 
@@ -319,21 +331,21 @@ exports.handler = async (event, context) => {
         let resultData;
 
         switch (action) {
-            case "CREATE_ENVELOPE_FROM_TEMPLATE":
+            case "CREATE_ENVELOPE_FROM_TEMPLATE": // Não estamos usando mais, mas mantendo por referência
                 if (!payload || !payload.templateId || !payload.signerEmail || !payload.signerName || !payload.signerClientUserId) {
-                    throw new Error("Dados insuficientes para 'CREATE_ENVELOPE_FROM_TEMPLATE': templateId, signerEmail, signerName, signerClientUserId são obrigatórios no payload.");
+                    throw new Error("Dados insuficientes para 'CREATE_ENVELOPE_FROM_TEMPLATE'.");
                 }
-                resultData = { envelopeId: await createEnvelopeFromTemplate(apiClient, payload) };
+                resultData = { envelopeId: await createEnvelopeFromTemplate(apiClient, payload) }; // createEnvelopeFromTemplate não foi modificado
                 break;
             case "CREATE_DYNAMIC_ENVELOPE":
                  if (!payload || !payload.documents || !payload.recipients || !payload.recipients.signers || payload.recipients.signers.length === 0) {
                     throw new Error("Dados insuficientes para 'CREATE_DYNAMIC_ENVELOPE': documents e recipients.signers são obrigatórios no payload.");
                 }
-                resultData = { envelopeId: await createDynamicEnvelope(apiClient, payload) };
+                resultData = { envelopeId: await createDynamicEnvelope(apiClient, payload) }; // Agora lida com tabs opcionais
                 break;
             case "GET_EMBEDDED_SIGNING_URL":
                  if (!payload || !payload.envelopeId || !payload.signerEmail || !payload.signerName || !payload.clientUserId || !payload.returnUrl) {
-                    throw new Error("Dados insuficientes para 'GET_EMBEDDED_SIGNING_URL': envelopeId, signerEmail, signerName, clientUserId, returnUrl são obrigatórios no payload.");
+                    throw new Error("Dados insuficientes para 'GET_EMBEDDED_SIGNING_URL'.");
                 }
                 resultData = { signingUrl: await createRecipientViewUrl(apiClient, payload) };
                 break;
@@ -350,7 +362,7 @@ exports.handler = async (event, context) => {
         console.error("[docusign-actions] Stack Trace do Erro Crítico:", error.stack);
         
         let statusCode = 500;
-        if (error.message.includes("Variáveis de ambiente") || 
+        if (error.message.includes("Variáveis de ambiente") || /* ... (outras condições de 400/401) ... */
             error.message.includes("Falha ao decodificar") ||
             error.message.includes("Requisição mal formatada") ||
             error.message.includes("Dados insuficientes") ||
@@ -360,9 +372,6 @@ exports.handler = async (event, context) => {
         } else if (error.message.includes("Erro ao autenticar com Docusign")) {
             statusCode = 401;
         } else if (error.message.includes("API DocuSign não retornou um envelopeId") || error.message.includes("Erro ao gerar URL de assinatura")) {
-            // Erros específicos das chamadas da API DocuSign podem ser 500 ou 502 se for um problema do DocuSign,
-            // ou 400 se for um problema com os dados enviados.
-            // Mantendo 500 como genérico para falha no processamento interno que depende de DocuSign.
             statusCode = 500; 
         }
 
@@ -370,7 +379,7 @@ exports.handler = async (event, context) => {
             statusCode: statusCode,
             body: JSON.stringify({
                 error: "Erro crítico ao processar requisição Docusign na função.",
-                details: error.message // Enviar a mensagem de erro para o cliente para depuração
+                details: error.message 
             }),
             headers: { 'Content-Type': 'application/json' }
         };

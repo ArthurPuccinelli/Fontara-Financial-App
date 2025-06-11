@@ -1,6 +1,6 @@
 // frontend/scripts/assinatura-embarcada.js
 document.addEventListener('DOMContentLoaded', async function() {
-  console.log("assinatura-embarcada.js (vFinal): Script carregado.");
+  console.log("assinatura-embarcada.js (vFinal-Rev3 - Melhorias UX): Script carregado.");
 
   // --- CONSTANTES ---
   const DEFAULT_DOC_PATH = "/assets/documentos/ContratoPadraoFontara.pdf";
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   const docUploadRadio = document.getElementById('docUpload');
   const fileUploadContainer = document.getElementById('fileUploadContainer');
   const uploadedDocInput = document.getElementById('uploadedDoc');
-  const submitEnvelopeBtn = document.getElementById('submitEnvelopeBtn');
+  const submitEnvelopeBtn = document.getElementById('submitEnvelopeBtn'); // O botão inteiro
   const docusignModalOverlay = document.getElementById('docusignSigningModalOverlay');
   const docusignModalTitle = document.getElementById('docusignModalTitle');
   const closeDocusignSigningModalBtn = document.getElementById('closeDocusignSigningModalBtn');
@@ -36,7 +36,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   let docusignApi = null; 
   let DOCUSIGN_APP_CLIENT_ID = null;
 
-  // --- FUNÇÃO PARA BUSCAR O DOCUSIGN APP CLIENT ID (IK) ---
   async function fetchDocusignAppClientId() {
     try {
       const response = await fetch('/.netlify/functions/get-docusign-client-id');
@@ -55,7 +54,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
   }
   
-  // --- INICIALIZAÇÃO DO SDK DOCUSIGN ---
   let sdkInitializationAttempted = false;
   let sdkInitializationSuccessful = false;
 
@@ -83,9 +81,23 @@ document.addEventListener('DOMContentLoaded', async function() {
           console.log("[assinatura-embarcada.js] SDK DocuSign (retornado por loadDocuSign) está pronto.");
         } else {
           console.error("[assinatura-embarcada.js] FALHA CRÍTICA: loadDocuSign não retornou SDK válido. Retorno:", loadedInstance);
+          if (typeof window.docusign !== 'undefined' && window.docusign !== null && typeof window.docusign.signing === 'function') {
+            console.warn("[assinatura-embarcada.js] Usando window.docusign (minúsculo) como fallback.");
+            docusignApi = window.docusign;
+            sdkInitializationSuccessful = true; 
+          } else {
+            console.error("[assinatura-embarcada.js] Fallback para window.docusign (minúsculo) falhou.");
+          }
         }
       } else {
-        console.warn("[assinatura-embarcada.js] IK não obtido. Não foi possível chamar loadDocuSign.");
+        console.warn("[assinatura-embarcada.js] IK não obtido. Tentando usar window.docusign (minúsculo) diretamente.");
+         if (typeof window.docusign !== 'undefined' && window.docusign !== null && typeof window.docusign.signing === 'function') {
+            docusignApi = window.docusign; 
+            sdkInitializationSuccessful = true;
+            console.log("[assinatura-embarcada.js] Usando window.docusign (minúsculo) diretamente.");
+        } else {
+             console.error("[assinatura-embarcada.js] window.docusign (minúsculo) não disponível e IK não obtido.");
+        }
       }
     } catch (error) {
       console.error("[assinatura-embarcada.js] Erro EXCEPCIONAL durante a inicialização do SDK DocuSign:", error.message, error.stack);
@@ -100,11 +112,12 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   // --- FUNÇÕES AUXILIARES ---
   function showElement(element, show) {
-    if (element) {
-      element.style.display = show ? (element.tagName === 'IFRAME' || element.classList.contains('modal-iframe-container') ? 'flex' : 'block') : 'none';
-      if (element.tagName === 'INPUT' && element.type === 'file') {
-         element.closest('.tw-hidden')?.classList.toggle('tw-hidden', !show);
-      }
+    if (!element) return;
+    // Lógica para mostrar/esconder elementos. A tag <details> funciona nativamente.
+    if (element.id === 'fileUploadContainer') {
+        element.classList.toggle('tw-hidden', !show);
+    } else {
+        element.style.display = show ? 'block' : 'none';
     }
   }
   
@@ -112,16 +125,16 @@ document.addEventListener('DOMContentLoaded', async function() {
     const signingMode = document.querySelector('input[name="signingMode"]:checked')?.value;
     if (!documentChoiceContainer) return;
 
+    // Mostra ou esconde a seção de escolha de documento inteira.
+    showElement(documentChoiceContainer, signingMode !== 'clicktoagree');
+    
     if (signingMode === 'clicktoagree') {
-      showElement(documentChoiceContainer, false);
-      showElement(fileUploadContainer, false);
-      if (uploadedDocInput) uploadedDocInput.required = false;
       if (emailSubjectInput) emailSubjectInput.value = "Confirmação de Acordo Fontara Financial";
     } else {
-      showElement(documentChoiceContainer, true);
       if (emailSubjectInput && emailSubjectInput.value === "Confirmação de Acordo Fontara Financial") {
          emailSubjectInput.value = "Documento Fontara Financial para Assinatura";
       }
+      // Lógica para o campo de upload dentro da seção
       const isUploadSelected = docUploadRadio && docUploadRadio.checked;
       showElement(fileUploadContainer, isUploadSelected);
       if (uploadedDocInput) uploadedDocInput.required = isUploadSelected;
@@ -131,25 +144,17 @@ document.addEventListener('DOMContentLoaded', async function() {
   async function fetchDocumentAsBase64(filePath) {
     try {
       const response = await fetch(filePath);
-      if (!response.ok) {
-        throw new Error(`Erro ao buscar o documento: ${response.statusText} (${filePath})`);
-      }
+      if (!response.ok) throw new Error(`Erro ao buscar documento: ${response.statusText}`);
       const blob = await response.blob();
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onloadend = () => {
-          if (reader.result) {
-            resolve(reader.result.split(',')[1]);
-          } else {
-            reject(new Error("Falha ao ler o arquivo como Base64."));
-          }
-        };
+        reader.onloadend = () => reader.result ? resolve(reader.result.split(',')[1]) : reject(new Error("Falha ao ler arquivo."));
         reader.onerror = error => reject(error);
         reader.readAsDataURL(blob);
       });
     } catch (error) {
       console.error(`[assinatura-embarcada.js] Erro em fetchDocumentAsBase64 para ${filePath}:`, error);
-      alert(`Não foi possível carregar o documento padrão (${filePath.split('/').pop()}). Verifique o console.`);
+      alert(`Não foi possível carregar o documento padrão. Verifique o console.`);
       throw error;
     }
   }
@@ -172,7 +177,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     const signerName = lastRecipientViewContext.signerName || 'Cliente';
 
     console.log(`[handleDocusignCompletionEvents] Status Final: ${finalStatus}, EnvelopeID: ${envelopeId}`);
-
     const returnUrlBase = `${window.location.origin}/agradecimento/obrigado.html?recipientName=${encodeURIComponent(signerName)}&envelopeId=${envelopeId || ''}`;
 
     if (finalStatus === 'signing_complete') {
@@ -185,73 +189,49 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
 
   function openDocusignSigningModal(url, signingMode) {
-    if(docusignModalTitle) docusignModalTitle.textContent = signingMode === 'classic' ? "Assinatura do Documento (Clássica)" : "Assinatura do Documento";
+    if(docusignModalTitle) docusignModalTitle.textContent = signingMode === 'classic' ? "Assinatura do Documento" : "Assinatura - Visualização Focada";
 
+    // Mostra/esconde os containers corretos
+    docusignIframeContainer.style.display = signingMode === 'classic' ? 'flex' : 'none';
+    docusignFocusedViewContainer.style.display = signingMode !== 'classic' ? 'block' : 'none';
+    
     if (signingMode === 'classic') {
-        showElement(docusignIframeContainer, true);
-        showElement(docusignFocusedViewContainer, false);
         if(docusignSigningIframe) docusignSigningIframe.src = url;
     } else { 
-        showElement(docusignIframeContainer, false);
-        showElement(docusignFocusedViewContainer, true);
         if(docusignFocusedViewContainer) docusignFocusedViewContainer.innerHTML = '';
 
         try {
-            if (!sdkInitializationSuccessful || typeof docusignApi === 'undefined' || docusignApi === null) {
-                let errorMsg = "SDK DocuSign (docusignApi) não está inicializado ou disponível. ";
-                if (typeof window.DocuSign === 'undefined') {
-                    errorMsg += "Causa: 'window.DocuSign' (bundle.js) não carregou.";
-                } else if (!docusignApi) { 
-                    errorMsg += "Causa: 'loadDocuSign' falhou ou não retornou uma instância válida.";
-                }
+            if (!sdkInitializationSuccessful || !docusignApi) {
+                let errorMsg = "SDK DocuSign não inicializado. ";
+                if (typeof window.DocuSign === 'undefined') errorMsg += "Causa: 'bundle.js' não carregou.";
+                else if (!docusignApi) errorMsg += "Causa: 'loadDocuSign' falhou ou não retornou uma instância válida.";
                 console.error("[assinatura-embarcada.js]", errorMsg);
                 throw new Error(errorMsg);
             }
-            if (typeof docusignApi.signing !== 'function') {
-                console.error("[assinatura-embarcada.js] docusignApi.signing não é uma função. Objeto:", docusignApi);
-                throw new Error("docusignApi.signing não encontrado.");
-            }
             
-            console.log("[assinatura-embarcada.js] Chamando docusignApi.signing() com url:", url);
             currentSigningInstance = docusignApi.signing({
                 url: url,
                 displayFormat: 'focused',
             });
-            
-            console.log("[assinatura-embarcada.js] Resultado de docusignApi.signing():", currentSigningInstance);
 
             if (!currentSigningInstance || typeof currentSigningInstance.on !== 'function') {
-                console.error("[assinatura-embarcada.js] currentSigningInstance.on não é uma função ou é inválido:", currentSigningInstance);
                 throw new Error("Falha ao criar instância de assinatura DocuSign válida.");
             }
             
-            console.log("[assinatura-embarcada.js] Adicionando listener para 'ready'");
-            currentSigningInstance.on('ready', (event) => {
-                console.log('[DocuSign.js SDK Event] ready:', event);
-            });
-
-            console.log("[assinatura-embarcada.js] Adicionando listener para 'sessionEnd'");
+            currentSigningInstance.on('ready', (event) => console.log('[DocuSign.js SDK Event] ready:', event));
             currentSigningInstance.on('sessionEnd', (eventData) => {
                 console.log('[DocuSign.js SDK Event] sessionEnd:', eventData);
-                handleDocusignCompletionEvents({ 
-                    event: 'sessionEnd',
-                    data: eventData,
-                    envelopeId: lastRecipientViewContext.envelopeId 
-                });
+                handleDocusignCompletionEvents({ event: 'sessionEnd', data: eventData, envelopeId: lastRecipientViewContext.envelopeId });
             });
             
-            console.log("[assinatura-embarcada.js] Montando em #docusignFocusedViewContainer...");
             currentSigningInstance.mount('#docusignFocusedViewContainer');
-            console.log("[assinatura-embarcada.js] DocuSign Focused View montada com sucesso.");
+            console.log("[assinatura-embarcada.js] DocuSign Focused View montada.");
 
         } catch (error) {
             console.error("[assinatura-embarcada.js] Erro ao montar DocuSign Focused View:", error);
-            if (error.message) console.error("Detalhe do erro (message):", error.message);
-            if (error.stack) console.error("Stack trace:", error.stack);
-
             alert(`Erro ao carregar a visualização focada: ${error.message}. Tentando fallback. Verifique o console.`);
-            showElement(docusignIframeContainer, true);
-            showElement(docusignFocusedViewContainer, false);
+            docusignIframeContainer.style.display = 'flex';
+            docusignFocusedViewContainer.style.display = 'none';
             if(docusignSigningIframe) docusignSigningIframe.src = url;
         }
     }
@@ -267,12 +247,9 @@ document.addEventListener('DOMContentLoaded', async function() {
   function closeDocusignSigningModal() {
     if (currentSigningInstance) {
         try {
-            if (typeof currentSigningInstance.destroy === 'function') {
-                console.log("[assinatura-embarcada.js] Chamando currentSigningInstance.destroy()");
-                currentSigningInstance.destroy();
-            }
+            if (typeof currentSigningInstance.destroy === 'function') currentSigningInstance.destroy();
         } catch (e) {
-            console.warn("[assinatura-embarcada.js] Erro ao tentar destruir instância docusign.js:", e);
+            console.warn("[assinatura-embarcada.js] Erro ao destruir instância docusign.js:", e);
         }
         if(docusignFocusedViewContainer) docusignFocusedViewContainer.innerHTML = '';
         currentSigningInstance = null;
@@ -286,28 +263,30 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
   }
 
-  document.querySelectorAll('input[name="signingMode"]').forEach(radio => {
-    radio.addEventListener('change', updateDocumentFieldsVisibility);
-  });
-  if (docDefaultRadio) docDefaultRadio.addEventListener('change', () => { updateDocumentFieldsVisibility(); });
-  if (docUploadRadio) docUploadRadio.addEventListener('change', () => { updateDocumentFieldsVisibility(); });
+  // --- EVENT LISTENERS ---
+  document.querySelectorAll('input[name="signingMode"]').forEach(radio => radio.addEventListener('change', updateDocumentFieldsVisibility));
+  
+  if (docUploadRadio) {
+      docUploadRadio.addEventListener('change', () => {
+          const isChecked = docUploadRadio.checked;
+          showElement(fileUploadContainer, isChecked);
+          if (uploadedDocInput) uploadedDocInput.required = isChecked;
+      });
+  }
+
   if (closeDocusignSigningModalBtn) closeDocusignSigningModalBtn.addEventListener('click', closeDocusignSigningModal);
   if (docusignModalOverlay) {
-      docusignModalOverlay.addEventListener('click', function(event) {
+      docusignModalOverlay.addEventListener('click', (event) => {
           if (event.target === docusignModalOverlay) closeDocusignSigningModal();
       });
   }
   window.addEventListener('message', function(event) {
-    if (document.querySelector('input[name="signingMode"]:checked')?.value !== 'classic') {
-        return;
-    }
+    if (document.querySelector('input[name="signingMode"]:checked')?.value !== 'classic') return;
     if (event.origin !== docusignExpectedOrigin) return;
-
     if (typeof event.data === 'string') {
       const params = new URLSearchParams(event.data.startsWith('?') ? event.data.substring(1) : event.data);
       const docusignEventName = params.get('event');
       const envelopeIdFromEvent = params.get('envelopeId');
-      console.log(`[PostMessage Event - Classic] Evento: ${docusignEventName}, EnvelopeID: ${envelopeIdFromEvent}`);
       handleDocusignCompletionEvents({ event: docusignEventName, envelopeId: envelopeIdFromEvent });
     }
   }, false);
@@ -315,29 +294,27 @@ document.addEventListener('DOMContentLoaded', async function() {
   if (envelopeForm) {
     envelopeForm.addEventListener('submit', async function(event) {
       event.preventDefault();
+      // Salva o HTML interno original do botão
       const originalButtonInnerHTML = submitEnvelopeBtn.innerHTML; 
       
       if (submitEnvelopeBtn) {
         submitEnvelopeBtn.disabled = true;
+        // Substitui o conteúdo INTEIRO do botão pelo spinner e texto
         submitEnvelopeBtn.innerHTML = '<div class="spinner-small" role="status" aria-hidden="true"></div> Processando...';
       }
 
       try {
-        if (!sdkInitializationAttempted) {
-            console.log("[assinatura-embarcada.js] SDK não inicializado na carga, tentando antes do submit...");
-            await initializeDocuSignSdk();
-        }
+        if (!sdkInitializationAttempted) await initializeDocuSignSdk();
+        
         const currentSigningMode = document.querySelector('input[name="signingMode"]:checked').value;
         if (currentSigningMode !== 'classic' && !sdkInitializationSuccessful) {
-            throw new Error("Falha na inicialização do SDK DocuSign. Verifique o console. A Visualização Focada não está disponível.");
+            throw new Error("Falha na inicialização do SDK DocuSign. A Visualização Focada não está disponível.");
         }
 
         const signerName = signerNameInput.value;
         const signerEmail = signerEmailInput.value;
         const emailSubjectVal = emailSubjectInput.value;
-        const documentChoice = (currentSigningMode !== 'clicktoagree' && docDefaultRadio) ? 
-                               document.querySelector('input[name="documentChoice"]:checked').value : 
-                               'default';
+        const documentChoice = (docUploadRadio && docUploadRadio.checked) ? 'upload' : 'default';
 
         let documentBase64 = '', documentName = '', currentDocumentId = DEFAULT_DOC_ID;
         const documentFileExtension = 'pdf'; 
@@ -350,9 +327,9 @@ document.addEventListener('DOMContentLoaded', async function() {
           documentBase64 = await fetchDocumentAsBase64(DEFAULT_DOC_PATH);
           documentName = DEFAULT_DOC_NAME;
           currentDocumentId = DEFAULT_DOC_ID;
-        } else {
+        } else { // upload
           const file = uploadedDocInput.files[0];
-          if (!file) throw new Error("Por favor, selecione um arquivo PDF.");
+          if (!file) throw new Error("Por favor, selecione um arquivo PDF para enviar.");
           if (file.type !== "application/pdf") throw new Error("Apenas arquivos PDF são permitidos.");
           documentName = file.name;
           currentDocumentId = UPLOADED_DOC_ID_PREFIX + Date.now();
@@ -381,7 +358,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             body: JSON.stringify({ action: "CREATE_DYNAMIC_ENVELOPE", payload: envelopePayload })
         });
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({error: `Erro HTTP ${response.status}`, details: response.statusText }));
+            const errorData = await response.json().catch(() => ({error: `Erro HTTP ${response.status}`}));
             throw new Error(errorData.details || errorData.error || `Falha ao criar envelope.`);
         }
         const envelopeResult = await response.json();
@@ -407,8 +384,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             body: JSON.stringify({ action: "GET_EMBEDDED_SIGNING_URL", payload: recipientViewPayload })
         });
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({error: `Erro HTTP ${response.status}`, details: response.statusText }));
-            throw new Error(errorData.details || errorData.error || `Falha ao obter URL de assinatura.`);
+            const errorData = await response.json().catch(() => ({error: `Erro HTTP ${response.status}`}));
+            throw new Error(errorData.details || errorData.error || `Falha ao obter URL.`);
         }
         const signingResult = await response.json();
         const signingUrl = signingResult.signingUrl;
@@ -425,6 +402,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       } finally {
           if(submitEnvelopeBtn) {
               submitEnvelopeBtn.disabled = false;
+              // Restaura o conteúdo original do botão
               submitEnvelopeBtn.innerHTML = originalButtonInnerHTML;
           }
       }

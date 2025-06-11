@@ -31,29 +31,7 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
-    <style>
-      .modal-iframe-container {
-        flex-grow: 1; 
-        display: flex;
-        min-height: 0; 
-      }
-      .modal-iframe-container iframe {
-        width: 100%;
-        height: 100%;
-        border: none;
-      }
-      .modal-header {
-        padding: 1rem;
-        border-bottom: 1px solid #e5e7eb;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-shrink: 0; 
-      }
-      .dark .modal-header {
-        border-bottom: 1px solid rgb(55 65 81); 
-      }
-    </style>
+    <!-- Estilos específicos foram removidos pois a lógica do modal foi removida -->
   </head>
   <body
     class="tw-flex tw-min-h-[100vh] tw-flex-col tw-bg-[#fcfcfc] tw-text-black dark:tw-bg-black dark:tw-text-white"
@@ -99,10 +77,15 @@
           </div>
           <br />
           <div class="tw-text-center">
-            <button type="button" id="openDocusignModalBtn" class="btn tw-inline-flex tw-items-center tw-gap-3 tw-px-6 tw-py-3 tw-text-lg tw-transition-transform tw-duration-[0.3s] hover:tw-scale-x-[1.03]">
+            <!-- BOTÃO ATUALIZADO PARA ABRIR O FLUXO MAESTRO EM UMA NOVA ABA -->
+            <a 
+              href="https://apps-d.docusign.com/api/maestro/v1/accounts/ec21792a-93fd-42e6-b819-8ae005bf5023/workflow_definitions/9cb25e72-231c-46ca-8ff3-415b19b3a130/trigger?mtid=9abc7b4f-4086-41d5-b8be-e972ffe93191&mtsec=Fw2QDXxJ3Lin28LvomDOHq9cVYSheBbnsgTXw65wnSA" 
+              class="btn tw-inline-flex tw-items-center tw-gap-3 tw-px-6 tw-py-3 tw-text-lg tw-transition-transform tw-duration-[0.3s] hover:tw-scale-x-[1.03]"
+              target="_blank" 
+              rel="noopener noreferrer">
               <span>Contrate Sua Previdência</span>
               <i class="bi bi-graph-up"></i>
-            </button>
+            </a>
           </div>
         </div>
       </section>
@@ -111,78 +94,10 @@
 
     <!-- 2. Placeholder para o Footer (Rodapé Dinâmico) -->
     <div id="footer-placeholder"></div>
-
-    <!-- Modal Docusign (Mantido como estava) -->
-    <div
-      class="tw-hidden tw-fixed tw-bg-[#000000af] dark:tw-bg-[#1f2937e6] tw-top-0 tw-left-0 tw-z-50 tw-w-full tw-h-full tw-flex tw-place-content-center tw-place-items-center tw-p-4"
-      id="docusignModalOverlay"
-    >
-      <div
-        class="tw-w-full tw-max-w-4xl tw-h-[90vh] tw-bg-white dark:tw-bg-gray-800 tw-rounded-lg tw-shadow-xl tw-flex tw-flex-col tw-overflow-hidden" 
-        id="docusignModalContent"
-      >
-        <div class="modal-header">
-          <h3 class="tw-text-lg tw-font-semibold tw-text-gray-800 dark:tw-text-white">Contratação de Previdência</h3>
-          <button
-            type="button"
-            id="closeDocusignModalBtn"
-            class="tw-text-gray-400 hover:tw-text-gray-600 dark:hover:tw-text-gray-200 tw-text-2xl"
-            title="Fechar"
-          >
-            <i class="bi bi-x-lg"></i>
-          </button>
-        </div>
-        <div class="modal-iframe-container tw-flex-grow"> 
-          <iframe id="docusignIframe" src="" title="Simulação de Previdência Docusign"></iframe>
-        </div>
-
-      </div>
-    </div>
-
+    
     <!-- 3. Scripts Padrão do Site -->
     <script src="./scripts/index.js"></script>
     <script src="./scripts/loadPartials.js" defer></script>
-    <!-- Adicione um script específico para esta página se a lógica do modal se tornar mais complexa -->
-    <!-- Ex: <script src="./scripts/previdencia.js" defer></script> -->
-    <script>
-      // A lógica simples do modal pode permanecer aqui por enquanto.
-      // Se ficar mais complexa, mova para um arquivo separado (ex: previdencia.js).
-      const openDocusignModalBtn = document.getElementById('openDocusignModalBtn');
-      const docusignModalOverlay = document.getElementById('docusignModalOverlay');
-      const closeDocusignModalBtn = document.getElementById('closeDocusignModalBtn');
-      const docusignIframe = document.getElementById('docusignIframe');
-      // ATENÇÃO: A URL para o DocuSign Web Form está hardcoded. Idealmente, ela seria obtida dinamicamente.
-      const docusignUrl = 'https://apps-d.docusign.com/api/maestro/v1/accounts/ec21792a-93fd-42e6-b819-8ae005bf5023/workflow_definitions/9cb25e72-231c-46ca-8ff3-415b19b3a130/trigger?mtid=9abc7b4f-4086-41d5-b8be-e972ffe93191&mtsec=Fw2QDXxJ3Lin28LvomDOHq9cVYSheBbnsgTXw65wnSA';
-
-      function openDocusignModal() {
-        if (docusignIframe && docusignModalOverlay) {
-          docusignIframe.src = docusignUrl;
-          docusignModalOverlay.classList.remove('tw-hidden');
-          document.body.classList.add('modal-open'); 
-        }
-      }
-
-      function closeDocusignModal() {
-        if (docusignIframe && docusignModalOverlay) {
-          docusignIframe.src = ''; 
-          docusignModalOverlay.classList.add('tw-hidden');
-          document.body.classList.remove('modal-open');
-        }
-      }
-
-      if (openDocusignModalBtn) {
-        openDocusignModalBtn.addEventListener('click', openDocusignModal);
-      }
-      if (closeDocusignModalBtn) {
-        closeDocusignModalBtn.addEventListener('click', closeDocusignModal);
-      }
-      if (docusignModalOverlay) {
-        docusignModalOverlay.addEventListener('click', function(event) {
-          if (event.target === docusignModalOverlay) { 
-            closeDocusignModal();
-          }
-        });
-      }
-    </script>
+    <!-- O script embutido e o HTML do modal foram removidos -->
   </body>
 </html>

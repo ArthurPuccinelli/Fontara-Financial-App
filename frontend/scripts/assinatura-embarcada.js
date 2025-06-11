@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   async function fetchDocusignAppClientId() {
     try {
       const response = await fetch('/.netlify/functions/get-docusign-client-id');
-      if (!response.ok) throw new Error(`Erro ao buscar App Client ID DocuSign: ${response.statusText}`);
+      if (!response.ok) throw new Error(`Erro ao buscar App Client ID: ${response.statusText}`);
       const data = await response.json();
       if (!data.clientId) throw new Error("App Client ID (IK) não retornado pela função.");
       console.log("[assinatura-embarcada.js] IK obtido.");
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.warn("[assinatura-embarcada.js] IK não obtido.");
       }
     } catch (error) {
-      console.error("[assinatura-embarcada.js] Erro na inicialização do SDK DocuSign:", error.message, error.stack);
+      console.error("[assinatura-embarcada.js] Erro na inicialização do SDK:", error.message, error.stack);
     }
 
     if (!sdkInitializationSuccessful) {
@@ -88,6 +88,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   
   await initializeDocuSignSdk(); 
 
+  // --- FUNÇÕES AUXILIARES ---
   function showElement(element, show) {
     if (!element) return;
     // A tag <details> funciona nativamente para expandir/recolher
@@ -222,22 +223,15 @@ document.addEventListener('DOMContentLoaded', async function() {
   // --- EVENT LISTENERS ---
   document.querySelectorAll('input[name="signingMode"]').forEach(radio => radio.addEventListener('change', updateDocumentFieldsVisibility));
   
-  if (docUploadRadio) {
-      docUploadRadio.addEventListener('change', () => {
-          showElement(fileUploadContainer, docUploadRadio.checked);
-          if (uploadedDocInput) uploadedDocInput.required = docUploadRadio.checked;
-          if(docDefaultRadio && docUploadRadio.checked) docDefaultRadio.checked = false; // Garante que apenas um está selecionado
-      });
-  }
-  if (docDefaultRadio) {
-      // Quando o usuário abre o 'details', o padrão já está selecionado.
-      // Este listener lida com a desmarcação do upload se o usuário interagir de alguma forma para voltar ao padrão
-      // Embora na UI atual, não haja um botão para isso, esta é uma salvaguarda.
-      docDefaultRadio.addEventListener('change', () => {
-          showElement(fileUploadContainer, !docDefaultRadio.checked);
-          if (uploadedDocInput) uploadedDocInput.required = !docDefaultRadio.checked;
-          if(docUploadRadio && docDefaultRadio.checked) docUploadRadio.checked = false;
-      });
+  if (docDefaultRadio && docUploadRadio) {
+      // Função unificada para lidar com a mudança na escolha do documento
+      const handleDocChoiceChange = () => {
+          const isUploadSelected = docUploadRadio.checked;
+          showElement(fileUploadContainer, isUploadSelected);
+          if (uploadedDocInput) uploadedDocInput.required = isUploadSelected;
+      };
+      docDefaultRadio.addEventListener('change', handleDocChoiceChange);
+      docUploadRadio.addEventListener('change', handleDocChoiceChange);
   }
 
   if (closeDocusignSigningModalBtn) closeDocusignSigningModalBtn.addEventListener('click', closeDocusignSigningModal);

@@ -1,21 +1,16 @@
 // netlify/functions/navigator-actions.js
-const { ApiClient: eSignApiClient } = require('docusign-esign');
+const { ApiClient: eSignApiClient } = require('docusign-esign'); // Usado apenas para autenticação JWT
 const { Buffer } = require('buffer');
-const fetch = require('node-fetch');
+const fetch = require('node-fetch'); // Lembre-se de 'npm install node-fetch@2'
 
-/**
- * Obtém um token de acesso JWT com os escopos necessários.
- */
+// Função para obter o Token de Acesso usando o fluxo JWT
 async function getAccessToken() {
-  console.log("[navigator-actions] Iniciando autenticação JWT.");
-  
   const ik = process.env.DOCUSIGN_IK;
   const userId = process.env.DOCUSIGN_USER_ID;
   const rsaPrivateKeyBase64Encoded = process.env.DOCUSIGN_RSA_PEM_AS_BASE64;
   const authServer = process.env.DOCUSIGN_AUTH_SERVER;
 
   if (!ik || !userId || !rsaPrivateKeyBase64Encoded || !authServer) {
-    console.error("[navigator-actions] ERRO: Variáveis de ambiente Docusign incompletas.");
     throw new Error("Variáveis de ambiente Docusign incompletas para autenticação.");
   }
 
@@ -24,15 +19,32 @@ async function getAccessToken() {
   const apiClient = new eSignApiClient();
   apiClient.setOAuthBasePath(authServer);
 
-  const requiredScopes = ["signature", "impersonation", "nna_read"];
+  const requiredScopes = [
+      "signature",
+      "impersonation",
+      "nna_read",
+      "nna_write"
+  ];
 
   try {
-    const results = await apiClient.requestJWTUserToken(ik, userId, requiredScopes, Buffer.from(rsaPrivateKeyPemString), 3600);
+    console.log("[navigator-actions] Solicitando token JWT com scopes:", requiredScopes.join(' '));
+    const results = await apiClient.requestJWTUserToken(
+      ik,
+      userId,
+      requiredScopes,
+      Buffer.from(rsaPrivateKeyPemString),
+      3600
+    );
+
     const accessToken = results.body.access_token;
-    console.log("[navigator-actions] Token de acesso JWT obtido com sucesso.");
+    console.log("[navigator-actions] Token de acesso obtido com sucesso.");
     return accessToken;
   } catch (err) {
-    console.error("[navigator-actions] FALHA NA AUTENTICAÇÃO JWT:", err.response ? err.response.body : err.message);
+    console.error("[navigator-actions] FALHA NA AUTENTICAÇÃO JWT:", err);
+    if (err.response && err.response.body && err.response.body.error_description) {
+        console.error("Detalhe do erro DocuSign:", err.response.body.error_description);
+        throw new Error(`Erro ao autenticar: ${err.response.body.error_description}`);
+    }
     throw new Error("Erro ao autenticar com a API DocuSign.");
   }
 }
@@ -45,8 +57,10 @@ async function getAccessToken() {
  * @returns {Promise<object>} A resposta da API com a lista de acordos ou dados de exemplo.
  */
 async function getAgreementsList(accessToken, accountId) {
-    const navigatorApiBasePath = 'https://apps-d.docusign.com/api/navigator/v1';
-    const endpoint = `${navigatorApiBasePath}/accounts/${accountId}/agreements`;
+    // --- CORREÇÃO PRINCIPAL ---
+    // A URL base da API Navigator estava incorreta.
+    const navigatorApiBasePath = 'https://api-d.docusign.com/v1'; // URL BASE CORRETA
+    const endpoint = `${navigatorApiBasePath}/accounts/${accountId}/agreements`; // ENDPOINT CORRETO
 
     try {
         console.log(`[navigator-actions] Fazendo chamada GET para listar acordos: ${endpoint}`);
@@ -63,18 +77,17 @@ async function getAgreementsList(accessToken, accountId) {
 
         const data = await response.json();
         console.log("[navigator-actions] Lista de acordos REAIS recebida com sucesso.");
-        return data; // Dados reais não terão o sinalizador 'isMockData'
+        return data; 
 
     } catch (error) {
         console.warn(`[navigator-actions] AVISO: Falha ao buscar dados reais da Navigator API. Motivo: ${error.message}. Retornando dados de EXEMPLO.`);
         // Fallback para dados de exemplo se a chamada real falhar.
         return {
-            isMockData: true, // <<< SINALIZADOR ADICIONADO AQUI
+            isMockData: true,
             value: [
                 { id: "mock-001", title: "Contrato de Previdência Exemplo", type: "PGBL", status: "Concluído", effectiveDate: "2025-06-10T10:00:00Z" },
                 { id: "mock-002", title: "Acordo de Investimento Exemplo", type: "Renda Fixa", status: "Concluído", effectiveDate: "2025-06-08T11:30:00Z" },
                 { id: "mock-003", title: "Termo de Adesão Exemplo", type: "VGBL", status: "Concluído", effectiveDate: "2025-05-20T15:00:00Z" },
-                { id: "mock-004", title: "Contrato de Serviço Exemplo", type: "Consultoria", status: "Concluído", effectiveDate: "2025-05-15T09:00:00Z" },
             ]
         };
     }

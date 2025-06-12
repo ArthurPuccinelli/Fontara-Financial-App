@@ -1,137 +1,118 @@
 // frontend/scripts/insights.js
 document.addEventListener('DOMContentLoaded', () => {
+  // Elementos da UI
   const loadingIndicator = document.getElementById('loading-indicator');
   const errorMessageContainer = document.getElementById('error-message');
   const errorDetails = document.getElementById('error-details');
   const dashboardContent = document.getElementById('dashboard-content');
-  const chartCanvas = document.getElementById('contractsChart');
-  const dataTableBody = document.getElementById('dataTableBody');
   const refreshDataBtn = document.getElementById('refreshDataBtn');
 
-  let contractsChart = null; // Para manter a referência do gráfico
+  // Elementos para exibir dados
+  const totalAgreementsEl = document.getElementById('totalAgreements');
+  const agreementTypesEl = document.getElementById('agreementTypes');
+  const lastAgreementDateEl = document.getElementById('lastAgreementDate');
+  const dataTableBody = document.getElementById('dataTableBody');
 
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
+  /**
+   * Formata uma string de data (ISO) para o formato brasileiro.
+   * @param {string} isoDate - A data em formato ISO (ex: "2025-06-10T10:00:00Z").
+   * @returns {string} A data formatada (ex: "10/06/2025").
+   */
+  const formatDate = (isoDate) => {
+    if (!isoDate) return 'N/A';
+    try {
+      return new Date(isoDate).toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch (e) {
+      return 'Data inválida';
+    }
   };
 
-  const renderChart = (data) => {
-    if (!chartCanvas) return;
-    if (contractsChart) contractsChart.destroy();
+  /**
+   * Atualiza a UI com os dados recebidos da API.
+   * @param {Array<object>} agreements - A lista de acordos.
+   */
+  const updateUI = (agreements) => {
+    if (!agreements) agreements = [];
 
-    const labels = data.map(item => item.mes);
-    const contractCounts = data.map(item => item.contratos);
+    // 1. Atualiza os cards de resumo
+    totalAgreementsEl.textContent = agreements.length;
 
-    contractsChart = new Chart(chartCanvas, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Nº de Contratos',
-          data: contractCounts,
-          backgroundColor: 'rgba(0, 171, 99, 0.6)',
-          borderColor: 'rgba(0, 137, 78, 1)',
-          borderWidth: 1,
-          borderRadius: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#111827',
-            titleColor: '#ffffff',
-            bodyColor: '#ffffff',
-            callbacks: {
-              label: (context) => `${context.dataset.label}: ${context.parsed.y}`
-            }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { 
-                stepSize: 10,
-                color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#4b5563'
-            },
-            grid: { color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }
-          },
-          x: {
-            ticks: { color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#4b5563' },
-            grid: { display: false }
-          }
-        }
-      }
-    });
-  };
+    const uniqueTypes = new Set(agreements.map(a => a.type).filter(Boolean));
+    agreementTypesEl.textContent = uniqueTypes.size;
 
-  const renderTable = (data) => {
-    if (!dataTableBody) return;
+    // Ordena para encontrar o mais recente
+    const sortedAgreements = agreements.sort((a, b) => new Date(b.effectiveDate) - new Date(a.effectiveDate));
+    const latestAgreement = sortedAgreements[0];
+    lastAgreementDateEl.textContent = latestAgreement ? formatDate(latestAgreement.effectiveDate) : 'N/A';
+    
+    // 2. Preenche a tabela
     dataTableBody.innerHTML = ''; 
-
-    if (data.length === 0) {
-        dataTableBody.innerHTML = '<tr><td colspan="3" class="tw-p-3 tw-text-center">Nenhum dado disponível.</td></tr>';
-        return;
+    if (agreements.length === 0) {
+      dataTableBody.innerHTML = '<tr><td colspan="4" class="tw-p-3 tw-text-center">Nenhum acordo encontrado. Verifique se a Navigator API está habilitada e se a extração de dados foi concluída.</td></tr>';
+      return;
     }
 
-    data.forEach(item => {
+    agreements.slice(0, 10).forEach(agreement => { // Mostra apenas os 10 mais recentes
       const row = document.createElement('tr');
       row.className = 'tw-border-b dark:tw-border-gray-700 hover:tw-bg-gray-50 dark:hover:tw-bg-gray-800';
       row.innerHTML = `
-        <td class="tw-p-3">${item.mes}</td>
-        <td class="tw-p-3">${item.contratos}</td>
-        <td class="tw-p-3">${formatCurrency(item.valor_total)}</td>
+        <td class="tw-p-3">${agreement.title || 'Sem Título'}</td>
+        <td class="tw-p-3">${agreement.type || 'N/A'}</td>
+        <td class="tw-p-3">${formatDate(agreement.effectiveDate)}</td>
+        <td class="tw-p-3"><span class="tw-px-2 tw-py-1 tw-text-xs tw-font-medium tw-rounded-full tw-bg-green-100 tw-text-green-800 dark:tw-bg-green-900 dark:tw-text-green-300">${agreement.status || 'N/A'}</span></td>
       `;
       dataTableBody.appendChild(row);
     });
   };
 
+  /**
+   * Controla a visibilidade dos elementos da UI com base no estado.
+   * @param {'loading' | 'error' | 'success'} state 
+   */
   const showUIState = (state) => {
-      loadingIndicator.style.display = state === 'loading' ? 'block' : 'none';
-      errorMessageContainer.style.display = state === 'error' ? 'block' : 'none';
-      dashboardContent.style.display = state === 'success' ? 'block' : 'none';
+      if (loadingIndicator) loadingIndicator.style.display = state === 'loading' ? 'block' : 'none';
+      if (errorMessageContainer) errorMessageContainer.style.display = state === 'error' ? 'block' : 'none';
+      if (dashboardContent) dashboardContent.style.display = state === 'success' ? 'block' : 'none';
   };
 
-  const loadDashboardData = async () => {
+  /**
+   * Função principal para buscar e exibir os dados dos acordos.
+   */
+  const loadAgreementsData = async () => {
     showUIState('loading');
 
     try {
       const response = await fetch('/.netlify/functions/navigator-actions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'get-dashboard-data' }),
+        body: JSON.stringify({ action: 'get-agreements-list' }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ details: response.statusText }));
-        throw new Error(errorData.details || `Erro HTTP ${response.status}`);
-      }
-
       const data = await response.json();
-      
-      if (data && data.results) {
-        renderChart(data.results);
-        renderTable(data.results);
-        showUIState('success');
-      } else {
-        throw new Error("Formato de dados inesperado recebido da API.");
+
+      if (!response.ok) {
+        throw new Error(data.details || `Erro HTTP ${response.status}`);
       }
+      
+      // A API Navigator real (e a nossa de exemplo) retorna os dados em uma propriedade 'value'
+      updateUI(data.value);
+      showUIState('success');
 
     } catch (error) {
-      console.error("Erro ao carregar dados do dashboard:", error);
-      errorDetails.textContent = error.message;
+      console.error("Erro ao carregar dados do painel:", error);
+      if (errorDetails) errorDetails.textContent = error.message;
       showUIState('error');
     }
   };
 
   if(refreshDataBtn) {
-    refreshDataBtn.addEventListener('click', loadDashboardData);
+    refreshDataBtn.addEventListener('click', loadAgreementsData);
   }
 
   // Inicia o carregamento dos dados quando a página é carregada
-  loadDashboardData();
+  loadAgreementsData();
 });

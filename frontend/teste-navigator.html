@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="tw-dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teste da API Navigator - Fontara Financial</title>
+    <link rel="stylesheet" href="./css/tailwind-build.css" />
+    <link rel="stylesheet" href="./css/index.css" />
+  </head>
+  <body class="tw-flex tw-min-h-[100vh] tw-flex-col tw-bg-[#fcfcfc] tw-text-black dark:tw-bg-black dark:tw-text-white">
+    <div id="header-placeholder"></div>
+
+    <main class="tw-mt-20 tw-pt-10 tw-pb-10 tw-px-[5%] lg:tw-px-[10%]">
+      <section class="tw-container tw-mx-auto">
+        <h1 class="tw-text-4xl tw-font-semibold tw-text-center tw-mb-6">Teste de Conexão com a Navigator API</h1>
+        <p class="tw-text-center tw-text-lg tw-text-gray-600 dark:tw-text-gray-400 tw-mb-8">
+          Clique no botão abaixo para tentar listar os "datasets" da sua conta DocuSign. Isso confirma se a autenticação e as permissões (scopes) `nna_read` estão funcionando.
+        </p>
+
+        <div class="tw-text-center tw-mb-8">
+          <button id="testApiBtn" class="btn tw-px-6 tw-py-3 tw-text-lg">
+            Testar Conexão
+          </button>
+        </div>
+
+        <div class="tw-bg-white dark:tw-bg-[#171717] tw-p-6 tw-rounded-xl tw-shadow-lg">
+          <h2 class="tw-text-2xl tw-font-medium tw-mb-4">Resposta da API</h2>
+          <pre id="apiResponse" class="tw-bg-gray-100 dark:tw-bg-gray-900 tw-p-4 tw-rounded-md tw-whitespace-pre-wrap tw-break-words tw-text-sm">Aguardando teste...</pre>
+        </div>
+      </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <!-- Scripts -->
+    <script src="./scripts/index.js"></script>
+    <script src="./scripts/loadPartials.js" defer></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const testBtn = document.getElementById('testApiBtn');
+        const responsePre = document.getElementById('apiResponse');
+
+        testBtn.addEventListener('click', async () => {
+          testBtn.disabled = true;
+          testBtn.textContent = 'Testando...';
+          responsePre.textContent = 'Fazendo chamada para a função Netlify...';
+
+          try {
+            const response = await fetch('/.netlify/functions/navigator-actions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'test-api-connection' })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              // Se a resposta da função foi um erro (ex: 500)
+              throw new Error(data.details || `Erro ${response.status}: ${JSON.stringify(data)}`);
+            }
+            
+            // Exibe a resposta formatada
+            responsePre.textContent = JSON.stringify(data, null, 2);
+            testBtn.textContent = 'Teste Concluído com Sucesso!';
+            testBtn.style.backgroundColor = '#00ab63'; // Verde
+
+          } catch (error) {
+            console.error('Erro no teste da API:', error);
+            responsePre.textContent = `Falha no teste:\n\n${error.message}`;
+            testBtn.textContent = 'Teste Falhou';
+            testBtn.style.backgroundColor = '#ef4444'; // Vermelho
+          } finally {
+            // Reabilita o botão após um tempo para permitir novos testes
+            setTimeout(() => {
+                testBtn.disabled = false;
+                testBtn.textContent = 'Testar Conexão Novamente';
+                testBtn.style.backgroundColor = ''; // Volta ao estilo original
+            }, 3000);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

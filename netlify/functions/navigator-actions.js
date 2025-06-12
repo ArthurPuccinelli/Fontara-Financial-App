@@ -1,7 +1,7 @@
 // netlify/functions/navigator-actions.js
 const { ApiClient: eSignApiClient } = require('docusign-esign'); // Usado apenas para autenticação JWT
 const { Buffer } = require('buffer');
-const fetch = require('node-fetch'); // Adicione 'node-fetch' ao seu projeto: npm install node-fetch@2
+const fetch = require('node-fetch'); // Lembre-se de 'npm install node-fetch@2'
 
 // Função para obter o Token de Acesso usando o fluxo JWT
 async function getAccessToken() {
@@ -16,7 +16,6 @@ async function getAccessToken() {
 
   const rsaPrivateKeyPemString = Buffer.from(rsaPrivateKeyBase64Encoded, 'base64').toString('utf-8');
   
-  // O SDK eSign é uma maneira conveniente de lidar com o fluxo de autenticação JWT
   const apiClient = new eSignApiClient();
   apiClient.setOAuthBasePath(authServer);
 
@@ -39,55 +38,51 @@ async function getAccessToken() {
   }
 }
 
-// Função para buscar dados de um dataset via API REST
-async function getDashboardData(accessToken, accountId, datasetId) {
-  // O endpoint da Navigator API para obter dados de um dataset
-  const navigatorApiBasePath = 'https://apps-d.docusign.com/navigator/api/v1';
-  const endpoint = `${navigatorApiBasePath}/accounts/${accountId}/datasets/${datasetId}/data`;
+// Função de teste para listar os datasets
+async function listDatasets(accessToken, accountId) {
+    const navigatorApiBasePath = 'https://apps-d.docusign.com/navigator/api/v1';
+    const endpoint = `${navigatorApiBasePath}/accounts/${accountId}/datasets`;
 
-  // Em um cenário real, você faria a chamada à API.
-  // O código abaixo está comentado, mas é a implementação correta.
-  /*
-  try {
-    console.log(`[navigator-actions] Fazendo chamada GET para: ${endpoint}`);
-    const response = await fetch(endpoint, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      }
-    });
+    try {
+        console.log(`[navigator-actions] Fazendo chamada de TESTE GET para: ${endpoint}`);
+        const response = await fetch(endpoint, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error(`[navigator-actions] Erro na API Navigator: ${response.status} ${response.statusText}`, errorBody);
-      throw new Error(`A API Navigator retornou um erro: ${response.statusText}`);
+        if (!response.ok) {
+            const errorBody = await response.text();
+            console.error(`[navigator-actions] Erro na API Navigator: ${response.status} ${response.statusText}`, errorBody);
+            throw new Error(`A API Navigator retornou um erro: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log("[navigator-actions] Resposta da listagem de datasets recebida com sucesso.");
+        return data;
+
+    } catch (error) {
+        console.error("[navigator-actions] Falha ao listar datasets da Navigator API:", error);
+        throw error;
     }
+}
 
-    const data = await response.json();
-    console.log("[navigator-actions] Dados recebidos da Navigator API.");
-    return data;
 
-  } catch (error) {
-    console.error("[navigator-actions] Falha ao buscar dados da Navigator API:", error);
-    throw error;
-  }
-  */
-
-  // Para fins de demonstração, retornamos dados MOCKADOS.
-  // Isso permite que você construa e visualize o frontend sem precisar ter um dataset populado.
-  console.log(`[navigator-actions] Retornando dados MOCKADOS para o datasetId: ${datasetId}`);
-  return {
-    // Exemplo de dados que a API poderia retornar
-    results: [
-        { mes: 'Janeiro', contratos: 22, valor_total: 45000 },
-        { mes: 'Fevereiro', contratos: 19, valor_total: 39500 },
-        { mes: 'Março', contratos: 35, valor_total: 72300 },
-        { mes: 'Abril', contratos: 41, valor_total: 85000 },
-        { mes: 'Maio', contratos: 38, valor_total: 81200 },
-        { mes: 'Junho', contratos: 45, valor_total: 95400 },
-    ]
-  };
+// Função para retornar dados de um dataset (com mock para demonstração)
+async function getDashboardData(accessToken, accountId, datasetId) {
+    console.log(`[navigator-actions] Retornando dados MOCKADOS para o datasetId: ${datasetId}`);
+    return {
+        results: [
+            { mes: 'Janeiro', contratos: 22, valor_total: 45000 },
+            { mes: 'Fevereiro', contratos: 19, valor_total: 39500 },
+            { mes: 'Março', contratos: 35, valor_total: 72300 },
+            { mes: 'Abril', contratos: 41, valor_total: 85000 },
+            { mes: 'Maio', contratos: 38, valor_total: 81200 },
+            { mes: 'Junho', contratos: 45, valor_total: 95400 },
+        ]
+    };
 }
 
 
@@ -96,11 +91,10 @@ exports.handler = async (event, context) => {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
-  let action, payload;
+  let action;
   try {
     const body = JSON.parse(event.body);
     action = body.action;
-    payload = body.payload;
   } catch (e) {
     return { statusCode: 400, body: "Corpo da requisição JSON inválido." };
   }
@@ -115,14 +109,15 @@ exports.handler = async (event, context) => {
     let resultData;
 
     switch (action) {
+      // NOVA AÇÃO DE TESTE
+      case 'test-api-connection':
+        resultData = await listDatasets(accessToken, accountId);
+        break;
+
       case 'get-dashboard-data':
-        // ATENÇÃO: Substitua este ID pelo ID do seu Dataset real quando ele existir.
-        const datasetId = payload?.datasetId || 'SEU_DATASET_ID_AQUI'; 
-        resultData = await getDashboardData(accessToken, accountId, datasetId);
+        resultData = await getDashboardData(accessToken, accountId, 'SEU_DATASET_ID_AQUI');
         break;
       
-      // Você pode adicionar outras ações aqui no futuro.
-
       default:
         return { statusCode: 400, body: `Ação desconhecida: ${action}` };
     }

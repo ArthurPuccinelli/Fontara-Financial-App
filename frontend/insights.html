@@ -9,7 +9,6 @@
       content="Visualize dados e insights sobre seus contratos e documentos na Fontara Financial."
     />
     <link rel="shortcut icon" href="../assets/logo/logo.png" type="image/x-icon" />
-    <!-- Adapta o caminho do CSS para a subpasta 'cliente' -->
     <link rel="stylesheet" href="../css/tailwind-build.css" />
     <link rel="stylesheet" href="../css/index.css" />
     <link
@@ -17,10 +16,9 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"
     />
     <style>
-      /* Estilo para o estado de carregamento */
       .loader {
-        border: 5px solid #f3f3f3; /* Cinza claro */
-        border-top: 5px solid #00ab63; /* Verde Fontara */
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #00ab63;
         border-radius: 50%;
         width: 50px;
         height: 50px;
@@ -35,7 +33,7 @@
 
     <main class="tw-mt-20 tw-pt-10 tw-pb-10 tw-px-[5%] lg:tw-px-[10%]">
       <section class="tw-container tw-mx-auto">
-        <div class="tw-flex tw-justify-between tw-items-center tw-mb-8 tw-flex-wrap tw-gap-4">
+        <div class="tw-flex tw-justify-between tw-items-center tw-mb-6 tw-flex-wrap tw-gap-4">
           <div>
             <h1 class="tw-text-4xl md:tw-text-5xl tw-font-semibold">Painel de Insights</h1>
             <p class="tw-text-lg tw-text-gray-600 dark:tw-text-gray-400">
@@ -48,10 +46,14 @@
           </button>
         </div>
 
+        <!-- NOVO: Indicador da Fonte dos Dados -->
+        <div id="data-source-indicator" class="tw-hidden tw-mb-8 tw-p-4 tw-text-sm tw-text-yellow-800 tw-rounded-lg tw-bg-yellow-50 dark:tw-bg-gray-800 dark:tw-text-yellow-300" role="alert">
+            <span class="tw-font-medium">Aviso:</span> <span id="data-source-message"></span>
+        </div>
+
         <!-- Container principal do dashboard -->
         <div id="dashboard-content" class="tw-space-y-12 tw-hidden">
           
-          <!-- Seção de Cards de Resumo -->
           <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-6">
             <div class="tw-bg-white dark:tw-bg-[#171717] tw-p-6 tw-rounded-xl tw-shadow-lg">
                 <h3 class="tw-text-lg tw-font-medium tw-text-gray-500 dark:tw-text-gray-400">Total de Acordos</h3>
@@ -67,7 +69,6 @@
             </div>
           </div>
           
-          <!-- Seção da Tabela de Dados -->
           <div class="tw-bg-white dark:tw-bg-[#171717] tw-p-6 md:tw-p-8 tw-rounded-xl tw-shadow-lg">
             <h2 class="tw-text-2xl md:tw-text-3xl tw-font-medium tw-mb-6">Últimos Acordos Processados</h2>
             <div class="tw-overflow-x-auto">
@@ -80,21 +81,17 @@
                     <th class="tw-p-3 tw-text-sm tw-font-semibold">Status</th>
                   </tr>
                 </thead>
-                <tbody id="dataTableBody">
-                  <!-- Linhas de dados serão injetadas aqui pelo JavaScript -->
-                </tbody>
+                <tbody id="dataTableBody"></tbody>
               </table>
             </div>
           </div>
         </div>
 
-        <!-- Indicador de Carregamento -->
         <div id="loading-indicator" class="tw-text-center tw-py-8">
           <div class="loader"></div>
           <p class="tw-text-lg tw-text-gray-600 dark:tw-text-gray-400">Carregando dados...</p>
         </div>
 
-        <!-- Mensagem de Erro -->
         <div id="error-message" class="tw-hidden tw-text-center tw-p-8 tw-bg-red-100 dark:tw-bg-red-900/20 tw-text-red-700 dark:tw-text-red-300 tw-rounded-lg">
           <h3 class="tw-font-semibold">Ocorreu um erro ao carregar os dados</h3>
           <p id="error-details" class="tw-mt-2"></p>
@@ -104,8 +101,6 @@
 
     <div id="footer-placeholder"></div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../scripts/index.js"></script>
     <script src="../scripts/loadPartials.js" defer></script>
     <script src="../scripts/insights.js" defer></script>

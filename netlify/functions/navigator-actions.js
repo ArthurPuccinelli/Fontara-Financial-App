@@ -45,7 +45,6 @@ async function getAccessToken() {
  * @returns {Promise<object>} A resposta da API com a lista de acordos ou dados de exemplo.
  */
 async function getAgreementsList(accessToken, accountId) {
-    // Este é o endpoint correto para listar acordos, conforme a documentação
     const navigatorApiBasePath = 'https://apps-d.docusign.com/api/navigator/v1';
     const endpoint = `${navigatorApiBasePath}/accounts/${accountId}/agreements`;
 
@@ -57,20 +56,20 @@ async function getAgreementsList(accessToken, accountId) {
         });
 
         if (!response.ok) {
-            // Se a API retornar um erro (como 404), lançamos uma exceção que será capturada abaixo.
             const errorBody = await response.text();
             console.error(`[navigator-actions] Erro na API Navigator [${response.status}]:`, errorBody);
             throw new Error(`A API Navigator retornou um erro: ${response.statusText}`);
         }
 
         const data = await response.json();
-        console.log("[navigator-actions] Lista de acordos recebida com sucesso.");
-        return data;
+        console.log("[navigator-actions] Lista de acordos REAIS recebida com sucesso.");
+        return data; // Dados reais não terão o sinalizador 'isMockData'
 
     } catch (error) {
         console.warn(`[navigator-actions] AVISO: Falha ao buscar dados reais da Navigator API. Motivo: ${error.message}. Retornando dados de EXEMPLO.`);
         // Fallback para dados de exemplo se a chamada real falhar.
         return {
+            isMockData: true, // <<< SINALIZADOR ADICIONADO AQUI
             value: [
                 { id: "mock-001", title: "Contrato de Previdência Exemplo", type: "PGBL", status: "Concluído", effectiveDate: "2025-06-10T10:00:00Z" },
                 { id: "mock-002", title: "Acordo de Investimento Exemplo", type: "Renda Fixa", status: "Concluído", effectiveDate: "2025-06-08T11:30:00Z" },

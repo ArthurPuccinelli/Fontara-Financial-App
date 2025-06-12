@@ -13,6 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const lastAgreementDateEl = document.getElementById('lastAgreementDate');
   const dataTableBody = document.getElementById('dataTableBody');
 
+  // NOVO: Elementos do indicador de fonte de dados
+  const dataSourceIndicator = document.getElementById('data-source-indicator');
+  const dataSourceMessage = document.getElementById('data-source-message');
+
   /**
    * Formata uma string de data (ISO) para o formato brasileiro.
    * @param {string} isoDate - A data em formato ISO (ex: "2025-06-10T10:00:00Z").
@@ -44,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const uniqueTypes = new Set(agreements.map(a => a.type).filter(Boolean));
     agreementTypesEl.textContent = uniqueTypes.size;
 
-    // Ordena para encontrar o mais recente
     const sortedAgreements = agreements.sort((a, b) => new Date(b.effectiveDate) - new Date(a.effectiveDate));
     const latestAgreement = sortedAgreements[0];
     lastAgreementDateEl.textContent = latestAgreement ? formatDate(latestAgreement.effectiveDate) : 'N/A';
@@ -84,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
    */
   const loadAgreementsData = async () => {
     showUIState('loading');
+    if (dataSourceIndicator) dataSourceIndicator.classList.add('tw-hidden'); // Esconde o aviso ao recarregar
 
     try {
       const response = await fetch('/.netlify/functions/navigator-actions', {
@@ -98,7 +102,14 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(data.details || `Erro HTTP ${response.status}`);
       }
       
-      // A API Navigator real (e a nossa de exemplo) retorna os dados em uma propriedade 'value'
+      // Verifica se os dados são de exemplo e mostra o aviso
+      if (data.isMockData) {
+        if(dataSourceIndicator && dataSourceMessage) {
+            dataSourceMessage.textContent = 'Exibindo dados de exemplo. A API Navigator pode não estar habilitada ou configurada para sua conta.';
+            dataSourceIndicator.classList.remove('tw-hidden');
+        }
+      }
+
       updateUI(data.value);
       showUIState('success');
 

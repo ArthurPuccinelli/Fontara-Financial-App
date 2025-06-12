@@ -19,9 +19,6 @@ async function getAccessToken() {
   const apiClient = new eSignApiClient();
   apiClient.setOAuthBasePath(authServer);
 
-  // --- CORREÇÃO PRINCIPAL ---
-  // O fluxo JWT requer o scope 'impersonation'. O scope 'signature' também é geralmente
-  // incluído como base para a maioria das operações. Adicionamos todos os necessários.
   const requiredScopes = [
       "signature",
       "impersonation",
@@ -34,7 +31,7 @@ async function getAccessToken() {
     const results = await apiClient.requestJWTUserToken(
       ik,
       userId,
-      requiredScopes, // <<<< USA O ARRAY DE SCOPES CORRIGIDO
+      requiredScopes,
       Buffer.from(rsaPrivateKeyPemString),
       3600
     );
@@ -44,7 +41,6 @@ async function getAccessToken() {
     return accessToken;
   } catch (err) {
     console.error("[navigator-actions] FALHA NA AUTENTICAÇÃO JWT:", err);
-    // Adiciona mais detalhes do erro, se disponíveis na resposta da API
     if (err.response && err.response.body && err.response.body.error_description) {
         console.error("Detalhe do erro DocuSign:", err.response.body.error_description);
         throw new Error(`Erro ao autenticar: ${err.response.body.error_description}`);
@@ -55,7 +51,9 @@ async function getAccessToken() {
 
 // Função de teste para listar os datasets
 async function listDatasets(accessToken, accountId) {
-    const navigatorApiBasePath = 'https://apps-d.docusign.com/navigator/api/v1';
+    // --- CORREÇÃO PRINCIPAL ---
+    // A URL base da API Navigator estava incorreta.
+    const navigatorApiBasePath = 'https://apps-d.docusign.com/api/navigator/v1'; // URL CORRIGIDA
     const endpoint = `${navigatorApiBasePath}/accounts/${accountId}/datasets`;
 
     try {

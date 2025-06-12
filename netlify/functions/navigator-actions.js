@@ -19,12 +19,22 @@ async function getAccessToken() {
   const apiClient = new eSignApiClient();
   apiClient.setOAuthBasePath(authServer);
 
+  // --- CORREÇÃO PRINCIPAL ---
+  // O fluxo JWT requer o scope 'impersonation'. O scope 'signature' também é geralmente
+  // incluído como base para a maioria das operações. Adicionamos todos os necessários.
+  const requiredScopes = [
+      "signature",
+      "impersonation",
+      "nna_read",
+      "nna_write"
+  ];
+
   try {
-    console.log("[navigator-actions] Solicitando token JWT para API...");
+    console.log("[navigator-actions] Solicitando token JWT com scopes:", requiredScopes.join(' '));
     const results = await apiClient.requestJWTUserToken(
       ik,
       userId,
-      ['nna_read', 'nna_write'], // Scopes para Navigator API (Insights)
+      requiredScopes, // <<<< USA O ARRAY DE SCOPES CORRIGIDO
       Buffer.from(rsaPrivateKeyPemString),
       3600
     );
@@ -34,6 +44,11 @@ async function getAccessToken() {
     return accessToken;
   } catch (err) {
     console.error("[navigator-actions] FALHA NA AUTENTICAÇÃO JWT:", err);
+    // Adiciona mais detalhes do erro, se disponíveis na resposta da API
+    if (err.response && err.response.body && err.response.body.error_description) {
+        console.error("Detalhe do erro DocuSign:", err.response.body.error_description);
+        throw new Error(`Erro ao autenticar: ${err.response.body.error_description}`);
+    }
     throw new Error("Erro ao autenticar com a API DocuSign.");
   }
 }
@@ -109,7 +124,6 @@ exports.handler = async (event, context) => {
     let resultData;
 
     switch (action) {
-      // NOVA AÇÃO DE TESTE
       case 'test-api-connection':
         resultData = await listDatasets(accessToken, accountId);
         break;

@@ -6,10 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const dashboardContent = document.getElementById('dashboard-content');
   const chartCanvas = document.getElementById('contractsChart');
   const dataTableBody = document.getElementById('dataTableBody');
+  const refreshDataBtn = document.getElementById('refreshDataBtn');
 
   let contractsChart = null; // Para manter a referência do gráfico
 
-  // Função para formatar números como moeda brasileira
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -17,61 +17,61 @@ document.addEventListener('DOMContentLoaded', () => {
     }).format(value);
   };
 
-  // Função para renderizar o gráfico
   const renderChart = (data) => {
     if (!chartCanvas) return;
-    
-    // Destrói o gráfico anterior, se existir, para evitar sobreposição
-    if (contractsChart) {
-      contractsChart.destroy();
-    }
+    if (contractsChart) contractsChart.destroy();
 
     const labels = data.map(item => item.mes);
     const contractCounts = data.map(item => item.contratos);
 
     contractsChart = new Chart(chartCanvas, {
-      type: 'bar', // Tipo de gráfico: barras
+      type: 'bar',
       data: {
         labels: labels,
         datasets: [{
           label: 'Nº de Contratos',
           data: contractCounts,
-          backgroundColor: '#00ab63', // Verde Fontara
-          borderColor: '#00894e',
-          borderWidth: 1
+          backgroundColor: 'rgba(0, 171, 99, 0.6)',
+          borderColor: 'rgba(0, 137, 78, 1)',
+          borderWidth: 1,
+          borderRadius: 4
         }]
       },
       options: {
         responsive: true,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
         plugins: {
-          legend: {
-            display: false, // Esconde a legenda, pois o título do card já é claro
-          },
+          legend: { display: false },
           tooltip: {
+            backgroundColor: '#111827',
+            titleColor: '#ffffff',
+            bodyColor: '#ffffff',
             callbacks: {
-              label: function(context) {
-                return `${context.dataset.label}: ${context.parsed.y}`;
-              }
+              label: (context) => `${context.dataset.label}: ${context.parsed.y}`
             }
           }
         },
         scales: {
           y: {
             beginAtZero: true,
-            ticks: {
-                stepSize: 5 // Define o intervalo do eixo Y
-            }
+            ticks: { 
+                stepSize: 10,
+                color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#4b5563'
+            },
+            grid: { color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }
+          },
+          x: {
+            ticks: { color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#4b5563' },
+            grid: { display: false }
           }
         }
       }
     });
   };
 
-  // Função para renderizar a tabela
   const renderTable = (data) => {
     if (!dataTableBody) return;
-    dataTableBody.innerHTML = ''; // Limpa a tabela antes de preencher
+    dataTableBody.innerHTML = ''; 
 
     if (data.length === 0) {
         dataTableBody.innerHTML = '<tr><td colspan="3" class="tw-p-3 tw-text-center">Nenhum dado disponível.</td></tr>';
@@ -80,8 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     data.forEach(item => {
       const row = document.createElement('tr');
-      row.classList.add('tw-border-b', 'dark:tw-border-gray-700', 'hover:tw-bg-gray-50', 'dark:hover:tw-bg-gray-800');
-      
+      row.className = 'tw-border-b dark:tw-border-gray-700 hover:tw-bg-gray-50 dark:hover:tw-bg-gray-800';
       row.innerHTML = `
         <td class="tw-p-3">${item.mes}</td>
         <td class="tw-p-3">${item.contratos}</td>
@@ -91,17 +90,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
-  // Função principal para buscar e exibir os dados
+  const showUIState = (state) => {
+      loadingIndicator.style.display = state === 'loading' ? 'block' : 'none';
+      errorMessageContainer.style.display = state === 'error' ? 'block' : 'none';
+      dashboardContent.style.display = state === 'success' ? 'block' : 'none';
+  };
+
   const loadDashboardData = async () => {
-    loadingIndicator.classList.remove('tw-hidden');
-    errorMessageContainer.classList.add('tw-hidden');
-    dashboardContent.classList.add('tw-hidden');
+    showUIState('loading');
 
     try {
       const response = await fetch('/.netlify/functions/navigator-actions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'get-dashboard-data', payload: {} }), // Payload pode ser usado para filtros futuros
+        body: JSON.stringify({ action: 'get-dashboard-data' }),
       });
 
       if (!response.ok) {
@@ -114,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data && data.results) {
         renderChart(data.results);
         renderTable(data.results);
-        dashboardContent.classList.remove('tw-hidden');
+        showUIState('success');
       } else {
         throw new Error("Formato de dados inesperado recebido da API.");
       }
@@ -122,12 +124,14 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       console.error("Erro ao carregar dados do dashboard:", error);
       errorDetails.textContent = error.message;
-      errorMessageContainer.classList.remove('tw-hidden');
-    } finally {
-      loadingIndicator.classList.add('tw-hidden');
+      showUIState('error');
     }
   };
 
-  // Inicia o carregamento dos dados
+  if(refreshDataBtn) {
+    refreshDataBtn.addEventListener('click', loadDashboardData);
+  }
+
+  // Inicia o carregamento dos dados quando a página é carregada
   loadDashboardData();
 });

@@ -35,11 +35,11 @@
 
     <main class="tw-mt-20 tw-pt-10 tw-pb-10 tw-px-[5%] lg:tw-px-[10%]">
       <section class="tw-container tw-mx-auto">
-        <div class="tw-flex tw-justify-between tw-items-center tw-mb-6 tw-flex-wrap tw-gap-4">
+        <div class="tw-flex tw-justify-between tw-items-center tw-mb-8 tw-flex-wrap tw-gap-4">
           <div>
             <h1 class="tw-text-4xl md:tw-text-5xl tw-font-semibold">Painel de Insights</h1>
             <p class="tw-text-lg tw-text-gray-600 dark:tw-text-gray-400">
-              Análise de dados dos seus contratos concluídos.
+              Análise dos acordos processados pelo DocuSign Navigator.
             </p>
           </div>
           <button id="refreshDataBtn" class="btn tw-flex tw-items-center tw-gap-2">
@@ -51,24 +51,33 @@
         <!-- Container principal do dashboard -->
         <div id="dashboard-content" class="tw-space-y-12 tw-hidden">
           
-          <!-- Seção do Gráfico -->
-          <div class="tw-bg-white dark:tw-bg-[#171717] tw-p-6 md:tw-p-8 tw-rounded-xl tw-shadow-lg">
-            <h2 class="tw-text-2xl md:tw-text-3xl tw-font-medium tw-mb-6">Contratos Concluídos por Mês</h2>
-            <div class="tw-relative h-64 md:h-96">
-              <canvas id="contractsChart"></canvas>
+          <!-- Seção de Cards de Resumo -->
+          <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-6">
+            <div class="tw-bg-white dark:tw-bg-[#171717] tw-p-6 tw-rounded-xl tw-shadow-lg">
+                <h3 class="tw-text-lg tw-font-medium tw-text-gray-500 dark:tw-text-gray-400">Total de Acordos</h3>
+                <p id="totalAgreements" class="tw-text-4xl tw-font-bold tw-text-green-600 dark:tw-text-green-500">0</p>
+            </div>
+            <div class="tw-bg-white dark:tw-bg-[#171717] tw-p-6 tw-rounded-xl tw-shadow-lg">
+                <h3 class="tw-text-lg tw-font-medium tw-text-gray-500 dark:tw-text-gray-400">Tipos de Contrato</h3>
+                <p id="agreementTypes" class="tw-text-4xl tw-font-bold">0</p>
+            </div>
+             <div class="tw-bg-white dark:tw-bg-[#171717] tw-p-6 tw-rounded-xl tw-shadow-lg">
+                <h3 class="tw-text-lg tw-font-medium tw-text-gray-500 dark:tw-text-gray-400">Último Acordo</h3>
+                <p id="lastAgreementDate" class="tw-text-3xl tw-font-bold">N/A</p>
             </div>
           </div>
           
           <!-- Seção da Tabela de Dados -->
           <div class="tw-bg-white dark:tw-bg-[#171717] tw-p-6 md:tw-p-8 tw-rounded-xl tw-shadow-lg">
-            <h2 class="tw-text-2xl md:tw-text-3xl tw-font-medium tw-mb-6">Dados Detalhados</h2>
+            <h2 class="tw-text-2xl md:tw-text-3xl tw-font-medium tw-mb-6">Últimos Acordos Processados</h2>
             <div class="tw-overflow-x-auto">
               <table class="tw-w-full tw-text-left">
                 <thead class="tw-border-b-2 tw-border-gray-200 dark:tw-border-gray-700">
                   <tr>
-                    <th class="tw-p-3 tw-text-sm tw-font-semibold">Mês</th>
-                    <th class="tw-p-3 tw-text-sm tw-font-semibold">Nº de Contratos</th>
-                    <th class="tw-p-3 tw-text-sm tw-font-semibold">Valor Total</th>
+                    <th class="tw-p-3 tw-text-sm tw-font-semibold">Título do Acordo</th>
+                    <th class="tw-p-3 tw-text-sm tw-font-semibold">Tipo</th>
+                    <th class="tw-p-3 tw-text-sm tw-font-semibold">Data de Efetivação</th>
+                    <th class="tw-p-3 tw-text-sm tw-font-semibold">Status</th>
                   </tr>
                 </thead>
                 <tbody id="dataTableBody">

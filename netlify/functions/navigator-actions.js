@@ -1,11 +1,10 @@
 // netlify/functions/navigator-actions.js
 const { ApiClient: eSignApiClient } = require('docusign-esign');
 const { Buffer } = require('buffer');
-const fetch = require('node-fetch'); // Lembre-se de 'npm install node-fetch@2'
+const fetch = require('node-fetch');
 
 /**
- * Obtém um token de acesso JWT usando as credenciais do ambiente.
- * @returns {Promise<string>} O token de acesso.
+ * Obtém um token de acesso JWT com os escopos necessários.
  */
 async function getAccessToken() {
   console.log("[navigator-actions] Iniciando autenticação JWT.");
@@ -25,7 +24,7 @@ async function getAccessToken() {
   const apiClient = new eSignApiClient();
   apiClient.setOAuthBasePath(authServer);
 
-  const requiredScopes = ["signature", "impersonation", "nna_read", "nna_write"];
+  const requiredScopes = ["signature", "impersonation", "nna_read"];
 
   try {
     const results = await apiClient.requestJWTUserToken(ik, userId, requiredScopes, Buffer.from(rsaPrivateKeyPemString), 3600);
@@ -39,50 +38,49 @@ async function getAccessToken() {
 }
 
 /**
- * Função de teste para listar os datasets disponíveis na conta.
+ * Busca a lista de acordos processados pela Navigator API.
+ * Se falhar, retorna dados de exemplo.
  * @param {string} accessToken - O token de acesso Bearer.
  * @param {string} accountId - O ID da conta DocuSign.
- * @returns {Promise<object>} A resposta da API.
+ * @returns {Promise<object>} A resposta da API com a lista de acordos ou dados de exemplo.
  */
-async function listDatasets(accessToken, accountId) {
+async function getAgreementsList(accessToken, accountId) {
+    // Este é o endpoint correto para listar acordos, conforme a documentação
     const navigatorApiBasePath = 'https://apps-d.docusign.com/api/navigator/v1';
-    const endpoint = `${navigatorApiBasePath}/accounts/${accountId}/datasets`;
+    const endpoint = `${navigatorApiBasePath}/accounts/${accountId}/agreements`;
 
-    console.log(`[navigator-actions] Fazendo chamada GET para listar datasets: ${endpoint}`);
-    const response = await fetch(endpoint, {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' }
-    });
+    try {
+        console.log(`[navigator-actions] Fazendo chamada GET para listar acordos: ${endpoint}`);
+        const response = await fetch(endpoint, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' }
+        });
 
-    if (!response.ok) {
-        const errorBody = await response.text();
-        console.error(`[navigator-actions] Erro na API Navigator [${response.status}]:`, errorBody);
-        throw new Error(`A API Navigator retornou um erro: ${response.statusText}`);
+        if (!response.ok) {
+            // Se a API retornar um erro (como 404), lançamos uma exceção que será capturada abaixo.
+            const errorBody = await response.text();
+            console.error(`[navigator-actions] Erro na API Navigator [${response.status}]:`, errorBody);
+            throw new Error(`A API Navigator retornou um erro: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log("[navigator-actions] Lista de acordos recebida com sucesso.");
+        return data;
+
+    } catch (error) {
+        console.warn(`[navigator-actions] AVISO: Falha ao buscar dados reais da Navigator API. Motivo: ${error.message}. Retornando dados de EXEMPLO.`);
+        // Fallback para dados de exemplo se a chamada real falhar.
+        return {
+            value: [
+                { id: "mock-001", title: "Contrato de Previdência Exemplo", type: "PGBL", status: "Concluído", effectiveDate: "2025-06-10T10:00:00Z" },
+                { id: "mock-002", title: "Acordo de Investimento Exemplo", type: "Renda Fixa", status: "Concluído", effectiveDate: "2025-06-08T11:30:00Z" },
+                { id: "mock-003", title: "Termo de Adesão Exemplo", type: "VGBL", status: "Concluído", effectiveDate: "2025-05-20T15:00:00Z" },
+                { id: "mock-004", title: "Contrato de Serviço Exemplo", type: "Consultoria", status: "Concluído", effectiveDate: "2025-05-15T09:00:00Z" },
+            ]
+        };
     }
-
-    const data = await response.json();
-    console.log("[navigator-actions] Datasets listados com sucesso.");
-    return data;
 }
 
-/**
- * Função que retorna dados para o painel de insights.
- * ATENÇÃO: Atualmente retorna dados MOCKADOS para demonstração.
- * @returns {Promise<object>} Um objeto com dados de exemplo.
- */
-async function getDashboardData() {
-    console.log("[navigator-actions] Retornando dados MOCKADOS para o dashboard.");
-    return {
-        results: [
-            { mes: 'Janeiro', contratos: 22, valor_total: 45000 },
-            { mes: 'Fevereiro', contratos: 19, valor_total: 39500 },
-            { mes: 'Março', contratos: 35, valor_total: 72300 },
-            { mes: 'Abril', contratos: 41, valor_total: 85000 },
-            { mes: 'Maio', contratos: 38, valor_total: 81200 },
-            { mes: 'Junho', contratos: 45, valor_total: 95400 },
-        ]
-    };
-}
 
 /**
  * Handler principal da Netlify Function.
@@ -99,7 +97,6 @@ exports.handler = async (event) => {
 
   const accountId = process.env.DOCUSIGN_ACCOUNT_ID;
   if (!accountId) {
-    console.error("[navigator-actions] ERRO: DOCUSIGN_ACCOUNT_ID não configurado.");
     return { statusCode: 500, body: "Configuração do servidor incompleta." };
   }
 
@@ -108,14 +105,10 @@ exports.handler = async (event) => {
     let resultData;
 
     switch (action) {
-      case 'list-datasets':
-        resultData = await listDatasets(accessToken, accountId);
+      case 'get-agreements-list':
+        resultData = await getAgreementsList(accessToken, accountId);
         break;
-      case 'get-dashboard-data':
-        // No futuro, esta ação chamaria a API para buscar dados de um dataset específico.
-        // Por enquanto, usa a função mock.
-        resultData = await getDashboardData();
-        break;
+      
       default:
         return { statusCode: 400, body: `Ação desconhecida: ${action}` };
     }
@@ -135,4 +128,3 @@ exports.handler = async (event) => {
     };
   }
 };
-

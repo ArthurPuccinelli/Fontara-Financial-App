@@ -255,27 +255,26 @@ function initializePageScripts(headerElement) {
     // 5. Outras inicializações que dependem do header
     // Ex: window.addEventListener("click", onHeaderClickOutside); // Sua lógica original, revise se ainda é necessária
 
-    // 6. Integração com auth.js
-    const loginButton = headerElement.querySelector('#login-button');
-    const logoutButton = headerElement.querySelector('#logout-button');
-
-    if (loginButton) {
-        if (loginButton.dataset.listenerAttached !== 'true') {
-            loginButton.addEventListener('click', function(event) {
+    // 6. Integração com auth.js (Listeners para botões no header)
+    const areaClienteButton = headerElement.querySelector('#login-client-area');
+    if (areaClienteButton) {
+        if (areaClienteButton.dataset.listenerAttached !== 'true') {
+            areaClienteButton.addEventListener('click', function(event) {
                 event.preventDefault();
                 if (typeof handleLogin === 'function') {
-                    handleLogin();
+                    handleLogin(); // Esta função agora mostra o formulário inline
                 } else {
-                    console.warn("index.js: handleLogin function not found.");
+                    console.warn("index.js: handleLogin function (from auth.js) not found.");
                 }
             });
-            loginButton.dataset.listenerAttached = 'true';
-            console.log("index.js: Listener para handleLogin anexado ao #login-button.");
+            areaClienteButton.dataset.listenerAttached = 'true';
+            console.log("index.js: Listener para handleLogin (abrir form inline) anexado ao #login-client-area.");
         }
     } else {
-        console.warn("index.js: #login-button não encontrado no header.");
+        console.warn("index.js: #login-client-area (botão Área do Cliente) não encontrado no header.");
     }
 
+    const logoutButton = headerElement.querySelector('#logout-button');
     if (logoutButton) {
         if (logoutButton.dataset.listenerAttached !== 'true') {
             logoutButton.addEventListener('click', function(event) {
@@ -283,7 +282,7 @@ function initializePageScripts(headerElement) {
                 if (typeof handleLogout === 'function') {
                     handleLogout();
                 } else {
-                    console.warn("index.js: handleLogout function not found.");
+                    console.warn("index.js: handleLogout function (from auth.js) not found.");
                 }
             });
             logoutButton.dataset.listenerAttached = 'true';
@@ -293,10 +292,49 @@ function initializePageScripts(headerElement) {
         console.warn("index.js: #logout-button não encontrado no header.");
     }
 
+    // 7. Listeners para o formulário de login inline (no corpo do documento)
+    const inlineLoginForm = document.getElementById('inline-login-form');
+    if (inlineLoginForm) {
+        if (inlineLoginForm.dataset.listenerAttached !== 'true') {
+            inlineLoginForm.addEventListener('submit', function(event) {
+                // event.preventDefault() é chamado dentro de handleInlineFormSubmit em auth.js
+                if (typeof handleInlineFormSubmit === 'function') {
+                    handleInlineFormSubmit(event);
+                } else {
+                    console.warn("index.js: handleInlineFormSubmit function (from auth.js) not found.");
+                }
+            });
+            inlineLoginForm.dataset.listenerAttached = 'true';
+            console.log("index.js: Listener para handleInlineFormSubmit anexado ao #inline-login-form.");
+        }
+    } else {
+        // Este aviso pode aparecer em páginas que não têm o formulário inline, o que é normal.
+        // console.warn("index.js: #inline-login-form não encontrado no documento. Isso é esperado se a página não for index.html.");
+    }
+
+    const inlineLoginCloseButton = document.getElementById('inline-login-close-button');
+    if (inlineLoginCloseButton) {
+        if (inlineLoginCloseButton.dataset.listenerAttached !== 'true') {
+            inlineLoginCloseButton.addEventListener('click', function() {
+                if (typeof closeInlineLoginForm === 'function') {
+                    closeInlineLoginForm();
+                } else {
+                    console.warn("index.js: closeInlineLoginForm function (from auth.js) not found.");
+                }
+            });
+            inlineLoginCloseButton.dataset.listenerAttached = 'true';
+            console.log("index.js: Listener para closeInlineLoginForm anexado ao #inline-login-close-button.");
+        }
+    } else {
+        // Este aviso pode aparecer em páginas que não têm o formulário inline.
+        // console.warn("index.js: #inline-login-close-button não encontrado no documento. Isso é esperado se a página não for index.html.");
+    }
+
+    // 8. Chamada final para checkLoginState para garantir que a UI reflita o estado atual
     if (typeof checkLoginState === 'function') {
         checkLoginState();
     } else {
-        console.warn("index.js: checkLoginState function not found. Ensure auth.js is loaded before index.js and defines this function globally.");
+        console.warn("index.js: checkLoginState function (from auth.js) not found. Ensure auth.js is loaded before index.js and defines this function globally.");
     }
 
     console.log("index.js: initializePageScripts CONCLUÍDA.");

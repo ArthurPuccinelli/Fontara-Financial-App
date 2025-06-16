@@ -1,124 +1,174 @@
-Portal Fontara Financial
-Bem-vindo ao repositório oficial do portal Fontara Financial. Este projeto é uma aplicação web moderna desenvolvida para oferecer serviços financeiros digitais, com integrações avançadas com as APIs da DocuSign para assinatura eletrônica e análise de dados de contratos.
+# Connected Fields Extension App Reference Implementation
+## Introduction
+This reference implementation models the implementation of [connected fields verification](https://developers.docusign.com/extension-apps/extension-apps-101/supported-extensions/connected-fields/) in an [extension app](https://developers.docusign.com/extension-apps/).
 
-🚀 Funcionalidades Principais
-O portal conta com um conjunto de funcionalidades robustas para otimizar a experiência do cliente e as operações internas:
+To test this reference implementation, modify the `manifest.json` file.
 
-Assinatura Eletrônica Embutida:
+## Hosted Version (no setup required)
+You can use the hosted version of this reference implementation by directly uploading the manifest file located in the root of the repository: `hosted.manifest.json` to the Docusign Developer Console. See [Upload your manifest and create the file archive app](#3-upload-your-manifest-and-create-the-connected-fields-app).
 
-Três Modos de Assinatura: Oferece flexibilidade com a "Assinatura Clássica" (interface completa), "Visualização Focada" (UI simplificada e integrada) e um modo de "Termo de Acordo Rápido".
+**Note:** The provided manifest includes `clientId` and `clientSecret` values used in the sample authentication connection. These do not authenticate to a real system, but the hosted reference implementation requires these exact values.
 
-Suporte a Upload e Padrão: Permite que os usuários assinem tanto documentos padrão da Fontara quanto façam o upload de seus próprios arquivos PDF.
+## Choose your setup: local or cloud deployment
+If you want to run the app locally using Node.js and ngrok, follow the [Local setup instructions](#local-setup-instructions) below.
 
-Integração com docusign.js: Utiliza o SDK mais recente do DocuSign para uma experiência de assinatura moderna e controlada por eventos.
+If you want to deploy the app to the cloud using Docker and Terraform, see [Deploying an extension app to the cloud with Terraform](terraform/README.md). This includes cloud-specific setup instructions for the following cloud providers:
+- [Amazon Web Services](https://aws.amazon.com/)
+- [Microsoft Azure](https://azure.microsoft.com/)
+- [Google Cloud Platform](https://cloud.google.com/)
 
-Painel de Insights (DocuSign Navigator API):
+## Local setup instructions
 
-Análise de Dados: Uma página de dashboard que consome dados da Navigator API para exibir informações sobre acordos concluídos.
+### Video Walkthrough
+[![Reference implementation videos](https://img.youtube.com/vi/_4p7GWK5aoA/0.jpg)](https://youtube.com/playlist?list=PLXpRTgmbu4orBQrYWPAXa4EBXv0IGGzID&feature=shared)
 
-Visualização de Dados: Apresenta resumos (KPIs) e uma lista detalhada dos últimos acordos, com um mecanismo de fallback para dados de exemplo caso a API não esteja disponível.
+### 1. Clone the repository
+Run the following command to clone the repository:
+```bash
+git clone https://github.com/docusign/extension-app-connected-fields-reference-implementation.git
+```
 
-Sistema de Autenticação (Simulado):
+### 2. Generate secret values
+- If you already have values for `JWT_SECRET_KEY`, `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`, and `AUTHORIZATION_CODE`, you may skip this step.
 
-Área Restrita: Implementa um fluxo de login que protege o acesso a páginas sensíveis como o "Dashboard" e o "Painel de Insights".
+The easiest way to generate a secret value is to run the following command:
+```bash
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'));"
+```
 
-Gerenciamento de Sessão: Utiliza localStorage para simular uma sessão de usuário persistente.
+You will need values for `JWT_SECRET_KEY`, `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`, and `AUTHORIZATION_CODE`.
 
-UI Dinâmica: O cabeçalho e os menus de navegação se adaptam dinamicamente, mostrando opções diferentes para usuários logados e deslogados.
-
-🛠️ Tecnologias Utilizadas
-Este projeto foi construído com uma stack moderna focada em performance e escalabilidade.
-
-Frontend
-HTML5
-
-Tailwind CSS: Para uma estilização utilitária e responsiva.
-
-JavaScript (Vanilla JS): Para toda a interatividade do lado do cliente.
-
-Chart.js: Utilizada para renderizar gráficos no Painel de Insights (funcionalidade em desenvolvimento).
-
-Backend (Serverless)
-Netlify Functions: Para toda a lógica de backend, incluindo a comunicação segura com APIs externas.
-
-Node.js: Ambiente de execução para as funções.
-
-node-fetch: Para realizar chamadas diretas às APIs REST do DocuSign.
-
-APIs e Serviços de Terceiros
-DocuSign eSignature API: Para o fluxo completo de criação e gerenciamento de envelopes de assinatura.
-
-DocuSign Navigator API: Para extração e análise de dados de contratos.
-
-DocuSign.js SDK: Para a renderização da experiência de assinatura embutida.
-
-📂 Estrutura do Projeto
-O projeto segue uma organização clara para separar o frontend do backend:
-
-/
-├── frontend/                     # Raiz pública do site
-│   ├── cliente/                  # Páginas da área restrita do cliente
-│   │   ├── dashboard.html
-│   │   └── insights.html
-│   ├── scripts/                  # Scripts JavaScript do lado do cliente
-│   │   ├── auth.js
-│   │   ├── insights.js
-│   │   └── assinatura-embarcada.js
-│   ├── _header.html              # Componente de cabeçalho
-│   ├── _footer.html              # Componente de rodapé
-│   ├── assinatura-embarcada.html
-│   └── login.html
-│
-├── netlify/
-│   └── functions/                # Funções serverless (backend)
-│       ├── docusign-actions.js
-│       ├── navigator-actions.js
-│       └── get-docusign-client-id.js
-│
-├── package.json                  # Dependências do projeto
-└── netlify.toml                  # Configuração de build e deploy do Netlify
-
-⚙️ Configuração do Ambiente Local
-Para executar este projeto localmente, siga os passos abaixo:
-
-1. Clone o Repositório
-
-git clone [https://github.com/dolthub/dolt](https://github.com/dolthub/dolt)
-cd fontara-financial-app
-
-2. Instale as Dependências
-Este projeto utiliza a Netlify CLI para emular o ambiente de produção localmente. Certifique-se de tê-la instalada: npm install -g netlify-cli.
-Em seguida, instale as dependências do projeto:
-
+### 3. Set the environment variables for the cloned repository
+- If you're running this in a development environment, create a copy of `example.development.env` and save it as `development.env`.
+- If you're running this in a production environment, create a copy of `example.production.env` and save it as `production.env`.
+- Replace `JWT_SECRET_KEY`, `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`, and `AUTHORIZATION_CODE` in `development.env` or `production.env` with your generated values. These values will be used to configure the sample proxy's mock authentication server.
+- Set the `clientId` value in the manifest file to the same value as `OAUTH_CLIENT_ID`.
+- Set the `clientSecret` value in the manifest file to the same value as `OAUTH_CLIENT_SECRET`.
+### 4. [Install and configure Node.js and npm on your machine.](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+### 5. Install dependencies
+Run the following command to install the necessary dependencies:
+```bash
 npm install
+```
+### 6. Running the proxy server
+#### Development mode:
+Start the proxy server in development mode by running the command:
+```bash
+npm run dev
+```
 
-3. Configure as Variáveis de Ambiente
-Crie um arquivo chamado .env na raiz do seu projeto e adicione as seguintes variáveis. Substitua os valores pelos da sua conta de desenvolvedor DocuSign.
+This will create a local server on the port in the `development.env` file (port 3000 by default) that listens for local changes that trigger a rebuild.
 
-# Variáveis para autenticação com DocuSign
-DOCUSIGN_IK=SEU_CLIENT_ID_DA_APLICAÇÃO_DOCUSIGN
-DOCUSIGN_USER_ID=SEU_USER_ID_GUID_DOCUSIGN
-DOCUSIGN_ACCOUNT_ID=SEU_ACCOUNT_ID_GUID_DOCUSIGN
-DOCUSIGN_RSA_PEM_AS_BASE64=SUA_CHAVE_PRIVADA_CODIFICADA_EM_BASE64
-DOCUSIGN_AUTH_SERVER=account-d.docusign.com
-DOCUSIGN_BASE_PATH=[https://demo.docusign.net/restapi](https://demo.docusign.net/restapi)
+#### Production mode:
+Start the proxy server in production mode by running the following commands:
+```bash
+npm run build
+npm run start
+```
 
-4. Execute o Projeto
-Use a Netlify CLI para iniciar o servidor de desenvolvimento local. Isso irá iniciar seu site e suas funções Netlify simultaneamente.
+This will start a production build on the port in the `production.env` file (port 3000 by default).
+## Setting up ngrok
+### 1. [Install and configure ngrok for your machine.](https://ngrok.com/docs/getting-started/)
+### 2. Start ngrok
+Run the following command to create a publicly accessible tunnel to your localhost:
 
-netlify dev
+```bash
+ngrok http <PORT>
+```
 
-O site estará disponível em http://localhost:8888 (ou outra porta indicada no terminal).
+Replace `<PORT>` with the port number in the `development.env` or `production.env` file.
 
-🤝 Como Contribuir
-Contribuições são bem-vindas! Para contribuir com o projeto, por favor, siga os seguintes passos:
+### 3. Save the forwarding address
+Copy the `Forwarding` address from the response. You’ll need this address in your manifest file.
 
-Crie um fork do projeto.
+```bash
+ngrok
 
-Crie uma nova branch para sua feature (git checkout -b feature/minha-feature).
+Send your ngrok traffic logs to Datadog: https://ngrok.com/blog-post/datadog-log
 
-Faça o commit das suas alterações (git commit -m 'Adiciona minha-feature').
+Session Status                online
+Account                       email@domain.com (Plan: Free)
+Update                        update available (version 3.3.1, Ctrl-U to update)
+Version                       3.3.0
+Region                        United States (us)
+Latency                       60ms
+Web Interface                 http://127.0.0.1:4040
+Forwarding                    https://bbd7-12-202-171-35.ngrok-free.app -> http:
 
-Faça o push para a branch (git push origin feature/minha-feature).a
+Connections                   ttl     opn     rt1     rt5     p50     p90
+                              0       0       0.00    0.00    0.00    0.00
+```
 
-Abra um Pull Request.
+In this example, the `Forwarding` address to copy is `https://bbd7-12-202-171-35.ngrok-free.app`.
+## Create an extension app
+### 1. Prepare your app manifest
+Replace `<PROXY_BASE_URL>` in your manifest file with the ngrok forwarding address in the following sections:
+- `connections.params.customConfig.tokenUrl`
+- `connections.params.customConfig.authorizationUrl`
+- `actions.params.uri`
+    * Replace this value for all of the actions.
+
+### 2. Navigate to the [Developer Console](https://devconsole.docusign.com/apps)
+Log in with your Docusign developer credentials. You can sign up for a free developer account [here](https://www.docusign.com/developers/sandbox).
+
+### 3. Upload your manifest and create the connected fields app
+To [create your extension app](https://developers.docusign.com/extension-apps/build-an-extension-app/create/), select **Create App > By editing the manifest**. In the app manifest editor that opens, upload your manifest file or paste into the editor itself; then select **Validate**. Once the editor validates your manifest, select **Create App.**
+
+### 4. Test the extension app
+This reference implementation uses mock data to simulate how data can be verified against a database. [Test your extension](https://developers.docusign.com/extension-apps/build-an-extension-app/test/) using the sample data in [vehicleDatabase.csv](https://github.com/docusign/extension-app-connected-fields-reference-implementation/blob/main/src/db/vehicleDatabase.csv). Extension app tests include [integration tests](https://developers.docusign.com/extension-apps/build-an-extension-app/test/integration-tests/) (connection tests and extension tests), [functional tests](https://developers.docusign.com/extension-apps/build-an-extension-app/test/functional-tests/), and [App Center preview](https://developers.docusign.com/extension-apps/build-an-extension-app/test/app-center-preview/).
+
+
+### Extension tests
+The Developer Console offers extension tests to verify that a connected fields extension app can connect to and exchange data with third-party APIs (or an API proxy that in turn connects with those APIs).
+
+**Note:** These instructions only apply if you use the [mock data](https://github.com/docusign/extension-app-connected-fields-reference-implementation/blob/main/src/db/vehicleDatabase.csv) in the reference implementation. If you use your own database, you’ll need to construct your requests based on your own schema. Queries for extension tests in the Developer Console are built using [IQuery](https://developers.docusign.com/extension-apps/extension-app-reference/extension-contracts/custom-query-language/) structure.
+
+
+#### Verify extension test
+The `typeName` property in the sample input maps to the name of a concept in the `model.cto` file. Any valid concept name can be used in this field.
+
+The `idempotencyKey` property in the sample input can be left as is.
+
+The `data` property in the sample input are the key-value pairs of the properties of the `typeName` that is being verified, where the key is the name of the property within the concept, and the value is the input to verify. For example, if the concept is defined as:
+
+```
+@VerifiableType
+@Term("Vehicle Identification")
+concept VehicleIdentification {
+    @IsRequiredForVerifyingType
+    @Term("VIN")
+    o String vin
+
+    @IsRequiredForVerifyingType
+    @Term("State of Registration")
+    o String stateOfRegistration
+
+    @IsRequiredForVerifyingType
+    @Term("Country of Registration")
+    o String countryOfRegistration
+}
+```
+
+Then the Verify request body would be:
+```
+{
+	"typeName": "VehicleIdentification",
+	"idempotencyKey": "mockIdempotencyKey",
+	"data": {
+		"vin": "XRHFCSNGUP4YBU5HB",
+		"stateOfRegistration": "CA",
+		"countryOfRegistration": "USA"
+	}
+}
+```
+
+
+Running the Verify test with the example request body above should return the following properties in the response:
+```
+{
+"verified":true
+"verifyResponseMessage":"Vehicle identification verification completed."
+"verificationResultCode":"SUCCESS"
+"verificationResultDescription":"Vehicle identification verification completed."
+}
+```

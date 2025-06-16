@@ -258,6 +258,7 @@ function initializePageScripts(headerElement) {
     // 6. Integração com auth.js (Listeners para botões no header)
     const areaClienteButton = headerElement.querySelector('#login-client-area');
     if (areaClienteButton) {
+        console.log('Debug initializePageScripts: Attaching click listener to areaClienteButton to call handleLogin.');
         if (areaClienteButton.dataset.listenerAttached !== 'true') {
             areaClienteButton.addEventListener('click', function(event) {
                 event.preventDefault();
@@ -276,6 +277,7 @@ function initializePageScripts(headerElement) {
 
     const logoutButton = headerElement.querySelector('#logout-button');
     if (logoutButton) {
+        console.log('Debug initializePageScripts: Attaching click listener to logoutButton to call handleLogout.');
         if (logoutButton.dataset.listenerAttached !== 'true') {
             logoutButton.addEventListener('click', function(event) {
                 event.preventDefault();
@@ -331,6 +333,7 @@ function initializePageScripts(headerElement) {
     }
 
     // 8. Chamada final para checkLoginState para garantir que a UI reflita o estado atual
+    console.log('Debug initializePageScripts: About to call checkLoginState() for initial UI setup.');
     if (typeof checkLoginState === 'function') {
         checkLoginState();
     } else {

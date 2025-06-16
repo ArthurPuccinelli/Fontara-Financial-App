@@ -14,6 +14,10 @@ function checkLoginState() {
     const inlineFormContainer = document.getElementById('inline-login-form-container'); // In index.html
     const welcomeMessageElement = document.getElementById('welcome-message-user'); // In _header.html
 
+    console.log('Debug checkLoginState: isLoggedIn =', isLoggedIn);
+    if (areaClienteButton) console.log('Debug checkLoginState: Initial areaClienteButton classes:', areaClienteButton.className); else console.log('Debug checkLoginState: areaClienteButton not found');
+    if (logoutButton) console.log('Debug checkLoginState: Initial logoutButton classes:', logoutButton.className); else console.log('Debug checkLoginState: logoutButton not found');
+
     if (isLoggedIn) {
         console.log("auth.js: User is logged in.");
         if (mainNavLinks) mainNavLinks.classList.remove('tw-hidden');
@@ -23,6 +27,9 @@ function checkLoginState() {
         if (inlineFormContainer && !inlineFormContainer.classList.contains('tw-hidden')) {
             inlineFormContainer.classList.add('tw-hidden'); // Ensure form is hidden if user is logged in
         }
+
+        if (areaClienteButton) console.log('Debug checkLoginState (isLoggedIn=true): Final areaClienteButton classes:', areaClienteButton.className);
+        if (logoutButton) console.log('Debug checkLoginState (isLoggedIn=true): Final logoutButton classes:', logoutButton.className);
 
         const username = sessionStorage.getItem('loggedInUser');
         if (welcomeMessageElement && username) {
@@ -40,6 +47,9 @@ function checkLoginState() {
         if (logoutButton) logoutButton.classList.add('tw-hidden');
         if (areaClienteButton) areaClienteButton.classList.remove('tw-hidden');
 
+        if (areaClienteButton) console.log('Debug checkLoginState (isLoggedIn=false): Final areaClienteButton classes:', areaClienteButton.className);
+        if (logoutButton) console.log('Debug checkLoginState (isLoggedIn=false): Final logoutButton classes:', logoutButton.className);
+
         if (welcomeMessageElement) {
             welcomeMessageElement.classList.add('tw-hidden');
             welcomeMessageElement.textContent = ''; // Clear text on logout
@@ -48,6 +58,7 @@ function checkLoginState() {
 }
 
 function handleLogin() {
+    console.log('Debug: handleLogin() invoked.');
     console.log("auth.js: handleLogin() called.");
     // Show the inline login form instead of redirecting
     const formContainer = document.getElementById('inline-login-form-container');
@@ -100,6 +111,7 @@ function closeInlineLoginForm() {
 }
 
 function handleLogout() {
+    console.log('Debug: handleLogout() invoked.');
     console.log("auth.js: handleLogout() called.");
     sessionStorage.removeItem('isLoggedIn');
     sessionStorage.removeItem('loggedInUser');

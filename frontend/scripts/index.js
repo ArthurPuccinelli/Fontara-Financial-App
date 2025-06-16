@@ -255,6 +255,50 @@ function initializePageScripts(headerElement) {
     // 5. Outras inicializações que dependem do header
     // Ex: window.addEventListener("click", onHeaderClickOutside); // Sua lógica original, revise se ainda é necessária
 
+    // 6. Integração com auth.js
+    const loginButton = headerElement.querySelector('#login-button');
+    const logoutButton = headerElement.querySelector('#logout-button');
+
+    if (loginButton) {
+        if (loginButton.dataset.listenerAttached !== 'true') {
+            loginButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                if (typeof handleLogin === 'function') {
+                    handleLogin();
+                } else {
+                    console.warn("index.js: handleLogin function not found.");
+                }
+            });
+            loginButton.dataset.listenerAttached = 'true';
+            console.log("index.js: Listener para handleLogin anexado ao #login-button.");
+        }
+    } else {
+        console.warn("index.js: #login-button não encontrado no header.");
+    }
+
+    if (logoutButton) {
+        if (logoutButton.dataset.listenerAttached !== 'true') {
+            logoutButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                if (typeof handleLogout === 'function') {
+                    handleLogout();
+                } else {
+                    console.warn("index.js: handleLogout function not found.");
+                }
+            });
+            logoutButton.dataset.listenerAttached = 'true';
+            console.log("index.js: Listener para handleLogout anexado ao #logout-button.");
+        }
+    } else {
+        console.warn("index.js: #logout-button não encontrado no header.");
+    }
+
+    if (typeof checkLoginState === 'function') {
+        checkLoginState();
+    } else {
+        console.warn("index.js: checkLoginState function not found. Ensure auth.js is loaded before index.js and defines this function globally.");
+    }
+
     console.log("index.js: initializePageScripts CONCLUÍDA.");
 }
 // Expor a função para loadPartials.js

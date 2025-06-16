@@ -1,5 +1,23 @@
 // Em: frontend/scripts/loadPartials.js
 
+// Helper function to load a script dynamically
+function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = false; // Ensure sequential execution relative to other async scripts if needed, though await handles this here
+        script.onload = () => {
+            console.log(`loadPartials.js: Script ${src} carregado com sucesso.`);
+            resolve();
+        };
+        script.onerror = () => {
+            console.error(`loadPartials.js: Falha ao carregar o script ${src}.`);
+            reject(new Error(`Failed to load script ${src}`));
+        };
+        document.head.appendChild(script);
+    });
+}
+
 async function fetchAndInjectHTML(filePath, placeholderId) {
   try {
     // USA CAMINHO ABSOLUTO A PARTIR DA RAIZ DO SITE
@@ -36,6 +54,17 @@ async function fetchAndInjectHTML(filePath, placeholderId) {
 
 async function initializePagePartials() {
   console.log("loadPartials.js: Iniciando carregamento de parciais...");
+
+  try {
+    // Load auth.js first
+    // Path assumes frontend/scripts/auth.js is accessible as /scripts/auth.js from the web root
+    await loadScript('/scripts/auth.js');
+  } catch (error) {
+    console.error("loadPartials.js: ERRO CRÍTICO - Não foi possível carregar auth.js. Funcionalidades de autenticação podem não funcionar.", error);
+    // Decide if you want to stop further execution or show a message to the user
+    // For now, it will log the error and continue, potentially leading to other errors if auth.js functions are undefined
+  }
+
   // CAMINHOS ABSOLUTOS DA RAIZ DO SITE
   const headerInjectedElement = await fetchAndInjectHTML('/_header.html', 'header-placeholder');
   const footerInjectedElement = await fetchAndInjectHTML('/_footer.html', 'footer-placeholder');

@@ -56,10 +56,11 @@ function checkLoginState() {
             welcomeMessageElement.classList.remove('tw-hidden');
         }
 
-        // New logic for collapsedHeaderItems alignment:
+        // Alignment logic for collapsedHeaderItems when LOGGED IN
         if (collapsedHeaderItems) {
-            collapsedHeaderItems.classList.remove('lg:justify-end');
-            collapsedHeaderItems.classList.add('lg:justify-between');
+            collapsedHeaderItems.classList.remove('lg:justify-end');    // Remove Tailwind class
+            collapsedHeaderItems.classList.remove('lg:justify-between'); // Remove Tailwind class just in case
+            collapsedHeaderItems.style.justifyContent = 'space-between'; // Set inline style
         }
 
     } else {
@@ -89,10 +90,11 @@ function checkLoginState() {
             welcomeMessageElement.textContent = ''; // Clear text on logout
         }
 
-        // New logic for collapsedHeaderItems alignment:
+        // Alignment logic for collapsedHeaderItems when LOGGED OUT
         if (collapsedHeaderItems) {
-            collapsedHeaderItems.classList.remove('lg:justify-between');
-            collapsedHeaderItems.classList.add('lg:justify-end');
+            collapsedHeaderItems.classList.remove('lg:justify-between'); // Remove Tailwind class
+            collapsedHeaderItems.classList.remove('lg:justify-end');    // Remove Tailwind class just in case
+            collapsedHeaderItems.style.justifyContent = 'flex-end';    // Set inline style
         }
     }
 }

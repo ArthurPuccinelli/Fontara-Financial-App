@@ -8,6 +8,7 @@ function checkLoginState() {
 
     // Elements to toggle based on login state
     const mainNavLinks = document.getElementById('main-nav-links'); // In _header.html
+    const collapsedHeaderItems = document.getElementById('collapsed-header-items'); // Added for convenience
     const nossosServicosSection = document.getElementById('nossos-servicos'); // In index.html
     const logoutButton = document.getElementById('logout-button'); // In _header.html
     const areaClienteButton = document.getElementById('login-client-area'); // In _header.html
@@ -20,6 +21,14 @@ function checkLoginState() {
 
     if (isLoggedIn) {
         console.log("auth.js: User is logged in.");
+
+        // New logic for mainNavLinks:
+        if (mainNavLinks) {
+            // Ensure it's visible. Our HTML uses max-lg:tw-hidden and lg:!tw-flex.
+            // Removing 'tw-hidden' is safe if it was added by the logged-out state.
+            mainNavLinks.classList.remove('tw-hidden'); 
+        }
+
         if (nossosServicosSection) nossosServicosSection.classList.remove('tw-hidden');
         
         if (logoutButton) {
@@ -47,8 +56,20 @@ function checkLoginState() {
             welcomeMessageElement.classList.remove('tw-hidden');
         }
 
+        // New logic for collapsedHeaderItems alignment:
+        if (collapsedHeaderItems) {
+            collapsedHeaderItems.classList.remove('lg:justify-end');
+            collapsedHeaderItems.classList.add('lg:justify-between');
+        }
+
     } else {
         console.log("auth.js: User is NOT logged in.");
+
+        // New logic for mainNavLinks:
+        if (mainNavLinks) {
+            mainNavLinks.classList.add('tw-hidden'); // Hide for logged-out users
+        }
+
         if (nossosServicosSection) nossosServicosSection.classList.add('tw-hidden');
         
         if (logoutButton) {
@@ -66,6 +87,12 @@ function checkLoginState() {
         if (welcomeMessageElement) {
             welcomeMessageElement.classList.add('tw-hidden');
             welcomeMessageElement.textContent = ''; // Clear text on logout
+        }
+
+        // New logic for collapsedHeaderItems alignment:
+        if (collapsedHeaderItems) {
+            collapsedHeaderItems.classList.remove('lg:justify-between');
+            collapsedHeaderItems.classList.add('lg:justify-end');
         }
     }
 }

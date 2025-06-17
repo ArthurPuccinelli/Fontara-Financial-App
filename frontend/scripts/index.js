@@ -85,7 +85,11 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
                     } else {
                         content.style.paddingTop = '10px'; 
                         content.style.paddingBottom = '10px';
-                        content.style.maxHeight = content.scrollHeight + "px";
+                        // Use requestAnimationFrame to set maxHeight after the browser has painted,
+                        // which can help get a more accurate scrollHeight, especially with web fonts.
+                        requestAnimationFrame(() => {
+                            content.style.maxHeight = content.scrollHeight + "px";
+                        });
                         icon.classList.replace('bi-plus', 'bi-dash');
                     }
                 });
@@ -301,6 +305,23 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
 
         // Call to initialize FAQ accordions
         initializeFaqAccordions();
+
+        // Add resize listener for FAQ accordions
+        if (!window.faqResizeListenerAttached) {
+            window.addEventListener('resize', () => {
+                // Consider adding a debounce/throttle mechanism here if performance becomes an issue
+                const openFaqContents = document.querySelectorAll('.faq .content'); // Make sure this selector is correct for your HTML
+                openFaqContents.forEach(content => {
+                    if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+                        // Recalculate and set maxHeight
+                        // Padding is set to 10px when opening, so scrollHeight should be correct
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                    }
+                });
+            });
+            window.faqResizeListenerAttached = true;
+            console.log("index.js: FAQ resize listener attached.");
+        }
 
         console.log('Debug initializePageScripts: About to call checkLoginState() for initial UI setup.');
         if (typeof checkLoginState === 'function') {

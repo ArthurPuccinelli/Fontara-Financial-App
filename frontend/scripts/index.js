@@ -4,7 +4,7 @@ console.log("index.js: Script carregado.");
 
 // Variáveis que eram globais no seu script original.
 // Serão atribuídas dentro de initializePageScripts após o header ser carregado.
-//let RESPONSIVE_WIDTH = 1024;
+let RESPONSIVE_WIDTH = 1024;
 let isHeaderCollapsed; // Estado do menu mobile
 let collapseBtn;       // Botão hamburguer
 let collapseHeaderItems; // O contêiner do menu que colapsa

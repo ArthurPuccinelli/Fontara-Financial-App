@@ -91,7 +91,7 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
                         // then use requestAnimationFrame to sync with the paint cycle.
                         setTimeout(() => {
                             requestAnimationFrame(() => {
-                                content.style.maxHeight = content.scrollHeight + "px";
+                                content.style.maxHeight = (content.scrollHeight + 5) + "px";
                             });
                         }, 10); // 10 millisecond delay
 

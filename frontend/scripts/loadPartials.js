@@ -58,7 +58,7 @@ async function initializePagePartials() {
   try {
     // Load auth.js first
     // Path assumes frontend/scripts/auth.js is accessible as /scripts/auth.js from the web root
-    await loadScript('/scripts/auth.js');
+    await loadScript('/scripts/auth.js'); 
   } catch (error) {
     console.error("loadPartials.js: ERRO CRÍTICO - Não foi possível carregar auth.js. Funcionalidades de autenticação podem não funcionar.", error);
     // Decide if you want to stop further execution or show a message to the user

@@ -299,6 +299,9 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
             }
         }
 
+        // Call to initialize FAQ accordions
+        initializeFaqAccordions();
+
         console.log('Debug initializePageScripts: About to call checkLoginState() for initial UI setup.');
         if (typeof checkLoginState === 'function') {
             checkLoginState();
@@ -313,9 +316,7 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
 
     document.addEventListener("DOMContentLoaded", function() {
         console.log("index.js: DOMContentLoaded evento disparado.");
-        if (!document.querySelector('#header-placeholder')) { 
-            initializeFaqAccordions(); 
-        }
+        // The call to initializeFaqAccordions() has been moved to initializePageScripts
     });
 
 } else {

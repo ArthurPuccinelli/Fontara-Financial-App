@@ -8,6 +8,7 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
 
     // Variáveis que eram globais no seu script original.
     // Serão atribuídas dentro de initializePageScripts após o header ser carregado.
+    var RESPONSIVE_WIDTH = 1024;
     var isHeaderCollapsed; // Estado do menu mobile
     var collapseBtn;       // Botão hamburguer
     var collapseHeaderItems; // O contêiner do menu que colapsa

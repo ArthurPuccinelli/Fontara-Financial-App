@@ -85,11 +85,16 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
                     } else {
                         content.style.paddingTop = '10px'; 
                         content.style.paddingBottom = '10px';
-                        // Use requestAnimationFrame to set maxHeight after the browser has painted,
-                        // which can help get a more accurate scrollHeight, especially with web fonts.
-                        requestAnimationFrame(() => {
-                            content.style.maxHeight = content.scrollHeight + "px";
-                        });
+
+                        // Use setTimeout to delay the execution slightly,
+                        // allowing the browser more time to reflow and finalize layout,
+                        // then use requestAnimationFrame to sync with the paint cycle.
+                        setTimeout(() => {
+                            requestAnimationFrame(() => {
+                                content.style.maxHeight = content.scrollHeight + "px";
+                            });
+                        }, 10); // 10 millisecond delay
+
                         icon.classList.replace('bi-plus', 'bi-dash');
                     }
                 });

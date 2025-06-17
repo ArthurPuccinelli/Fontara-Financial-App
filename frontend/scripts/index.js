@@ -8,7 +8,6 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
 
     // Variáveis que eram globais no seu script original.
     // Serão atribuídas dentro de initializePageScripts após o header ser carregado.
-    var RESPONSIVE_WIDTH = 1024;
     var isHeaderCollapsed; // Estado do menu mobile
     var collapseBtn;       // Botão hamburguer
     var collapseHeaderItems; // O contêiner do menu que colapsa
@@ -77,13 +76,13 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
 
                     if (content.style.maxHeight && content.style.maxHeight !== '0px') {
                         content.style.maxHeight = '0px';
-                        setTimeout(() => { 
+                        setTimeout(() => {
                             content.style.paddingTop = '0px';
                             content.style.paddingBottom = '0px';
-                        }, 300); 
+                        }, 300);
                         icon.classList.replace('bi-dash', 'bi-plus');
                     } else {
-                        content.style.paddingTop = '10px'; 
+                        content.style.paddingTop = '10px';
                         content.style.paddingBottom = '10px';
                         content.style.maxHeight = content.scrollHeight + "px";
                         icon.classList.replace('bi-plus', 'bi-dash');
@@ -99,13 +98,13 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
       const htmlElement = document.documentElement;
       const storedTheme = localStorage.getItem('theme');
 
-      if (themeToggleIcon) { 
+      if (themeToggleIcon) {
         if (storedTheme === 'dark') {
           htmlElement.classList.add('tw-dark');
           themeToggleIcon.classList.remove('bi-sun');
           themeToggleIcon.classList.add('bi-moon');
           console.log("index.js: Tema escuro aplicado (localStorage).");
-        } else { 
+        } else {
           htmlElement.classList.remove('tw-dark');
           themeToggleIcon.classList.remove('bi-moon');
           themeToggleIcon.classList.add('bi-sun');
@@ -121,7 +120,7 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
       }
     }
 
-    function toggleMode() { 
+    function toggleMode() {
       console.log("index.js: Alternando tema...");
       const htmlElement = document.documentElement;
       if (!themeToggleButton || !themeToggleIcon) {
@@ -151,24 +150,24 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
             return;
         }
 
-        collapseBtn = headerElement.querySelector("#collapse-btn"); 
+        collapseBtn = headerElement.querySelector("#collapse-btn");
         collapseHeaderItems = headerElement.querySelector("#collapsed-header-items");
-        navToggle = headerElement.querySelector("#nav-dropdown-toggle-0"); 
-        navDropdown = headerElement.querySelector("#nav-dropdown-list-0"); 
-        themeToggleButton = headerElement.querySelector('#theme-toggle'); 
-        themeToggleIcon = headerElement.querySelector('#toggle-mode-icon'); 
+        navToggle = headerElement.querySelector("#nav-dropdown-toggle-0");
+        navDropdown = headerElement.querySelector("#nav-dropdown-list-0");
+        themeToggleButton = headerElement.querySelector('#theme-toggle');
+        themeToggleIcon = headerElement.querySelector('#toggle-mode-icon');
 
         if (collapseHeaderItems && collapseBtn) {
-            isHeaderCollapsed = true; 
-            if (window.innerWidth >= RESPONSIVE_WIDTH) { 
+            isHeaderCollapsed = true;
+            if (window.innerWidth >= RESPONSIVE_WIDTH) {
                 isHeaderCollapsed = false;
                 collapseHeaderItems.classList.remove("max-lg:tw-hidden");
-                collapseBtn.classList.add("lg:tw-hidden"); 
+                collapseBtn.classList.add("lg:tw-hidden");
                 collapseBtn.classList.remove("bi-x");
                 collapseBtn.classList.add("bi-list");
-            } else { 
+            } else {
                 collapseHeaderItems.classList.add("max-lg:tw-hidden");
-                collapseBtn.classList.remove("lg:tw-hidden"); 
+                collapseBtn.classList.remove("lg:tw-hidden");
                 collapseBtn.classList.remove("bi-x");
                 collapseBtn.classList.add("bi-list");
             }
@@ -177,7 +176,7 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
         }
 
         if (collapseBtn) {
-            if (collapseBtn.dataset.listenerAttached !== 'true') { 
+            if (collapseBtn.dataset.listenerAttached !== 'true') {
                 collapseBtn.addEventListener('click', toggleHeader);
                 collapseBtn.dataset.listenerAttached = 'true';
                 console.log("index.js: Listener para toggleHeader anexado ao #collapse-btn.");
@@ -187,7 +186,7 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
         }
 
         if (navToggle && navDropdown) {
-            if (navToggle.dataset.listenerAttached !== 'true') { 
+            if (navToggle.dataset.listenerAttached !== 'true') {
                 navToggle.addEventListener('click', (event) => {
                     event.stopPropagation();
                     toggleNavDropdown();
@@ -197,10 +196,10 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
             }
             if (!document.body.dataset.clickOutsideDropdownListener) {
                 document.addEventListener('click', (event) => {
-                    if (navDropdown && navDropdown.getAttribute('data-open') === 'true' && 
-                        navToggle && !navToggle.contains(event.target) && 
+                    if (navDropdown && navDropdown.getAttribute('data-open') === 'true' &&
+                        navToggle && !navToggle.contains(event.target) &&
                         !navDropdown.contains(event.target)) {
-                        toggleNavDropdown(); 
+                        toggleNavDropdown();
                     }
                 });
                 document.body.dataset.clickOutsideDropdownListener = 'true';
@@ -217,10 +216,10 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
             if(!navToggle) console.warn("index.js: #nav-dropdown-toggle-0 não encontrado.");
             if(!navDropdown) console.warn("index.js: #nav-dropdown-list-0 não encontrado.");
         }
-        
+
         if (themeToggleButton && themeToggleIcon) {
-            applyInitialTheme(); 
-            if (themeToggleButton.dataset.listenerAttached !== 'true') { 
+            applyInitialTheme();
+            if (themeToggleButton.dataset.listenerAttached !== 'true') {
                 themeToggleButton.addEventListener('click', toggleMode);
                 themeToggleButton.dataset.listenerAttached = 'true';
                 console.log("index.js: Listener para toggleMode anexado ao #theme-toggle.");
@@ -228,9 +227,9 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
         } else {
             if(!themeToggleButton) console.warn("index.js: Botão de tema (#theme-toggle) não encontrado.");
             if(!themeToggleIcon) console.warn("index.js: Ícone de tema (#toggle-mode-icon) não encontrado.");
-            applyInitialTheme(); 
+            applyInitialTheme();
         }
-        
+
         const areaClienteButton = headerElement.querySelector('#login-client-area');
         if (areaClienteButton) {
             console.log('Debug initializePageScripts: Attaching click listener to areaClienteButton to call handleLogin.');
@@ -238,7 +237,7 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
                 areaClienteButton.addEventListener('click', function(event) {
                     event.preventDefault();
                     if (typeof handleLogin === 'function') {
-                        handleLogin(); 
+                        handleLogin();
                     } else {
                         console.warn("index.js: handleLogin function (from auth.js) not found.");
                     }
@@ -308,13 +307,13 @@ if (typeof window.FONTARA_INDEX_SCRIPT_EXECUTED === 'undefined') {
 
         console.log("index.js: initializePageScripts CONCLUÍDA.");
     }
-    
+
     window.initializePageScripts = initializePageScripts;
 
     document.addEventListener("DOMContentLoaded", function() {
         console.log("index.js: DOMContentLoaded evento disparado.");
-        if (!document.querySelector('#header-placeholder')) { 
-            initializeFaqAccordions(); 
+        if (!document.querySelector('#header-placeholder')) {
+            initializeFaqAccordions();
         }
     });
 

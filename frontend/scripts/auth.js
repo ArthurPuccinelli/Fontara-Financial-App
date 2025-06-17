@@ -4,7 +4,7 @@ console.log("auth.js: Script loaded.");
 
 function checkLoginState() {
     console.log("auth.js: checkLoginState() called.");
-    const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; // MODIFIED
 
     // Elements to toggle based on login state
     const mainNavLinks = document.getElementById('main-nav-links'); // In _header.html
@@ -22,16 +22,24 @@ function checkLoginState() {
         console.log("auth.js: User is logged in.");
         if (mainNavLinks) mainNavLinks.classList.remove('tw-hidden');
         if (nossosServicosSection) nossosServicosSection.classList.remove('tw-hidden');
-        if (logoutButton) logoutButton.classList.remove('tw-hidden');
-        if (areaClienteButton) areaClienteButton.classList.add('tw-hidden');
+
+        if (logoutButton) {
+            logoutButton.classList.remove('tw-hidden');
+            logoutButton.classList.add('tw-flex'); // Ensure it's flex when visible
+            console.log('Debug checkLoginState (isLoggedIn=true): Final logoutButton classes:', logoutButton.className);
+        }
+
+        if (areaClienteButton) {
+            areaClienteButton.classList.add('tw-hidden');
+            areaClienteButton.classList.remove('tw-flex'); // Remove flex when hidden
+            console.log('Debug checkLoginState (isLoggedIn=true): Final areaClienteButton classes:', areaClienteButton.className);
+        }
+
         if (inlineFormContainer && !inlineFormContainer.classList.contains('tw-hidden')) {
             inlineFormContainer.classList.add('tw-hidden'); // Ensure form is hidden if user is logged in
         }
 
-        if (areaClienteButton) console.log('Debug checkLoginState (isLoggedIn=true): Final areaClienteButton classes:', areaClienteButton.className);
-        if (logoutButton) console.log('Debug checkLoginState (isLoggedIn=true): Final logoutButton classes:', logoutButton.className);
-
-        const username = sessionStorage.getItem('loggedInUser');
+        const username = localStorage.getItem('loggedInUser'); // MODIFIED
         if (welcomeMessageElement && username) {
             welcomeMessageElement.textContent = `Bem vindo, ${username}`;
             welcomeMessageElement.classList.remove('tw-hidden');
@@ -44,11 +52,18 @@ function checkLoginState() {
         console.log("auth.js: User is NOT logged in.");
         if (mainNavLinks) mainNavLinks.classList.add('tw-hidden');
         if (nossosServicosSection) nossosServicosSection.classList.add('tw-hidden');
-        if (logoutButton) logoutButton.classList.add('tw-hidden');
-        if (areaClienteButton) areaClienteButton.classList.remove('tw-hidden');
 
-        if (areaClienteButton) console.log('Debug checkLoginState (isLoggedIn=false): Final areaClienteButton classes:', areaClienteButton.className);
-        if (logoutButton) console.log('Debug checkLoginState (isLoggedIn=false): Final logoutButton classes:', logoutButton.className);
+        if (logoutButton) {
+            logoutButton.classList.add('tw-hidden');
+            logoutButton.classList.remove('tw-flex'); // Remove flex when hidden
+            console.log('Debug checkLoginState (isLoggedIn=false): Final logoutButton classes:', logoutButton.className);
+        }
+
+        if (areaClienteButton) {
+            areaClienteButton.classList.remove('tw-hidden');
+            areaClienteButton.classList.add('tw-flex'); // Ensure it's flex when visible
+            console.log('Debug checkLoginState (isLoggedIn=false): Final areaClienteButton classes:', areaClienteButton.className);
+        }
 
         if (welcomeMessageElement) {
             welcomeMessageElement.classList.add('tw-hidden');
@@ -73,15 +88,15 @@ function handleInlineFormSubmit(event) {
     if (event) event.preventDefault(); // Prevent actual form submission
     console.log("auth.js: handleInlineFormSubmit() called.");
 
-    sessionStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('isLoggedIn', 'true'); // MODIFIED
 
     const usernameInput = document.getElementById('inline-username');
     if (usernameInput && usernameInput.value.trim() !== '') {
-        sessionStorage.setItem('loggedInUser', usernameInput.value.trim());
-        console.log("auth.js: Username stored in session: " + usernameInput.value.trim());
+        localStorage.setItem('loggedInUser', usernameInput.value.trim()); // MODIFIED
+        console.log("auth.js: Username stored in localStorage: " + usernameInput.value.trim()); // MODIFIED
     } else {
-        sessionStorage.setItem('loggedInUser', 'Usuário'); // Fallback username
-        console.log("auth.js: Username input empty or not found, stored fallback 'Usuário'.");
+        localStorage.setItem('loggedInUser', 'Usuário'); // MODIFIED - Fallback username
+        console.log("auth.js: Username input empty or not found, stored fallback 'Usuário' in localStorage."); // MODIFIED
     }
 
     const formContainer = document.getElementById('inline-login-form-container');
@@ -113,9 +128,9 @@ function closeInlineLoginForm() {
 function handleLogout() {
     console.log('Debug: handleLogout() invoked.');
     console.log("auth.js: handleLogout() called.");
-    sessionStorage.removeItem('isLoggedIn');
-    sessionStorage.removeItem('loggedInUser');
-    console.log("auth.js: Username removed from session.");
+    localStorage.removeItem('isLoggedIn'); // MODIFIED
+    localStorage.removeItem('loggedInUser'); // MODIFIED
+    console.log("auth.js: Username removed from localStorage."); // MODIFIED
 
     checkLoginState();
     // Consider redirecting to home page or login page after logout

@@ -78,7 +78,6 @@ header > .collapsible-header{
     gap: 1rem;
     width: 100%;
     background-color: inherit;
-    place-content: center;
     overflow: hidden;
     transition: width 0.3s ease, height 0.3s ease;
 }

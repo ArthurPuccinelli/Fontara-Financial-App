@@ -51,6 +51,30 @@
   <body
     class="tw-flex tw-min-h-[100vh] tw-flex-col tw-bg-[#fcfcfc] tw-text-black dark:tw-bg-black dark:tw-text-white"
   >
+<!-- Inline Login Form Container -->
+<div id="inline-login-form-container" class="tw-hidden tw-fixed tw-inset-0 tw-bg-gray-600 tw-bg-opacity-50 tw-flex tw-items-center tw-justify-center tw-z-50">
+    <div class="tw-bg-white dark:tw-bg-gray-800 tw-p-8 tw-rounded-lg tw-shadow-xl tw-max-w-md" style="max-width: 448px !important; width: 100%; margin-left: auto; margin-right: auto;">
+        <h2 class="tw-text-2xl tw-font-semibold tw-mb-6 tw-text-center dark:tw-text-white">Login</h2>
+        <form id="inline-login-form">
+            <div class="tw-mb-4">
+                <label for="inline-username" class="tw-block tw-text-sm tw-font-medium tw-text-gray-700 dark:tw-text-gray-300">Usuário</label>
+                <input type="text" id="inline-username" name="username" required class="tw-mt-1 tw-block tw-w-full tw-px-3 tw-py-2 tw-border-2 tw-rounded-md tw-shadow-sm focus:tw-outline-none sm:tw-text-sm dark:tw-text-white tw-bg-gray-100 dark:tw-bg-gray-700 tw-border-green-600 dark:tw-border-green-500 focus:tw-border-green-700 dark:focus:tw-border-green-600 focus:tw-ring-1 focus:tw-ring-green-600 focus:tw-ring-opacity-30">
+            </div>
+            <div class="tw-mb-6">
+                <label for="inline-password" class="tw-block tw-text-sm tw-font-medium tw-text-gray-700 dark:tw-text-gray-300">Senha</label>
+                <input type="password" id="inline-password" name="password" required class="tw-mt-1 tw-block tw-w-full tw-px-3 tw-py-2 tw-border-2 tw-rounded-md tw-shadow-sm focus:tw-outline-none sm:tw-text-sm dark:tw-text-white tw-bg-gray-100 dark:tw-bg-gray-700 tw-border-green-600 dark:tw-border-green-500 focus:tw-border-green-700 dark:focus:tw-border-green-600 focus:tw-ring-1 focus:tw-ring-green-600 focus:tw-ring-opacity-30">
+            </div>
+            <div class="tw-flex tw-items-center tw-justify-between">
+                <button type="submit" class="btn tw-bg-indigo-600 hover:tw-bg-indigo-700 tw-text-white">
+                    Entrar
+                </button>
+                <button type="button" id="inline-login-close-button" class="btn !tw-bg-transparent !tw-text-gray-700 dark:!tw-text-gray-300 hover:!tw-bg-gray-100 dark:hover:!tw-bg-gray-700">
+                    Fechar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
  <div id="header-placeholder"></div>
 
     <section
@@ -158,7 +182,7 @@
     </section>
 
 <section
-      class="tw-relative tw-mt-10 tw-flex tw-min-h-[100vh] tw-w-full tw-max-w-[100vw] tw-flex-col tw-place-items-center lg:tw-p-6"
+      class="tw-hidden tw-relative tw-mt-10 tw-flex tw-min-h-[100vh] tw-w-full tw-max-w-[100vw] tw-flex-col tw-place-items-center lg:tw-p-6"
       id="nossos-servicos"
     >
       <div
@@ -518,8 +542,6 @@
     </section>
     
     <div id="footer-placeholder"></div>
-    <script src="./scripts/index.js"></script>
-    <script src="./scripts/loadPartials.js" defer></script>
     <script>
       // Se esta página tivesse alguma lógica JS específica, você a colocaria aqui
       // e poderia expô-la via window.initializePageSpecificScripts se necessário.
@@ -528,28 +550,29 @@
       // }
       // window.initializePageSpecificScripts = initializeMinhaPaginaScripts;
     </script>
+
+    <!-- External libraries like GSAP, Typed.js -->
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/gsap.min.js"
+      integrity="sha512-B1lby8cGcAUU3GR+Fd809/ZxgHbfwJMp0jLTVfHiArTuUt++VqSlJpaJvhNtRf3NERaxDNmmxkdx2o+aHd4bvw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/ScrollTrigger.min.js"
+      integrity="sha512-AY2+JxnBETJ0wcXnLPCcZJIJx0eimyhz3OJ55k2Jx4RtYC+XdIi2VtJQ+tP3BaTst4otlGG1TtPJ9fKrAUnRdQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.10/typed.min.js"
+      integrity="sha512-hIlMpy2enepx9maXZF1gn0hsvPLerXoLHdb095CmRY5HG3bZfN7XPBZ14g+TUDH1aGgfLyPHmY9/zuU53smuMw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+
+    <script src="./scripts/loadPartials.js" defer></script>
+    <script src="./scripts/components.js"></script>
+    <script src="./scripts/index.js"></script> 
   </body>
-
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/gsap.min.js"
-    integrity="sha512-B1lby8cGcAUU3GR+Fd809/ZxgHbfwJMp0jLTVfHiArTuUt++VqSlJpaJvhNtRf3NERaxDNmmxkdx2o+aHd4bvw=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  ></script>
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/ScrollTrigger.min.js"
-    integrity="sha512-AY2+JxnBETJ0wcXnLPCcZJIJx0eimyhz3OJ55k2Jx4RtYC+XdIi2VtJQ+tP3BaTst4otlGG1TtPJ9fKrAUnRdQ=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  ></script>
-
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.10/typed.min.js"
-    integrity="sha512-hIlMpy2enepx9maXZF1gn0hsvPLerXoLHdb095CmRY5HG3bZfN7XPBZ14g+TUDH1aGgfLyPHmY9/zuU53smuMw=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  ></script>
-
-  <script src="./scripts/components.js"></script>
-  <script src="./scripts/index.js"></script>
 </html>

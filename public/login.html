@@ -48,7 +48,11 @@
     <script>
         document.getElementById('form-login').addEventListener('submit', function(event) {
             event.preventDefault();
-            window.location.href = 'cliente/dashboard.html';
+            // Set the login flag in session storage
+            sessionStorage.setItem('isLoggedIn', 'true');
+            console.log('Login successful, isLoggedIn flag set.'); // For debugging
+            // Redirect to the main page (assuming public/index.html is the main entry)
+            window.location.href = 'index.html';
         });
     </script>
 </body>

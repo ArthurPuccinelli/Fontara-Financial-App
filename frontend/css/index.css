@@ -182,7 +182,6 @@ hr{
     background-color: var(--btn-bg);
     justify-content: center;
     align-items: center;
-    display: flex;
     cursor: pointer;
 }
 

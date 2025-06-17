@@ -20,7 +20,6 @@ function checkLoginState() {
 
     if (isLoggedIn) {
         console.log("auth.js: User is logged in.");
-        if (mainNavLinks) mainNavLinks.classList.remove('tw-hidden');
         if (nossosServicosSection) nossosServicosSection.classList.remove('tw-hidden');
         
         if (logoutButton) {
@@ -50,7 +49,6 @@ function checkLoginState() {
 
     } else {
         console.log("auth.js: User is NOT logged in.");
-        if (mainNavLinks) mainNavLinks.classList.add('tw-hidden');
         if (nossosServicosSection) nossosServicosSection.classList.add('tw-hidden');
         
         if (logoutButton) {

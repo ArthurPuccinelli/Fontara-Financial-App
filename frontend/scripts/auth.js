@@ -22,13 +22,13 @@ function checkLoginState() {
         console.log("auth.js: User is logged in.");
         if (mainNavLinks) mainNavLinks.classList.remove('tw-hidden');
         if (nossosServicosSection) nossosServicosSection.classList.remove('tw-hidden');
-
+        
         if (logoutButton) {
             logoutButton.classList.remove('tw-hidden');
             logoutButton.classList.add('tw-flex'); // Ensure it's flex when visible
             console.log('Debug checkLoginState (isLoggedIn=true): Final logoutButton classes:', logoutButton.className);
         }
-
+        
         if (areaClienteButton) {
             areaClienteButton.classList.add('tw-hidden');
             areaClienteButton.classList.remove('tw-flex'); // Remove flex when hidden
@@ -43,8 +43,8 @@ function checkLoginState() {
         if (welcomeMessageElement && username) {
             welcomeMessageElement.textContent = `Bem vindo, ${username}`;
             welcomeMessageElement.classList.remove('tw-hidden');
-        } else if (welcomeMessageElement) {
-            welcomeMessageElement.textContent = 'Bem vindo!';
+        } else if (welcomeMessageElement) { 
+            welcomeMessageElement.textContent = 'Bem vindo!'; 
             welcomeMessageElement.classList.remove('tw-hidden');
         }
 
@@ -52,19 +52,19 @@ function checkLoginState() {
         console.log("auth.js: User is NOT logged in.");
         if (mainNavLinks) mainNavLinks.classList.add('tw-hidden');
         if (nossosServicosSection) nossosServicosSection.classList.add('tw-hidden');
-
+        
         if (logoutButton) {
             logoutButton.classList.add('tw-hidden');
             logoutButton.classList.remove('tw-flex'); // Remove flex when hidden
             console.log('Debug checkLoginState (isLoggedIn=false): Final logoutButton classes:', logoutButton.className);
         }
-
+        
         if (areaClienteButton) {
             areaClienteButton.classList.remove('tw-hidden');
             areaClienteButton.classList.add('tw-flex'); // Ensure it's flex when visible
             console.log('Debug checkLoginState (isLoggedIn=false): Final areaClienteButton classes:', areaClienteButton.className);
         }
-
+        
         if (welcomeMessageElement) {
             welcomeMessageElement.classList.add('tw-hidden');
             welcomeMessageElement.textContent = ''; // Clear text on logout
@@ -103,7 +103,7 @@ function handleInlineFormSubmit(event) {
     if (formContainer) {
         formContainer.classList.add('tw-hidden');
     }
-
+    
     // Clear form fields (good practice)
     const passwordField = document.getElementById('inline-password');
     if (usernameInput) usernameInput.value = ''; // Already have usernameInput from above
@@ -131,7 +131,7 @@ function handleLogout() {
     localStorage.removeItem('isLoggedIn'); // MODIFIED
     localStorage.removeItem('loggedInUser'); // MODIFIED
     console.log("auth.js: Username removed from localStorage."); // MODIFIED
-
+    
     checkLoginState();
     // Consider redirecting to home page or login page after logout
     // window.location.href = 'index.html'; // Or the main page

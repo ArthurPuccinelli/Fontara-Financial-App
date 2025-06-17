@@ -26,7 +26,7 @@ function checkLoginState() {
         if (mainNavLinks) {
             // Ensure it's visible. Our HTML uses max-lg:tw-hidden and lg:!tw-flex.
             // Removing 'tw-hidden' is safe if it was added by the logged-out state.
-            mainNavLinks.classList.remove('tw-hidden'); 
+            mainNavLinks.classList.remove('tw-hidden');
         }
 
         if (nossosServicosSection) nossosServicosSection.classList.remove('tw-hidden');

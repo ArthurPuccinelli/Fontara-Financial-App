@@ -1,174 +1,259 @@
-# Connected Fields Extension App Reference Implementation
-## Introduction
-This reference implementation models the implementation of [connected fields verification](https://developers.docusign.com/extension-apps/extension-apps-101/supported-extensions/connected-fields/) in an [extension app](https://developers.docusign.com/extension-apps/).
+# Fontara Financial - Docusign Integration Service
 
-To test this reference implementation, modify the `manifest.json` file.
+## Overview
 
-## Hosted Version (no setup required)
-You can use the hosted version of this reference implementation by directly uploading the manifest file located in the root of the repository: `hosted.manifest.json` to the Docusign Developer Console. See [Upload your manifest and create the file archive app](#3-upload-your-manifest-and-create-the-connected-fields-app).
+This project provides a client data verification service for Docusign envelopes and includes a frontend portal. It allows Docusign to dynamically pull client data based on input provided during the signing process (e.g., a CPF/CNPJ) and offers a user interface for related financial services.
 
-**Note:** The provided manifest includes `clientId` and `clientSecret` values used in the sample authentication connection. These do not authenticate to a real system, but the hosted reference implementation requires these exact values.
+The project is composed of two main parts:
 
-## Choose your setup: local or cloud deployment
-If you want to run the app locally using Node.js and ngrok, follow the [Local setup instructions](#local-setup-instructions) below.
+1.  **Frontend Portal:** A user-facing website built with HTML, CSS (Tailwind CSS), and JavaScript, providing access to various financial products and information.
+2.  **Backend Docusign Integration (Netlify Functions):** A set of serverless functions responsible for handling requests from Docusign, verifying client information (currently using mock data), and serving data according to a predefined Concerto model.
 
-If you want to deploy the app to the cloud using Docker and Terraform, see [Deploying an extension app to the cloud with Terraform](terraform/README.md). This includes cloud-specific setup instructions for the following cloud providers:
-- [Amazon Web Services](https://aws.amazon.com/)
-- [Microsoft Azure](https://azure.microsoft.com/)
-- [Google Cloud Platform](https://cloud.google.com/)
+## Technologies Used
 
-## Local setup instructions
+*   **Frontend:**
+    *   HTML
+    *   CSS (Tailwind CSS)
+    *   JavaScript
+*   **Backend:**
+    *   Node.js
+    *   Netlify Functions
+    *   Express.js (potentially, based on dependencies, for local proxying or function structure)
+*   **Docusign Integration:**
+    *   Docusign eSignature API
+    *   Docusign Connected Fields
+    *   Concerto Data Modeling (`.cto` files)
+*   **Authentication:**
+    *   JWT (JSON Web Tokens)
+    *   Auth0 (for validating JWTs from Docusign callbacks)
+*   **Development & Deployment:**
+    *   Git
+    *   npm
+    *   Netlify (for deployment and serverless functions)
+    *   Esbuild (for bundling Netlify functions)
 
-### Video Walkthrough
-[![Reference implementation videos](https://img.youtube.com/vi/_4p7GWK5aoA/0.jpg)](https://youtube.com/playlist?list=PLXpRTgmbu4orBQrYWPAXa4EBXv0IGGzID&feature=shared)
 
-### 1. Clone the repository
-Run the following command to clone the repository:
+## Frontend Details
+
+The frontend portal is located in the `frontend/` directory. It provides users with access to information about various financial products and services offered by Fontara.
+
+Key characteristics:
+
+*   **Structure:** Static HTML files serve as the primary content pages (e.g., `index.html`, `credito-imobiliario.html`, `investimentos.html`).
+    *   `assets/`: Contains static assets like images (`assets/images/`) and documents (`assets/documentos/`).
+    *   `css/`: Contains stylesheets. `css/source.css` is the input for Tailwind CSS, and `css/tailwind-build.css` is the generated output.
+    *   `scripts/`: Contains client-side JavaScript files. `scripts/loadPartials.js` suggests that common HTML parts like headers and footers (`_header.html`, `_footer.html`) might be loaded dynamically.
+*   **Styling:** Tailwind CSS is used for styling. The configuration can be found in `frontend/tailwind.config.js`.
+    *   To build the Tailwind CSS, navigate to the `frontend/` directory and run: `npm run build:css` (This script is defined in `frontend/package.json`).
+*   **Dependencies:** Frontend specific dependencies are managed in `frontend/package.json`. Install them by running `npm install` within the `frontend/` directory.
+*   **Local Viewing:** To view the frontend locally, you can typically open the `.html` files directly in a browser or serve the `frontend/` directory using a simple HTTP server. When using Netlify CLI for backend development (`netlify dev`), it will also usually serve the frontend from the directory specified in `netlify.toml` (which is `frontend/`).
+
+
+## Backend Details (Netlify Functions)
+
+The backend logic, primarily for Docusign integration, is implemented as serverless functions using Netlify Functions. These functions are located in the `netlify/functions/` directory.
+
+Key functions and their roles (refer to `netlify/functions/DOCUSIGN_INTEGRATION_GUIDE.md` for more in-depth details):
+
+*   **`verify.js`**: This is the main endpoint that Docusign calls during a signing process when Connected Fields are used. It receives data from Docusign (like `clienteId`), validates an incoming JWT (from Auth0) for security, calls `verificaCPFeCNPJ.js` to get client information, and then formats the response for Docusign.
+*   **`GetTypeDefinition.js`**: Provides Docusign with the detailed data schema (structure, types, properties) of the `VerificacaoDeCliente` concept. This is based on the `model.cto` file and translated into a JSON format Docusign understands.
+*   **`GetTypeNames.js`**: Supplies Docusign with a list of available data type names (e.g., "VerificacaoDeCliente") and their human-readable labels.
+*   **`verificaCPFeCNPJ.js`**: Contains the core business logic for fetching or generating client verification data based on a `clienteId`. **Currently, this function returns mock/dummy data.** In a production environment, this would query a real database or external API.
+*   **`docusign-listener.js` & `docusign-actions.js`**: These functions suggest further Docusign integration points, possibly for handling Docusign Connect events or other envelope/recipient actions. Consult their code and the Docusign guide for specifics.
+*   **`get-docusign-client-id.js`**: Retrieves the Docusign Client ID, likely used for API interactions.
+*   **Helper/Testing Functions:**
+    *   `verificaCPFeCNPJ-http.js` and `verificaCPFeCNPJHandler.js`: These are HTTP-triggered wrappers around `verificaCPFeCNPJ.js`, useful for testing the data retrieval logic independently of the full Docusign flow.
+
+*   **Data Modeling (`model.cto`)**: The structure of the data exchanged with Docusign (specifically for the `VerificacaoDeCliente` concept) is defined in `netlify/functions/model.cto` using the Concerto Modeling Language. This model includes fields like `clienteId`, `score`, `status`, `dataConsulta`, `endereco`, and `planoAtual`.
+
+*   **Node.js Version**: The `netlify.toml` file specifies Node.js version 20 for the runtime environment of these functions.
+*   **Bundling**: Functions are bundled using `esbuild`, as configured in `netlify.toml`.
+
+
+## Data Flow and Docusign Integration
+
+This service integrates with Docusign using its "Connected Fields" feature. The primary goal is to allow Docusign envelopes to dynamically fetch and populate client data during the signing ceremony.
+
+**Key Data Concept: `VerificacaoDeCliente`**
+
+*   **Definition**: Defined in `netlify/functions/model.cto`, this Concerto model represents the client information structure.
+*   **Properties**: Includes `clienteId` (String, mandatory input like CPF/CNPJ), `score` (Integer), `status` (String), `dataConsulta` (DateTime), `endereco` (String), and `planoAtual` (String).
+*   **Usage**: Docusign uses this model (via `GetTypeDefinition.js`) to understand what data it can request. The `verify.js` function returns data matching this structure.
+
+**Integration Steps:**
+
+1.  **Configuration Phase (in Docusign):**
+    *   A Docusign administrator configures a "Connected Field" app, pointing to this service's Netlify functions.
+    *   Docusign calls `GetTypeNames.js` to list available data types (i.e., `VerificacaoDeCliente`).
+    *   Docusign calls `GetTypeDefinition.js` to get the schema for `VerificacaoDeCliente`.
+
+2.  **Runtime Verification (during Docusign Signing):**
+    *   A user starts a Docusign signing session for an envelope using these Connected Fields.
+    *   Docusign makes an API call to this service's `verify.js` endpoint.
+    *   The request to `verify.js` includes:
+        *   An `Authorization: Bearer <JWT>` header (token issued by Auth0).
+        *   A JSON body with `typeName: "VerificacaoDeCliente"` and `data: { "clienteId": "<user_input>" }`.
+    *   **`verify.js` Processing:**
+        1.  **Authenticates** the JWT using Auth0's JWKS URI.
+        2.  **Retrieves/Generates Data** by calling `verificaCPFeCNPJ(data.clienteId)`.
+        3.  **Formats Response** into the JSON structure Docusign expects, including verification status and the `VerificacaoDeCliente` data within a `suggestions` array.
+    *   Docusign receives the response and populates the data into the document fields.
+
+(For a more detailed flow, refer to `netlify/functions/DOCUSIGN_INTEGRATION_GUIDE.md`)
+
+
+## Environment Variables and Configuration
+
+To run and deploy this project, certain environment variables need to be configured. For local development, you can create a `.env` file in the root of the project (ensure this file is listed in `.gitignore` and not committed). For Netlify deployments, these variables should be set in the Netlify build & deploy settings.
+
+**Required Environment Variables:**
+
+*   **For Auth0 JWT Validation (used in `verify.js`):**
+    *   `AUTH0_DOMAIN`: Your Auth0 domain (e.g., `fontara.us.auth0.com`). This is used to construct the JWKS URI.
+    *   `AUTH0_AUDIENCE`: The audience for your API in Auth0 (e.g., `https://fontarafinancial.netlify.app`).
+
+*   **For Docusign API Interaction (potentially used by various Docusign functions):**
+    *   `DOCUSIGN_CLIENT_ID`: Your Docusign integration key (client ID). The function `get-docusign-client-id.js` likely provides this to other functions.
+    *   `DOCUSIGN_IMPERSONATED_USER_GUID`: The GUID of the Docusign user to impersonate for API calls if using JWT Grant authentication.
+    *   `DOCUSIGN_PRIVATE_KEY`: The private key corresponding to your Docusign integration key (client ID) for JWT Grant authentication. This might be a multi-line value; ensure it's formatted correctly when setting as an environment variable.
+    *   `DOCUSIGN_ACCOUNT_ID`: The Docusign Account ID (API Account ID) your integration will target.
+
+*   **General Netlify Configuration (`netlify.toml`):**
+    *   **Build Command:** While the root `package.json` has build scripts, `netlify.toml` currently has an empty `command`. If a specific root build command is needed before deployment (other than frontend CSS build), it should be added here.
+    *   **Publish Directory:** Set to `frontend/`, which is where the static frontend assets are served from.
+    *   **Functions Directory:** Set to `netlify/functions/`.
+    *   **Node Version:** Specified as Node.js 20.
+    *   **Function Bundling:** Uses `esbuild` with specified `external_node_modules` like `docusign-esign` to optimize bundle sizes.
+
+**Note on other variables from generic Docusign examples:**
+
+The generic Docusign reference implementation `README.md` (which this document replaces) mentions `JWT_SECRET_KEY`, `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`, and `AUTHORIZATION_CODE`. These seem related to a mock OAuth server or a different JWT setup not directly used by the primary `verify.js` function in this project, which relies on Auth0 for JWT validation. If parts of the application still use these (e.g., for other non-Docusign related auth or local testing proxies), they would need to be documented here. However, based on the `DOCUSIGN_INTEGRATION_GUIDE.md`, the Auth0 variables are paramount for the core Docusign verification flow.
+
+
+## Setup and Local Development
+
+Follow these steps to set up the project for local development:
+
+**1. Prerequisites:**
+
+*   **Node.js:** Install Node.js. It's recommended to use a version manager like `nvm`. The project specifies version 20 in `.nvmrc` and `netlify.toml`. You can run `nvm use` in the project root if you have `nvm` installed.
+*   **npm:** npm (Node Package Manager) is included with Node.js. Used for managing project dependencies.
+*   **Netlify CLI (Recommended):** To easily run the frontend and backend (Netlify Functions) locally, simulating the Netlify environment. Install it globally: `npm install -g netlify-cli`.
+
+**2. Clone the Repository:**
+
 ```bash
-git clone https://github.com/docusign/extension-app-connected-fields-reference-implementation.git
+git clone <repository_url>
+cd <repository_directory>
 ```
 
-### 2. Generate secret values
-- If you already have values for `JWT_SECRET_KEY`, `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`, and `AUTHORIZATION_CODE`, you may skip this step.
+**3. Install Dependencies:**
 
-The easiest way to generate a secret value is to run the following command:
-```bash
-node -e "console.log(require('crypto').randomBytes(64).toString('hex'));"
-```
+*   **Root Dependencies (for backend functions and general project tools):**
+    ```bash
+    npm install
+    ```
+*   **Frontend Dependencies (for Tailwind CSS):**
+    ```bash
+    cd frontend
+    npm install
+    cd ..
+    ```
 
-You will need values for `JWT_SECRET_KEY`, `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`, and `AUTHORIZATION_CODE`.
+**4. Configure Environment Variables:**
 
-### 3. Set the environment variables for the cloned repository
-- If you're running this in a development environment, create a copy of `example.development.env` and save it as `development.env`.
-- If you're running this in a production environment, create a copy of `example.production.env` and save it as `production.env`.
-- Replace `JWT_SECRET_KEY`, `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`, and `AUTHORIZATION_CODE` in `development.env` or `production.env` with your generated values. These values will be used to configure the sample proxy's mock authentication server.
-- Set the `clientId` value in the manifest file to the same value as `OAUTH_CLIENT_ID`.
-- Set the `clientSecret` value in the manifest file to the same value as `OAUTH_CLIENT_SECRET`.
-### 4. [Install and configure Node.js and npm on your machine.](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
-### 5. Install dependencies
-Run the following command to install the necessary dependencies:
-```bash
-npm install
-```
-### 6. Running the proxy server
-#### Development mode:
-Start the proxy server in development mode by running the command:
-```bash
-npm run dev
-```
+*   Create a file named `.env` in the root directory of the project.
+*   Add the necessary environment variables as listed in the "Environment Variables and Configuration" section to this `.env` file. For example:
+    ```env
+    AUTH0_DOMAIN="your-auth0-domain.us.auth0.com"
+    AUTH0_AUDIENCE="your-api-audience"
+    DOCUSIGN_CLIENT_ID="your-docusign-client-id"
+    # Add other Docusign variables like DOCUSIGN_IMPERSONATED_USER_GUID, DOCUSIGN_PRIVATE_KEY, DOCUSIGN_ACCOUNT_ID
+    ```
+*   **Important:** Ensure `.env` is added to your `.gitignore` file to prevent committing secrets.
 
-This will create a local server on the port in the `development.env` file (port 3000 by default) that listens for local changes that trigger a rebuild.
+**5. Build Frontend Assets:**
 
-#### Production mode:
-Start the proxy server in production mode by running the following commands:
-```bash
-npm run build
-npm run start
-```
+*   Compile the Tailwind CSS:
+    ```bash
+    cd frontend
+    npm run build:css
+    cd ..
+    ```
 
-This will start a production build on the port in the `production.env` file (port 3000 by default).
-## Setting up ngrok
-### 1. [Install and configure ngrok for your machine.](https://ngrok.com/docs/getting-started/)
-### 2. Start ngrok
-Run the following command to create a publicly accessible tunnel to your localhost:
+**6. Running the Project Locally:**
 
-```bash
-ngrok http <PORT>
-```
+*   **Using Netlify CLI (Recommended):**
+    The Netlify CLI will host your frontend (from the `publish` directory configured in `netlify.toml`, i.e., `frontend/`) and run your Netlify Functions, simulating the cloud environment.
+    ```bash
+    netlify dev
+    ```
+    This command typically opens your site in a browser and provides a local URL for your functions.
 
-Replace `<PORT>` with the port number in the `development.env` or `production.env` file.
+*   **Manual/Alternative (if not using Netlify CLI for frontend):**
+    *   You can open frontend HTML files (`frontend/*.html`) directly in your browser. However, for full functionality including backend calls, `netlify dev` is preferred.
+    *   The root `package.json` includes scripts like `npm run dev` or `npm run start` which seem to be related to running an Express-based proxy or server (potentially for the Docusign reference implementation this project is based on). If these are still relevant for a specific part of the local development (e.g., a mock auth server, if used), refer to their implementation details. However, for the core Netlify functions and frontend, `netlify dev` is the standard.
 
-### 3. Save the forwarding address
-Copy the `Forwarding` address from the response. You’ll need this address in your manifest file.
+**7. Testing Docusign Integration:**
 
-```bash
-ngrok
-
-Send your ngrok traffic logs to Datadog: https://ngrok.com/blog-post/datadog-log
-
-Session Status                online
-Account                       email@domain.com (Plan: Free)
-Update                        update available (version 3.3.1, Ctrl-U to update)
-Version                       3.3.0
-Region                        United States (us)
-Latency                       60ms
-Web Interface                 http://127.0.0.1:4040
-Forwarding                    https://bbd7-12-202-171-35.ngrok-free.app -> http:
-
-Connections                   ttl     opn     rt1     rt5     p50     p90
-                              0       0       0.00    0.00    0.00    0.00
-```
-
-In this example, the `Forwarding` address to copy is `https://bbd7-12-202-171-35.ngrok-free.app`.
-## Create an extension app
-### 1. Prepare your app manifest
-Replace `<PROXY_BASE_URL>` in your manifest file with the ngrok forwarding address in the following sections:
-- `connections.params.customConfig.tokenUrl`
-- `connections.params.customConfig.authorizationUrl`
-- `actions.params.uri`
-    * Replace this value for all of the actions.
-
-### 2. Navigate to the [Developer Console](https://devconsole.docusign.com/apps)
-Log in with your Docusign developer credentials. You can sign up for a free developer account [here](https://www.docusign.com/developers/sandbox).
-
-### 3. Upload your manifest and create the connected fields app
-To [create your extension app](https://developers.docusign.com/extension-apps/build-an-extension-app/create/), select **Create App > By editing the manifest**. In the app manifest editor that opens, upload your manifest file or paste into the editor itself; then select **Validate**. Once the editor validates your manifest, select **Create App.**
-
-### 4. Test the extension app
-This reference implementation uses mock data to simulate how data can be verified against a database. [Test your extension](https://developers.docusign.com/extension-apps/build-an-extension-app/test/) using the sample data in [vehicleDatabase.csv](https://github.com/docusign/extension-app-connected-fields-reference-implementation/blob/main/src/db/vehicleDatabase.csv). Extension app tests include [integration tests](https://developers.docusign.com/extension-apps/build-an-extension-app/test/integration-tests/) (connection tests and extension tests), [functional tests](https://developers.docusign.com/extension-apps/build-an-extension-app/test/functional-tests/), and [App Center preview](https://developers.docusign.com/extension-apps/build-an-extension-app/test/app-center-preview/).
+*   Testing the Docusign Connected Fields integration typically requires configuring Docusign to point to your local Netlify function URLs (which `netlify dev` will provide, often using a tunnel service like ngrok automatically managed by `netlify dev` or configured manually).
+*   Use the helper functions like `verificaCPFeCNPJ-http.js` (by calling their local URLs) to test the data generation logic independently.
 
 
-### Extension tests
-The Developer Console offers extension tests to verify that a connected fields extension app can connect to and exchange data with third-party APIs (or an API proxy that in turn connects with those APIs).
+## Deployment
 
-**Note:** These instructions only apply if you use the [mock data](https://github.com/docusign/extension-app-connected-fields-reference-implementation/blob/main/src/db/vehicleDatabase.csv) in the reference implementation. If you use your own database, you’ll need to construct your requests based on your own schema. Queries for extension tests in the Developer Console are built using [IQuery](https://developers.docusign.com/extension-apps/extension-app-reference/extension-contracts/custom-query-language/) structure.
+This project is designed for deployment on **Netlify**.
 
+*   **Trigger:** Deployments are typically triggered automatically when changes are pushed to the configured branch in your Git repository (e.g., `main` or `master`).
+*   **Configuration:** The `netlify.toml` file in the root of the project dictates how Netlify builds and deploys the site:
+    *   `build.publish`: Set to `frontend/`, meaning the contents of the `frontend` directory will be deployed as the live site.
+    *   `build.functions`: Set to `netlify/functions/`, where Netlify will find and deploy the serverless functions.
+    *   `build.command`: If there were any root-level build commands required before deployment (beyond the frontend's CSS build, which should ideally be part of the local setup or a specific frontend build script referenced here), they would be specified here. Currently, it's empty in the provided `netlify.toml`.
+*   **Environment Variables:** Ensure all necessary environment variables (as listed in the "Environment Variables and Configuration" section) are correctly set in your Netlify site's build & deploy settings (under "Environment"). These are crucial for the backend functions to operate correctly in the deployed environment.
+*   **Frontend Build:** The frontend's CSS (`frontend/css/tailwind-build.css`) should be committed to the repository after being built locally with `cd frontend && npm run build:css`. Alternatively, the `build.command` in `netlify.toml` could be updated to include this step, e.g., `cd frontend && npm install && npm run build:css && cd ..`.
 
-#### Verify extension test
-The `typeName` property in the sample input maps to the name of a concept in the `model.cto` file. Any valid concept name can be used in this field.
+To deploy:
 
-The `idempotencyKey` property in the sample input can be left as is.
-
-The `data` property in the sample input are the key-value pairs of the properties of the `typeName` that is being verified, where the key is the name of the property within the concept, and the value is the input to verify. For example, if the concept is defined as:
-
-```
-@VerifiableType
-@Term("Vehicle Identification")
-concept VehicleIdentification {
-    @IsRequiredForVerifyingType
-    @Term("VIN")
-    o String vin
-
-    @IsRequiredForVerifyingType
-    @Term("State of Registration")
-    o String stateOfRegistration
-
-    @IsRequiredForVerifyingType
-    @Term("Country of Registration")
-    o String countryOfRegistration
-}
-```
-
-Then the Verify request body would be:
-```
-{
-	"typeName": "VehicleIdentification",
-	"idempotencyKey": "mockIdempotencyKey",
-	"data": {
-		"vin": "XRHFCSNGUP4YBU5HB",
-		"stateOfRegistration": "CA",
-		"countryOfRegistration": "USA"
-	}
-}
-```
+1.  Ensure your project is linked to a Netlify site.
+2.  Push your code to the Git branch that Netlify is configured to watch.
+3.  Netlify will automatically pick up the changes, build (if a command is set), deploy the functions from `netlify/functions/`, and deploy the static assets from `frontend/`.
 
 
-Running the Verify test with the example request body above should return the following properties in the response:
-```
-{
-"verified":true
-"verifyResponseMessage":"Vehicle identification verification completed."
-"verificationResultCode":"SUCCESS"
-"verificationResultDescription":"Vehicle identification verification completed."
-}
-```
+## Contribution Guidelines
+
+We welcome contributions to improve and expand this project! Please follow these guidelines:
+
+**General Workflow:**
+
+1.  **Fork the repository** to your own GitHub account.
+2.  **Create a new branch** for your feature or bug fix: `git checkout -b feature/your-feature-name` or `bugfix/issue-description`.
+3.  **Make your changes** and commit them with clear, descriptive messages.
+4.  **Ensure your code lints correctly** if linters are configured (see below).
+5.  **Test your changes thoroughly** locally.
+6.  **Push your branch** to your fork: `git push origin feature/your-feature-name`.
+7.  **Create a Pull Request (PR)** from your fork's branch to the main repository's `main` (or appropriate) branch.
+8.  Clearly describe the changes made and the problem solved in your PR description.
+
+**Coding Standards:**
+
+*   **JavaScript/Node.js:** Follow existing code style. The root `package.json` includes `eslint` and `@typescript-eslint/parser` (though TypeScript usage isn't confirmed across the board, ESLint is present). Consider running `npm run lint` (if this script is fully configured) to check for issues.
+*   **HTML/CSS:** Maintain clean and readable code. For CSS, try to leverage Tailwind CSS utility classes as much as possible.
+*   **Commit Messages:** Write clear and concise commit messages, explaining the 'what' and 'why' of your changes.
+
+**Adding New Features:**
+
+*   **Frontend Pages:** New static pages can be added to the `frontend/` directory. Remember to update any navigation or links if necessary. If using partials, ensure they are handled correctly by `frontend/scripts/loadPartials.js` or similar logic.
+*   **Netlify Functions:** New serverless functions can be added as JavaScript files within the `netlify/functions/` directory. Each file typically exports a handler function. Remember to configure any necessary environment variables if your new function requires them.
+*   **Data Model (`model.cto`):** If changes to the Docusign data structure are needed, update `netlify/functions/model.cto`. This may also require updates to `GetTypeDefinition.js` and `verify.js` to reflect the new model.
+
+**Reporting Bugs:**
+
+*   Use the GitHub Issues section of the repository to report bugs.
+*   Provide as much detail as possible, including steps to reproduce, expected behavior, and actual behavior.
+
+**For AI Collaborators:**
+
+*   This README aims to provide comprehensive details about the project structure, setup, and key components.
+*   Pay close attention to the "Environment Variables" section for backend function requirements.
+*   The `netlify/functions/DOCUSIGN_INTEGRATION_GUIDE.md` offers deeper insights into the Docusign-specific logic.
+*   When modifying code, especially in backend functions, ensure that data types and structures align with the `model.cto` and the expectations of the Docusign API.

@@ -4,7 +4,11 @@
   "description": "* This template uses tailwind css every tailwind class are prefixed with `tw-`, to help differentiate   between tailwind classes and other classes",
   "main": "tailwind.config.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:css": "tailwindcss -i ./css/source.css -o ./css/tailwind-build.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.0.0"
   },
   "keywords": [],
   "author": "",

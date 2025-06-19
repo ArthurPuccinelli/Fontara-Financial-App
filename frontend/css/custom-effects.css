@@ -1,0 +1,13 @@
+/* Styles for the letter-by-letter text generation effect */
+span#financial-text-effect .letter {
+  opacity: 0;
+  transform: translateY(10px); /* Optional: slight upward movement before appearing */
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+  display: inline-block; /* Important for transform and proper spacing */
+  min-width: 0.5ch; /* Prevents jitter for very narrow characters like 'i' or 'l', adjust as needed */
+}
+
+span#financial-text-effect .letter.visible {
+  opacity: 1;
+  transform: translateY(0);
+}

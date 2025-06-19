@@ -7,7 +7,8 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('scroll', function() {
       const scrollPosition = window.scrollY;
       const elementPosition = textElement.offsetTop;
-      // console.log('Custom Effects: Scroll event. ScrollY:', scrollPosition, 'Element OffsetTop:', elementPosition);
+      console.log('Custom Effects: Scroll event. ScrollY:', scrollPosition, 'Element OffsetTop:', elementPosition); // Uncommented
+      console.log('Custom Effects: scrollY:', scrollPosition, 'calc threshold:', elementPosition - window.innerHeight / 2, 'element.offsetTop:', elementPosition, 'window.innerHeight:', window.innerHeight); // Added
 
       if (scrollPosition > elementPosition - window.innerHeight / 2) {
         if (!textElement.classList.contains('active-effect')) {

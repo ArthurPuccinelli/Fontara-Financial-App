@@ -138,6 +138,127 @@
         }
       ],
       "$class": "concerto.metamodel@1.0.0.ConceptDeclaration"
+    },
+    {
+      "name": "VerificacaoEnergia",
+      "isAbstract": false,
+      "properties": [
+        {
+          "name": "clienteId",
+          "isArray": false,
+          "isOptional": false,
+          "$class": "concerto.metamodel@1.0.0.StringProperty",
+          "decorators": [
+            {
+              "$class": "concerto.metamodel@1.0.0.Decorator",
+              "name": "IsRequiredForVerifyingType"
+            },
+            {
+              "$class": "concerto.metamodel@1.0.0.Decorator",
+              "name": "Term",
+              "arguments": [
+                {
+                  "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                  "value": "Informe o CPF ou CNPJ"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "endereco",
+          "isArray": false,
+          "isOptional": false,
+          "$class": "concerto.metamodel@1.0.0.StringProperty",
+          "decorators": [
+            {
+              "$class": "concerto.metamodel@1.0.0.Decorator",
+              "name": "Term",
+              "arguments": [
+                {
+                  "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                  "value": "Endereço"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "nome",
+          "isArray": false,
+          "isOptional": false,
+          "$class": "concerto.metamodel@1.0.0.StringProperty",
+          "decorators": [
+            {
+              "$class": "concerto.metamodel@1.0.0.Decorator",
+              "name": "Term",
+              "arguments": [
+                {
+                  "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                  "value": "Nome"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "telefone",
+          "isArray": false,
+          "isOptional": false,
+          "$class": "concerto.metamodel@1.0.0.StringProperty",
+          "decorators": [
+            {
+              "$class": "concerto.metamodel@1.0.0.Decorator",
+              "name": "Term",
+              "arguments": [
+                {
+                  "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                  "value": "Telefone"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "unidadeConsumidora",
+          "isArray": false,
+          "isOptional": false,
+          "$class": "concerto.metamodel@1.0.0.StringProperty",
+          "decorators": [
+            {
+              "$class": "concerto.metamodel@1.0.0.Decorator",
+              "name": "Term",
+              "arguments": [
+                {
+                  "$class": "concerto.metamodel@1.0.0.DecoratorString",
+                  "value": "Unidade Consumidora"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "identified": {
+        "name": "clienteId",
+        "$class": "concerto.metamodel@1.0.0.IdentifiedBy"
+      },
+      "decorators": [
+        {
+          "$class": "concerto.metamodel@1.0.0.Decorator",
+          "name": "VerifiableType"
+        },
+        {
+          "$class": "concerto.metamodel@1.0.0.Decorator",
+          "name": "Term",
+          "arguments": [
+            {
+              "$class": "concerto.metamodel@1.0.0.DecoratorString",
+              "value": "Verificação de Energia"
+            }
+          ]
+        }
+      ],
+      "$class": "concerto.metamodel@1.0.0.ConceptDeclaration"
     }
   ]
 }

@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 const { verificaCPFeCNPJ } = require('./verificaCPFeCNPJ');
+const { verificaEnergia } = require('./verificaEnergia');
 
 const client = jwksClient({
   jwksUri: 'https://fontara.us.auth0.com/.well-known/jwks.json'
@@ -60,13 +61,6 @@ exports.handler = async function (event) {
 
     const { typeName, data } = body;
 
-    if (typeName !== 'VerificacaoDeCliente') { 
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: 'typeName inválido.' })
-      };
-    }
-
     if (!data?.clienteId) {
       return {
         statusCode: 400,
@@ -74,22 +68,44 @@ exports.handler = async function (event) {
       };
     }
 
-    const resultadoRaw = await verificaCPFeCNPJ(data.clienteId);
+    let resultado;
 
-    const resultado = {
-      clienteId: String(resultadoRaw.clienteId ?? data.clienteId),
-      score: resultadoRaw.score !== undefined ? parseInt(resultadoRaw.score, 10) : null,
-      status: resultadoRaw.status ?? null,
-      dataConsulta: resultadoRaw.dataConsulta ? new Date(resultadoRaw.dataConsulta).toISOString() : null,
-      endereco: resultadoRaw.endereco ?? null,
-      planoAtual: resultadoRaw.planoAtual ?? null
-    };
+    switch (typeName) {
+      case 'VerificacaoDeCliente':
+        const resultadoRawCliente = await verificaCPFeCNPJ(data.clienteId);
+        resultado = {
+          clienteId: String(resultadoRawCliente.clienteId ?? data.clienteId),
+          score: resultadoRawCliente.score !== undefined ? parseInt(resultadoRawCliente.score, 10) : null,
+          status: resultadoRawCliente.status ?? null,
+          dataConsulta: resultadoRawCliente.dataConsulta ? new Date(resultadoRawCliente.dataConsulta).toISOString() : null,
+          endereco: resultadoRawCliente.endereco ?? null,
+          planoAtual: resultadoRawCliente.planoAtual ?? null
+        };
+        break;
+
+      case 'VerificacaoEnergia':
+        const resultadoRawEnergia = await verificaEnergia(data.clienteId);
+        resultado = {
+          clienteId: String(resultadoRawEnergia.clienteId ?? data.clienteId),
+          nome: resultadoRawEnergia.nome ?? null,
+          endereco: resultadoRawEnergia.endereco ?? null,
+          telefone: resultadoRawEnergia.telefone ?? null,
+          unidadeConsumidora: resultadoRawEnergia.unidadeConsumidora ?? null
+        };
+        break;
+
+      default:
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ message: `typeName inválido: ${typeName}` })
+        };
+    }
 
     const responseBody = {
       verified: true,
       verifyResponseMessage: "Consulta realizada com sucesso.",
       verificationResultCode: "SUCCESS",
-      verificationResultDescription: "Verificação concluída com sucesso para o cliente.",
+      verificationResultDescription: `Verificação concluída com sucesso para ${typeName}.`,
       suggestions: [resultado],
       passthroughResponseData: {
         additionalData: "Informações extras podem ser passadas aqui."

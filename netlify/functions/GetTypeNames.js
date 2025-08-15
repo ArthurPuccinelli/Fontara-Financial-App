@@ -1,24 +1,25 @@
-// netlify/functions/GetTypeNames.js
-
 exports.handler = async function(event, context) {
-  // Este endpoint deve retornar os 'tipos' de verificação que sua integração suporta.
-  // Cada tipo corresponde a um 'Concept' no seu modelo Concerto (model.cto).
-  const types = [
-    {
-      name: "VerificacaoDeCliente", // Nome do Concept no model.cto
-      label: "Fontara BR Financial"  // Rótulo amigável que aparecerá no DocuSign
-    },
-    {
-      name: "VerificacaoEnergia",
-      label: "Fontara Energia"
-    }
-  ];
+  try {
+    // Mesmo se o cliente_id não for passado, agora não vai quebrar mais
+    const typeNames = [
+      { typeName: "clienteId", label: "Cliente Id" },
+      { typeName: "score", label: "Score" },
+      { typeName: "status", label: "Status" },
+      { typeName: "dataConsulta", label: "Data Consulta" },
+      { typeName: "endereco", label: "Endereco" },
+      { typeName: "planoAtual", label: "Plano Atual" }
+    ];
 
-  return {
-    statusCode: 200,
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ types })
-  };
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ typeNames })
+    };
+
+  } catch (error) {
+    console.error('Erro em GetTypeNames:', error.message);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Erro ao buscar tipos' })
+    };
+  }
 };

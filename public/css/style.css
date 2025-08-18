@@ -80,4 +80,38 @@ nav ul li a:hover {
 }
 
 .button.primary {
-    background-color: #30d5c8; /* Cor primária para botões primários
+    background-color: #30d5c8; /* Cor primária para botões primários */
+    color: #fff;
+}
+
+.button.primary:hover {
+    background-color: #28b8ae;
+    color: #fff;
+}
+
+.button.large {
+    padding: 14px 28px;
+    font-size: 1.125rem;
+}
+
+/* Hero section */
+.hero {
+    text-align: center;
+    padding: 80px 0 40px;
+}
+
+.hero h1 {
+    font-size: clamp(2rem, 3vw + 1rem, 3.25rem);
+    line-height: 1.15;
+    max-width: 22ch;
+    margin: 0 auto 12px;
+    text-wrap: balance;
+}
+
+.hero p {
+    font-size: clamp(1rem, 1vw + 0.85rem, 1.25rem);
+    max-width: 60ch;
+    margin: 0 auto 24px;
+    color: #4f6f52;
+    text-wrap: pretty;
+}

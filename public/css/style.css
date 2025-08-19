@@ -80,4 +80,42 @@ nav ul li a:hover {
 }
 
 .button.primary {
-    background-color: #30d5c8; /* Cor primária para botões primários
+    background-color: #30d5c8; /* Cor primária para botões primários */
+    color: #fff;
+}
+
+.button.primary:hover {
+    background-color: #26b8ad;
+    color: #fff;
+}
+
+.button.large {
+    padding: 14px 28px;
+    font-size: 1.125rem;
+    border-radius: 8px;
+}
+
+.hero {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.hero h1 {
+    margin: 0 0 10px;
+    font-weight: 700;
+    line-height: 1.15;
+    text-wrap: balance;
+    font-size: clamp(1.8rem, 4.5vw, 3rem);
+}
+
+.hero p {
+    margin: 0 0 24px;
+    color: #556;
+    font-size: clamp(1rem, 2.2vw, 1.25rem);
+}
+
+@media (min-width: 1024px) {
+    .hero {
+        padding: 96px 20px;
+    }
+}
